@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CctvProduct {
+  id          String   @id @default(cuid())
+  brand       String
+  modelName   String
+  cameraType  String
+  resolution  String
+  technology  String
+  recorderType String
+  nightVision String
+  weatherRating String
+  price       Float
+  salePrice   Float?
+  description String
+  features    String
+  imageUrl    String
+  videoUrl    String?
+  sampleVideoUrl String?
+  irRange     String
+  fieldOfView String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
