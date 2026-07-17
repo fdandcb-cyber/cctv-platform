@@ -13,10 +13,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LearningSystem } from "@/components/learning-system";
 import {
   Search, Plus, Shield, Eye, GitCompareArrows, Trash2, X,
   Camera, Wifi, Radio, Signal, MonitorPlay, ChevronLeft,
   Tag, DollarSign, Zap, Droplets, Wind, Video, CheckCircle2, Star,
+  GraduationCap,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -510,7 +512,7 @@ function FilterSidebar() {
 // MAIN PAGE
 // ═══════════════════════════════════════════
 export default function Home() {
-  const { view, products, filters, setProducts, loading, setLoading, setView } = useStore();
+  const { view, products, filters, setProducts, loading, setLoading, setView, setLearnSection } = useStore();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -543,9 +545,10 @@ export default function Home() {
               <span className="font-bold text-lg hidden sm:inline">CCTV Catalog</span>
             </button>
             <div className="flex items-center gap-2">
-              <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
+              <Tabs value={view} onValueChange={(v) => { if (v === 'learn') setLearnSection('overview'); setView(v as typeof view); }}>
                 <TabsList className="h-9">
                   <TabsTrigger value="catalog" className="text-xs px-3 gap-1"><Camera className="h-3.5 w-3.5 hidden sm:inline" />Catalog</TabsTrigger>
+                  <TabsTrigger value="learn" className="text-xs px-3 gap-1"><GraduationCap className="h-3.5 w-3.5 hidden sm:inline" />Learn</TabsTrigger>
                   <TabsTrigger value="compare" className="text-xs px-3 gap-1"><GitCompareArrows className="h-3.5 w-3.5 hidden sm:inline" />Compare</TabsTrigger>
                   <TabsTrigger value="admin" className="text-xs px-3 gap-1"><Plus className="h-3.5 w-3.5 hidden sm:inline" />Admin</TabsTrigger>
                 </TabsList>
@@ -557,7 +560,9 @@ export default function Home() {
 
       {/* Content */}
       <main className="flex-1">
-        {view === "detail" && useStore.getState().selectedProduct ? (
+        {view === "learn" ? (
+          <LearningSystem />
+        ) : view === "detail" && useStore.getState().selectedProduct ? (
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <ProductDetail product={useStore.getState().selectedProduct!} onBack={() => setView("catalog")} />
           </div>

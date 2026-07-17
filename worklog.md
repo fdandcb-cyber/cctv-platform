@@ -18,3 +18,30 @@ Stage Summary:
 - 8 embedded images with captions, 3 comparison tables, step-by-step numbered lists
 - Hikvision & Dahua specific model recommendations with INR pricing
 - 3 complete budget setup recommendations under 10K INR
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Build Learning System for CCTV Platform (web app)
+
+Work Log:
+- Analyzed existing CCTV platform (catalog, compare, admin panel already built)
+- Added "Learn" view to Zustand store with learnSection state
+- Built comprehensive LearningSystem component (1020+ lines) with 8 sections:
+  - Overview: Hero, 6 topic cards, "How CCTV Works" 3-part diagram
+  - Camera Types: 5 expandable cards (Dome/Bullet/WiFi/PTZ/4G) with description, best-for tags, pros/cons, specs
+  - DVR vs NVR: Side-by-side comparison cards + quick decision guide
+  - Compatibility: Critical warning, 6x4 compatibility matrix table, safe buying combinations
+  - Mobile Viewing: Prerequisites, Hikvision 6-step guide, Dahua 7-step guide, troubleshooting
+  - Budget Guide: 4 tier cards (Under 5K / 5-10K / 10-25K / 25K+) with itemized costs + money-saving tips
+  - Installation: 7-step wired system guide, 6-step WiFi camera guide, tools needed
+  - FAQ: 6 expandable questions with detailed answers
+- Added "Learn" tab to main navigation header
+- Fixed ESLint parsing issues with template literals (converted to cn() utility)
+- Verified all interactions via Agent Browser: tab switching, section navigation, card expansion, accordion, catalog back-navigation
+
+Stage Summary:
+- Learning System is fully integrated into the CCTV platform under the "Learn" tab
+- 8 learning sections with sidebar navigation, breadcrumbs, and rich content
+- All core flows verified: Catalog ↔ Learn ↔ Compare ↔ Admin navigation works
+- Key files modified: src/store/cctv-store.ts, src/app/page.tsx, new: src/components/learning-system.tsx
