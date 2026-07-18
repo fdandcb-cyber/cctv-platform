@@ -120,7 +120,7 @@ const initialState = {
   rj45Connector: 0,
   networkingRack: 0,
   monitor: 0,
-  monitorSize: '21.5"',
+  monitorSize: '21.5',
   extensionBoard: 0,
   wirelessMouse: 0,
   wirelessKeyboard: 0,

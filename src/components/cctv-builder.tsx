@@ -80,33 +80,36 @@ function getCameraSuggestion(area: number, propType: PropertyType): { min: numbe
 
 // ═══ RECORDER CONFIG ═══
 // Real market channel counts:
-//   DVR (analog): 4ch, 8ch, 16ch, 32ch  (64ch DVRs are extremely rare)
-//   NVR (IP):     4ch, 8ch, 16ch, 32ch, 64ch
-function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: string; units: { channels: number; usedPorts: number }[]; summary: string } {
+//   DVR (analog): 4ch, 8ch, 16ch, 32ch   (max 32ch for DVR)
+//   NVR (IP):     4ch, 8ch, 16ch, 32ch, 64ch, 128ch, 256ch
+// If cameras exceed the largest available single unit, multiple units are suggested.
+function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: string; units: { channels: number; usedPorts: number }[]; summary: string; exceedsMax: boolean } {
   if (system === "wifi") {
-    return { type: "None", units: [], summary: "WiFi cameras do not need a DVR/NVR. They record on MicroSD card or cloud." };
+    return { type: "None", units: [], summary: "WiFi cameras do not need a DVR/NVR. They record on MicroSD card or cloud.", exceedsMax: false };
   }
 
   const type = system === "analog" ? "DVR" : "NVR";
-  // Analog DVRs max at 32ch in market. NVRs go up to 64ch.
-  const availableChannels = system === "analog" ? [4, 8, 16, 32] : [4, 8, 16, 32, 64];
+  // DVR max is 32ch. NVR goes up to 256ch.
+  const availableChannels = system === "analog" ? [4, 8, 16, 32] : [4, 8, 16, 32, 64, 128, 256];
+  const maxSingleUnit = availableChannels[availableChannels.length - 1];
+  const exceedsMax = totalCameras > maxSingleUnit;
 
   const units: { channels: number; usedPorts: number }[] = [];
   let remaining = totalCameras;
 
   while (remaining > 0) {
-    // Pick the largest channel count that covers remaining, or the biggest available
+    // Pick the smallest channel count that covers remaining, or the biggest available
     const fitting = availableChannels.filter(ch => ch >= remaining);
     const chosen = fitting.length > 0 ? fitting[0] : availableChannels[availableChannels.length - 1];
     const used = Math.min(remaining, chosen);
     units.push({ channels: chosen, usedPorts: used });
-    remaining -= chosen;
+    remaining -= used;
   }
 
   // Build summary string
   if (units.length === 1) {
     const u = units[0];
-    return { type, units, summary: `${type} ${u.channels}-Channel (${u.usedPorts} camera${u.usedPorts > 1 ? "s" : ""} connected)` };
+    return { type, units, summary: `${type} ${u.channels}-Channel (${u.usedPorts} camera${u.usedPorts > 1 ? "s" : ""} connected)`, exceedsMax };
   }
 
   const unitDescs = units.map(u => {
@@ -119,11 +122,12 @@ function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: 
     type,
     units,
     summary: `${units.length}x ${type} units: ${unitDescs} = ${totalChannels} total channels for ${totalCameras} cameras`,
+    exceedsMax,
   };
 }
 
 // ═══ POWER SUPPLY CONFIG ═══
-// Real market PoE switch ports: 4, 8, 16, 24  (32-port PoE switches do NOT exist in mainstream market)
+// Real market PoE switch ports: 4, 8, 16, 24, 48  (32-port PoE switches do NOT exist)
 // SMPS channels for analog: 4ch, 8ch, 16ch
 function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp: boolean): { units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[]; summary: string } {
   if (system === "wifi") {
@@ -141,7 +145,7 @@ function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp:
       const chosen = fitting.length > 0 ? fitting[0] : smpsOptions[smpsOptions.length - 1];
       const used = Math.min(remaining, chosen);
       units.push({ type: "SMPS Power Supply", ports: chosen, usedPorts: used, variant: "standard" });
-      remaining -= chosen;
+      remaining -= used;
     }
 
     const unitDescs = units.map(u => {
@@ -153,9 +157,9 @@ function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp:
   }
 
   // IP system - PoE Switch
-  // Real market: 4-port, 8-port, 16-port, 24-port PoE switches
+  // Real market: 4-port, 8-port, 16-port, 24-port, 48-port PoE switches
   // Gigabit needed for >2MP cameras (higher bandwidth)
-  const poeOptions = [4, 8, 16, 24];
+  const poeOptions = [4, 8, 16, 24, 48];
   const variant: "standard" | "giga" = hasAbove2mp ? "giga" : "standard";
   const units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[] = [];
   let remaining = totalCameras;
@@ -165,7 +169,7 @@ function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp:
     const chosen = fitting.length > 0 ? fitting[0] : poeOptions[poeOptions.length - 1];
     const used = Math.min(remaining, chosen);
     units.push({ type: "PoE Switch", ports: chosen, usedPorts: used, variant });
-    remaining -= chosen;
+    remaining -= used;
   }
 
   const variantLabel = variant === "giga" ? "Gigabit" : "Fast Ethernet";
@@ -820,14 +824,22 @@ export function CctvBuilder() {
                             <p className="text-xs text-amber-700">Match the DVR brand with camera brand — Hikvision cameras need Hikvision DVR (HD-TVI), Dahua cameras need Dahua DVR (HD-CVI). They are NOT cross-compatible.</p>
                           </div>
                         )}
+                        {recorderConfig.exceedsMax && (
+                          <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-2 flex items-start gap-2">
+                            <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                            <p className="text-xs text-red-700">
+                              {totalCameras} cameras exceed the maximum available single {recorderConfig.type} ({store.cameraSystem === "analog" ? "32" : "256"} channels). Multiple {recorderConfig.type} units are required as shown above.
+                            </p>
+                          </div>
+                        )}
                       </div>
                       <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
 
-                {/* Individual unit cards */}
-                {recorderConfig.units.length > 1 && (
+                {/* Individual unit cards — always show when multiple units OR when exceeds max */}
+                {(recorderConfig.units.length > 1 || recorderConfig.exceedsMax) && (
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Unit Breakdown</p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -928,7 +940,7 @@ export function CctvBuilder() {
                 {store.cameraSystem === "ip" && totalCameras > 24 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
                     <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
-                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, and 24-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port PoE switches do not exist in the mainstream market.</p>
+                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, 24, and 48-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port PoE switches do not exist in the mainstream market.</p>
                   </div>
                 )}
               </div>
