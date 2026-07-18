@@ -24,7 +24,7 @@ export interface CctvProduct {
 }
 
 interface StoreState {
-  view: "catalog" | "detail" | "admin" | "compare" | "learn";
+  view: "catalog" | "detail" | "admin" | "compare" | "learn" | "builder";
   learnSection: string;
   products: CctvProduct[];
   selectedProduct: CctvProduct | null;

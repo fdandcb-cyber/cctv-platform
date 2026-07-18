@@ -14,11 +14,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearningSystem } from "@/components/learning-system";
+import { CctvBuilder } from "@/components/cctv-builder";
 import {
   Search, Plus, Shield, Eye, GitCompareArrows, Trash2, X,
   Camera, Wifi, Radio, Signal, MonitorPlay, ChevronLeft,
   Tag, DollarSign, Zap, Droplets, Wind, Video, CheckCircle2, Star,
-  GraduationCap,
+  GraduationCap, Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -547,6 +548,7 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <Tabs value={view} onValueChange={(v) => { if (v === 'learn') setLearnSection('overview'); setView(v as typeof view); }}>
                 <TabsList className="h-9">
+                  <TabsTrigger value="builder" className="text-xs px-3 gap-1"><Wrench className="h-3.5 w-3.5 hidden sm:inline" />Builder</TabsTrigger>
                   <TabsTrigger value="catalog" className="text-xs px-3 gap-1"><Camera className="h-3.5 w-3.5 hidden sm:inline" />Catalog</TabsTrigger>
                   <TabsTrigger value="learn" className="text-xs px-3 gap-1"><GraduationCap className="h-3.5 w-3.5 hidden sm:inline" />Learn</TabsTrigger>
                   <TabsTrigger value="compare" className="text-xs px-3 gap-1"><GitCompareArrows className="h-3.5 w-3.5 hidden sm:inline" />Compare</TabsTrigger>
@@ -560,7 +562,9 @@ export default function Home() {
 
       {/* Content */}
       <main className="flex-1">
-        {view === "learn" ? (
+        {view === "builder" ? (
+          <CctvBuilder />
+        ) : view === "learn" ? (
           <LearningSystem />
         ) : view === "detail" && useStore.getState().selectedProduct ? (
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
