@@ -19,3 +19,30 @@ Stage Summary:
 - HDD calculation uses real H.265+ bitrates: 2MP=15.1GB/day, 4MP=30.2GB/day, 8MP=60.5GB/day (with 70% motion factor)
 - Admin panel with Products, Quotes, and Settings tabs
 - All files: builder-store.ts, cctv-builder.tsx, admin-panel.tsx, page.tsx
+
+---
+Task ID: 2
+Agent: Main
+Task: Update NVR channels to include 128/256, add 48-port PoE, fix algorithm bug, add exceedsMax warning
+
+Work Log:
+- Updated NVR available channels from [4,8,16,32,64] to [4,8,16,32,64,128,256] per user specification
+- DVR channels remain [4,8,16,32] — max 32ch for DVR (confirmed by user)
+- Added 48-port to PoE switch options [4,8,16,24,48] — was missing before
+- Fixed critical algorithm bug: `remaining -= chosen` changed to `remaining -= used` in both recorder and power config loops (was causing incorrect distribution in edge cases)
+- Added `exceedsMax` flag to getRecorderConfig return type — triggers red warning when cameras exceed max single unit (32 for DVR, 256 for NVR)
+- Added red alert UI in Step 7 showing "X cameras exceed the maximum available single DVR/NVR (32/256 channels)"
+- Updated unit breakdown to always show when exceedsMax is true (even for single large units)
+- Fixed PoE info text to mention 48-port variant
+- Fixed monitorSize store initial value from '21.5"' to '21.5' (mismatch with Select value)
+- Verified admin panel is complete: Products CRUD, Saved Quotes (localStorage), Settings, Dashboard stats
+- Verified all algorithms with node test script: 68 cameras NVR→128ch, 40 cameras DVR→32ch+8ch, 300 cameras NVR→256ch+64ch, 32 cameras PoE→48p(32used), 68 cameras PoE→48p+24p
+- Build passes successfully, dev server returns 200
+
+Stage Summary:
+- NVR now supports up to 256 channels (4/8/16/32/64/128/256)
+- DVR stays at max 32 channels (4/8/16/32) — correct per market
+- PoE switches now include 48-port (4/8/16/24/48) — no fake 32-port
+- Algorithm bug fixed: remaining now correctly decrements by `used` not `chosen`
+- Red warning shown when camera count exceeds maximum single DVR/NVR unit
+- All calculations verified with edge case testing
