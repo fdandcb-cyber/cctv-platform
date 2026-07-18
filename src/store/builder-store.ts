@@ -12,15 +12,22 @@ export interface CameraSelection {
   tech: CameraTech;
 }
 
+export interface RecorderUnit {
+  type: string;      // "DVR" or "NVR"
+  channels: number;  // 4, 8, 16, 32, 64
+  usedPorts: number; // how many cameras will connect
+}
+
+export interface PowerUnit {
+  type: string;      // "SMPS Power Supply" or "PoE Switch"
+  ports: number;     // 4, 8, 16, 24
+  usedPorts: number;
+  variant: "standard" | "giga"; // giga for PoE with >2MP cameras
+}
+
 export interface CableSelection {
   type: string;     // "90m" or "180m" for analog, "100m" or "305m" for IP
   qty: number;
-}
-
-export interface PowerSelection {
-  type: string;     // "4ch", "8ch", "16ch" for SMPS, "4port", "8port", "16port", "24port" for PoE
-  qty: number;
-  variant: string;  // "standard" or "giga" for PoE
 }
 
 export interface BuilderState {
@@ -32,17 +39,18 @@ export interface BuilderState {
   suggestedCameras: number;
   // Step 4
   cameraSystem: CameraSystem | "";
-  // Step 5
-  cameraTech: CameraTech | "";
+  // Step 5 — MULTI-SELECT now
+  cameraTechs: CameraTech[];
   // Step 6
   cameraSelections: CameraSelection[];
-  // Step 7 (auto-suggested)
-  recorderSuggestion: { type: string; channels: number; label: string } | null;
-  // Step 8 (auto-suggested)
-  powerSuggestion: PowerSelection | null;
+  // Step 7 (auto-suggested) — ARRAY of units
+  recorderUnits: RecorderUnit[];
+  // Step 8 (auto-suggested) — ARRAY of units
+  powerUnits: PowerUnit[];
   // Step 9
   retentionDays: number;
   hddSuggestion: string;
+  hddBreakdown: string;
   // Step 10
   cableLengthPerCamera: number;
   cableSelection: CableSelection | null;
@@ -66,12 +74,14 @@ export interface BuilderState {
   setAreaSqft: (v: string) => void;
   setSuggestedCameras: (v: number) => void;
   setCameraSystem: (v: CameraSystem) => void;
-  setCameraTech: (v: CameraTech) => void;
+  toggleCameraTech: (v: CameraTech) => void;
+  setCameraTechs: (v: CameraTech[]) => void;
   setCameraSelections: (v: CameraSelection[]) => void;
-  setRecorderSuggestion: (v: BuilderState["recorderSuggestion"]) => void;
-  setPowerSuggestion: (v: BuilderState["powerSuggestion"]) => void;
+  setRecorderUnits: (v: RecorderUnit[]) => void;
+  setPowerUnits: (v: PowerUnit[]) => void;
   setRetentionDays: (v: number) => void;
   setHddSuggestion: (v: string) => void;
+  setHddBreakdown: (v: string) => void;
   setCableLengthPerCamera: (v: number) => void;
   setCableSelection: (v: CableSelection | null) => void;
   setJunctionBox4x4: (v: number) => void;
@@ -94,12 +104,13 @@ const initialState = {
   areaSqft: "",
   suggestedCameras: 0,
   cameraSystem: "" as CameraSystem | "",
-  cameraTech: "" as CameraTech | "",
+  cameraTechs: [] as CameraTech[],
   cameraSelections: [] as CameraSelection[],
-  recorderSuggestion: null as BuilderState["recorderSuggestion"],
-  powerSuggestion: null as BuilderState["powerSuggestion"],
+  recorderUnits: [] as RecorderUnit[],
+  powerUnits: [] as PowerUnit[],
   retentionDays: 15,
   hddSuggestion: "",
+  hddBreakdown: "",
   cableLengthPerCamera: 25,
   cableSelection: null as CableSelection | null,
   junctionBox4x4: 0,
@@ -121,13 +132,28 @@ export const useBuilderStore = create<BuilderState>((set) => ({
   setPropertyType: (v) => set({ propertyType: v }),
   setAreaSqft: (v) => set({ areaSqft: v }),
   setSuggestedCameras: (v) => set({ suggestedCameras: v }),
-  setCameraSystem: (v) => set({ cameraSystem: v, cameraTech: "", cameraSelections: [], recorderSuggestion: null, powerSuggestion: null, cableSelection: null }),
-  setCameraTech: (v) => set({ cameraTech: v }),
+  setCameraSystem: (v) => set({
+    cameraSystem: v,
+    cameraTechs: [],
+    cameraSelections: [],
+    recorderUnits: [],
+    powerUnits: [],
+    cableSelection: null,
+    hddSuggestion: "",
+    hddBreakdown: "",
+  }),
+  toggleCameraTech: (v) => set((s) => ({
+    cameraTechs: s.cameraTechs.includes(v)
+      ? s.cameraTechs.filter(t => t !== v)
+      : [...s.cameraTechs, v]
+  })),
+  setCameraTechs: (v) => set({ cameraTechs: v }),
   setCameraSelections: (v) => set({ cameraSelections: v }),
-  setRecorderSuggestion: (v) => set({ recorderSuggestion: v }),
-  setPowerSuggestion: (v) => set({ powerSuggestion: v }),
+  setRecorderUnits: (v) => set({ recorderUnits: v }),
+  setPowerUnits: (v) => set({ powerUnits: v }),
   setRetentionDays: (v) => set({ retentionDays: v }),
   setHddSuggestion: (v) => set({ hddSuggestion: v }),
+  setHddBreakdown: (v) => set({ hddBreakdown: v }),
   setCableLengthPerCamera: (v) => set({ cableLengthPerCamera: v }),
   setCableSelection: (v) => set({ cableSelection: v }),
   setJunctionBox4x4: (v) => set({ junctionBox4x4: v }),

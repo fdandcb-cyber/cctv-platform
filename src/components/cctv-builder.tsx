@@ -1,24 +1,26 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useBuilderStore, type CameraForm, type CameraSelection, type CameraSystem, type CameraTech, type PropertyType } from "@/store/builder-store";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   Home, Building2, Store, Warehouse, Factory, UtensilsCrossed,
   GraduationCap, Hospital, Castle, HelpCircle,
   Camera, Wifi, Cable, Radio, Shield, HardDrive, Cloud,
-  Monitor, Plug, Plus, Minus, ChevronRight, CheckCircle2,
-  AlertTriangle, Lightbulb, Router, Cpu, Server, Battery,
-  Mouse, Keyboard, MonitorSpeaker, Zap, Box, Link,
+  Monitor, Plug, Plus, Minus, CheckCircle2,
+  AlertTriangle, Lightbulb, Router, Zap, Box, Link,
   Calculator, RotateCcw, Info, Eye, Volume2, MessageSquare,
-  Sun, Moon, Palette,
+  Sun, Moon, Palette, Server, ChevronsDown, Copy, Printer,
+  Mouse, Keyboard,
 } from "lucide-react";
+import { toast } from "sonner";
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS & DATA
@@ -38,32 +40,33 @@ const propertyTypes: { value: PropertyType; label: string; icon: React.ReactNode
   { value: "other", label: "Other", icon: <HelpCircle className="h-6 w-6" />, desc: "Any other property type" },
 ];
 
-const cameraSystems: { value: CameraSystem; label: string; icon: React.ReactNode; desc: string; pros: string[]; cons: string[] }[] = [
-  { value: "analog", label: "Analog (HD-TVI / HD-CVI)", icon: <Cable className="h-6 w-6" />, desc: "Uses coaxial cable + DVR. Budget-friendly, easy to install, reliable for standard setups.", pros: ["Most affordable", "Easy installation", "Long cable runs (300m+)", "Proven technology"], cons: ["Lower max resolution (8MP)", "Separate power cable needed", "Limited smart features", "Brand-locked (Hikvision/Dahua)"] },
-  { value: "ip", label: "IP (Network Camera)", icon: <Wifi className="h-6 w-6" />, desc: "Uses Ethernet cable + NVR with PoE. Best quality, single cable for data+power, smart features.", pros: ["Best video quality (up to 12MP)", "PoE - one cable carries everything", "Smart AI features", "Cross-brand compatible (ONVIF)"], cons: ["More expensive", "100m max cable per run", "Requires network knowledge", "Higher bandwidth needed"] },
-  { value: "wifi", label: "WiFi (Wireless)", icon: <Radio className="h-6 w-6" />, desc: "No cables at all. Camera connects to WiFi, stores on MicroSD card or cloud. No DVR/NVR needed.", pros: ["Zero cable installation", "DIY friendly", "Works with MicroSD + Cloud", "Instant mobile alerts"], cons: ["Depends on WiFi strength", "Limited to 1-3 cameras", "Not for large properties", "Higher running cost (cloud)"] },
+const cameraSystems: { value: CameraSystem; label: string; icon: React.ReactNode; desc: string; pros: string[] }[] = [
+  { value: "analog", label: "Analog (HD-TVI / HD-CVI)", icon: <Cable className="h-6 w-6" />, desc: "Uses coaxial cable + DVR. Budget-friendly, easy to install, reliable for standard setups.", pros: ["Most affordable system", "Easy installation", "Long cable runs (300m+)", "Proven reliable technology"] },
+  { value: "ip", label: "IP (Network Camera)", icon: <Wifi className="h-6 w-6" />, desc: "Uses Ethernet cable + NVR with PoE. Best quality, single cable for data+power, smart features.", pros: ["Best video quality (up to 12MP)", "PoE - one cable for data+power", "Smart AI features", "ONVIF cross-brand compatible"] },
+  { value: "wifi", label: "WiFi (Wireless)", icon: <Radio className="h-6 w-6" />, desc: "No cables needed. Camera connects to WiFi, stores on MicroSD card or cloud. No DVR/NVR needed.", pros: ["Zero cable installation", "DIY friendly", "MicroSD + Cloud storage", "Instant mobile alerts"] },
 ];
 
 const cameraTechs: { value: CameraTech; label: string; icon: React.ReactNode; desc: string }[] = [
   { value: "night_vision", label: "Night Vision (IR)", icon: <Moon className="h-5 w-5" />, desc: "Black & white recording in darkness using infrared LEDs. Reliable, long-range (20-80m)." },
-  { value: "night_vision_audio", label: "Night Vision + Audio", icon: <Volume2 className="h-5 w-5" />, desc: "IR night vision with built-in microphone for audio recording. You can hear what's happening." },
+  { value: "night_vision_audio", label: "Night Vision + Audio", icon: <Volume2 className="h-5 w-5" />, desc: "IR night vision with built-in microphone for audio recording. Hear what is happening." },
   { value: "color_audio", label: "Full Color + Audio", icon: <Palette className="h-5 w-5" />, desc: "Records in full color even at night using ColorVu/Full-Color technology. Includes audio." },
-  { value: "two_way_talk", label: "Two-Way Talk", icon: <MessageSquare className="h-5 w-5" />, desc: "Full color night vision + audio + built-in speaker for two-way communication through the app." },
+  { value: "two_way_talk", label: "Two-Way Talk", icon: <MessageSquare className="h-5 w-5" />, desc: "Full color night vision + audio + built-in speaker for two-way communication through app." },
 ];
 
 const mpOptions = ["2MP", "3MP", "4MP", "5MP", "8MP", "12MP"];
 const formOptions: { value: CameraForm; label: string; icon: React.ReactNode; desc: string }[] = [
   { value: "dome", label: "Dome", icon: <Camera className="h-5 w-5" />, desc: "Indoor, vandal-proof, hidden direction" },
-  { value: "bullet", label: "Bullet", icon: <Camera className="h-5 w-5" />, desc: "Outdoor, long-range IR, visible deterrent" },
-  { value: "ptz", label: "PTZ", icon: <Radio className="h-5 w-5" />, desc: "Pan-tilt-zoom, 360° coverage, auto-track" },
+  { value: "bullet", label: "Bullet", icon: <Eye className="h-5 w-5" />, desc: "Outdoor, long-range IR, visible deterrent" },
+  { value: "ptz", label: "PTZ", icon: <Radio className="h-5 w-5" />, desc: "Pan-tilt-zoom, 360 degree coverage, auto-track" },
 ];
 
 const retentionOptions = [7, 10, 15, 20, 30, 45, 60, 90];
 
 // ═══════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
+// CCTV DOMAIN-ACCURATE CALCULATION ENGINE
 // ═══════════════════════════════════════════════════════════════
 
+// Camera density per 1000 sq ft by property type
 function getCameraSuggestion(area: number, propType: PropertyType): { min: number; max: number; suggested: number } {
   const camerasPer1000sqft: Record<PropertyType, number> = {
     home: 1.2, apartment: 1.5, office: 1.8, shop: 2.0,
@@ -75,25 +78,160 @@ function getCameraSuggestion(area: number, propType: PropertyType): { min: numbe
   return { min: Math.max(2, suggested - 2), max: suggested + 4, suggested };
 }
 
-function getSuggestedChannels(camCount: number): number {
-  if (camCount <= 4) return 4;
-  if (camCount <= 8) return 8;
-  if (camCount <= 16) return 16;
-  return 32;
+// ═══ RECORDER CONFIG ═══
+// Real market channel counts:
+//   DVR (analog): 4ch, 8ch, 16ch, 32ch  (64ch DVRs are extremely rare)
+//   NVR (IP):     4ch, 8ch, 16ch, 32ch, 64ch
+function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: string; units: { channels: number; usedPorts: number }[]; summary: string } {
+  if (system === "wifi") {
+    return { type: "None", units: [], summary: "WiFi cameras do not need a DVR/NVR. They record on MicroSD card or cloud." };
+  }
+
+  const type = system === "analog" ? "DVR" : "NVR";
+  // Analog DVRs max at 32ch in market. NVRs go up to 64ch.
+  const availableChannels = system === "analog" ? [4, 8, 16, 32] : [4, 8, 16, 32, 64];
+
+  const units: { channels: number; usedPorts: number }[] = [];
+  let remaining = totalCameras;
+
+  while (remaining > 0) {
+    // Pick the largest channel count that covers remaining, or the biggest available
+    const fitting = availableChannels.filter(ch => ch >= remaining);
+    const chosen = fitting.length > 0 ? fitting[0] : availableChannels[availableChannels.length - 1];
+    const used = Math.min(remaining, chosen);
+    units.push({ channels: chosen, usedPorts: used });
+    remaining -= chosen;
+  }
+
+  // Build summary string
+  if (units.length === 1) {
+    const u = units[0];
+    return { type, units, summary: `${type} ${u.channels}-Channel (${u.usedPorts} camera${u.usedPorts > 1 ? "s" : ""} connected)` };
+  }
+
+  const unitDescs = units.map(u => {
+    if (u.usedPorts === u.channels) return `${u.channels}ch`;
+    return `${u.channels}ch (${u.usedPorts} used)`;
+  }).join(" + ");
+
+  const totalChannels = units.reduce((s, u) => s + u.channels, 0);
+  return {
+    type,
+    units,
+    summary: `${units.length}x ${type} units: ${unitDescs} = ${totalChannels} total channels for ${totalCameras} cameras`,
+  };
 }
 
-function getHddSize(totalCameras: number, avgMp: number, retentionDays: number, system: CameraSystem): string {
-  const mpMap: Record<string, number> = { "2MP": 2, "3MP": 3, "4MP": 4, "5MP": 5, "8MP": 8, "12MP": 12 };
-  const mpVal = mpMap[avgMp] || 4;
-  // GB per camera per day (H.265+ compression, motion recording ~70% of 24/7)
-  const gbPerCamPerDay = (mpVal * 2.5 * 0.7) / (system === "wifi" ? 2 : 1);
-  const totalGb = totalCameras * gbPerCamPerDay * retentionDays;
-  // Available HDD sizes in TB
-  const hddSizes = [500, 1000, 2000, 3000, 4000, 6000, 8000, 10000];
-  for (const size of hddSizes) {
-    if (size >= totalGb) return size >= 1000 ? `${(size / 1000).toFixed(0)} TB` : `${size} GB`;
+// ═══ POWER SUPPLY CONFIG ═══
+// Real market PoE switch ports: 4, 8, 16, 24  (32-port PoE switches do NOT exist in mainstream market)
+// SMPS channels for analog: 4ch, 8ch, 16ch
+function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp: boolean): { units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[]; summary: string } {
+  if (system === "wifi") {
+    return { units: [], summary: "WiFi cameras use included 12V adapters. No separate power supply needed." };
   }
-  return "10+ TB (Multiple HDDs)";
+
+  if (system === "analog") {
+    // SMPS: 4ch, 8ch, 16ch
+    const smpsOptions = [4, 8, 16];
+    const units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[] = [];
+    let remaining = totalCameras;
+
+    while (remaining > 0) {
+      const fitting = smpsOptions.filter(ch => ch >= remaining);
+      const chosen = fitting.length > 0 ? fitting[0] : smpsOptions[smpsOptions.length - 1];
+      const used = Math.min(remaining, chosen);
+      units.push({ type: "SMPS Power Supply", ports: chosen, usedPorts: used, variant: "standard" });
+      remaining -= chosen;
+    }
+
+    const unitDescs = units.map(u => {
+      if (u.usedPorts === u.ports) return `${u.ports}-Channel SMPS`;
+      return `${u.ports}-Channel SMPS (${u.usedPorts} used)`;
+    }).join(" + ");
+
+    return { units, summary: `${units.length}x SMPS units: ${unitDescs} (12V DC)` };
+  }
+
+  // IP system - PoE Switch
+  // Real market: 4-port, 8-port, 16-port, 24-port PoE switches
+  // Gigabit needed for >2MP cameras (higher bandwidth)
+  const poeOptions = [4, 8, 16, 24];
+  const variant: "standard" | "giga" = hasAbove2mp ? "giga" : "standard";
+  const units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[] = [];
+  let remaining = totalCameras;
+
+  while (remaining > 0) {
+    const fitting = poeOptions.filter(ch => ch >= remaining);
+    const chosen = fitting.length > 0 ? fitting[0] : poeOptions[poeOptions.length - 1];
+    const used = Math.min(remaining, chosen);
+    units.push({ type: "PoE Switch", ports: chosen, usedPorts: used, variant });
+    remaining -= chosen;
+  }
+
+  const variantLabel = variant === "giga" ? "Gigabit" : "Fast Ethernet";
+  const unitDescs = units.map(u => {
+    if (u.usedPorts === u.ports) return `${u.ports}-Port ${variantLabel}`;
+    return `${u.ports}-Port (${u.usedPorts} used)`;
+  }).join(" + ");
+
+  const totalPorts = units.reduce((s, u) => s + u.ports, 0);
+  return { units, summary: `${units.length}x ${variantLabel} PoE switches: ${unitDescs} = ${totalPorts} total ports for ${totalCameras} cameras` };
+}
+
+// ═══ HDD SIZE CALCULATION ═══
+// Real-world H.265+ bitrates (Mbps) at 15fps continuous recording:
+//   2MP  (1080p): 2 Mbps   → ~21.6 GB/day/camera
+//   3MP:          3 Mbps   → ~32.4 GB/day/camera
+//   4MP  (2K):    4 Mbps   → ~43.2 GB/day/camera
+//   5MP:          6 Mbps   → ~64.8 GB/day/camera
+//   8MP  (4K):    8 Mbps   → ~86.4 GB/day/camera
+//   12MP:         16 Mbps  → ~172.8 GB/day/camera
+// With H.265+ motion recording (~70% activity factor), multiply by 0.7
+// Formula per camera: GB/day = (bitrate_Mbps / 8) * 3600 * 24 * 0.7
+// Total GB = Sum(camera_qty_i * GB_per_day_i * retention_days)
+
+const BITRATE_GB_PER_DAY: Record<string, number> = {
+  "2MP": 15.1,    // (2/8)*86400*0.7 = 15120 MB = 14.8 GB → rounded
+  "3MP": 22.7,
+  "4MP": 30.2,
+  "5MP": 45.4,
+  "8MP": 60.5,
+  "12MP": 120.9,
+};
+
+const HDD_SIZES_GB = [500, 1000, 2000, 3000, 4000, 6000, 8000, 10000, 12000, 16000];
+
+function calculateHdd(cameraSelections: CameraSelection[], retentionDays: number): { size: string; breakdown: string } {
+  if (cameraSelections.length === 0 || retentionDays <= 0) return { size: "", breakdown: "" };
+
+  let totalGB = 0;
+  const details: string[] = [];
+
+  for (const cam of cameraSelections) {
+    const gbPerDay = BITRATE_GB_PER_DAY[cam.mp] || 30.2;
+    const camTotal = gbPerDay * cam.qty * retentionDays;
+    totalGB += camTotal;
+    details.push(`${cam.qty}x ${cam.mp} ${cam.form}: ${Math.round(camTotal / 1024 * 10) / 10} TB`);
+  }
+
+  // Find smallest standard HDD that fits
+  let hddLabel = "";
+  for (const size of HDD_SIZES_GB) {
+    if (size >= totalGB) {
+      hddLabel = size >= 1000 ? `${size / 1000} TB` : `${size} GB`;
+      break;
+    }
+  }
+  if (!hddLabel) {
+    const tb = Math.ceil(totalGB / 1000);
+    hddLabel = `${tb}+ TB (Multiple HDDs needed)`;
+  }
+
+  // Build breakdown
+  const totalTB = (totalGB / 1024).toFixed(1);
+  const breakdown = `Total: ~${totalTB} TB for ${retentionDays} days retention`;
+
+  return { size: hddLabel, breakdown };
 }
 
 function getTotalCableMeters(cameraQty: number, metersPerCam: number): number {
@@ -130,11 +268,11 @@ function StepBadge({ num, title, active, done }: { num: number; title: string; a
 // QUANTITY CONTROL
 // ═══════════════════════════════════════════════════════════════
 
-function QtyControl({ value, onChange, min = 0, max = 32 }: { value: number; onChange: (v: number) => void; min?: number; max?: number }) {
+function QtyControl({ value, onChange, min = 0, max = 256 }: { value: number; onChange: (v: number) => void; min?: number; max?: number }) {
   return (
     <div className="flex items-center gap-1">
       <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => onChange(Math.max(min, value - 1))} disabled={value <= min}><Minus className="h-3 w-3" /></Button>
-      <span className="w-8 text-center font-bold text-sm">{value}</span>
+      <span className="w-10 text-center font-bold text-sm">{value}</span>
       <Button size="icon" variant="outline" className="h-7 w-7" onClick={() => onChange(Math.min(max, value + 1))} disabled={value >= max}><Plus className="h-3 w-3" /></Button>
     </div>
   );
@@ -152,53 +290,79 @@ export function CctvBuilder() {
   const hasPropertyType = store.propertyType !== "";
   const hasArea = area > 0;
   const hasSystem = store.cameraSystem !== "";
-  const hasTech = store.cameraTech !== "";
+  const hasTech = store.cameraTechs.length > 0;
 
   const cameraSuggestion = useMemo(() => {
     if (!hasPropertyType || !hasArea) return null;
-    return getCameraSuggestion(area, store.propertyType);
+    return getCameraSuggestion(area, store.propertyType as PropertyType);
   }, [hasPropertyType, hasArea, area, store.propertyType]);
 
   const totalCameras = useMemo(() => store.cameraSelections.reduce((s, c) => s + c.qty, 0), [store.cameraSelections]);
-  const suggestedChannels = useMemo(() => getSuggestedChannels(totalCameras), [totalCameras]);
+  const hasAbove2mp = useMemo(() => store.cameraSelections.some(c => c.mp !== "2MP"), [store.cameraSelections]);
 
-  const recorderSuggestion = useMemo(() => {
+  // ─── Auto-calculated: Recorder Config ───
+  const recorderConfig = useMemo(() => {
     if (totalCameras === 0) return null;
-    if (store.cameraSystem === "wifi") return { type: "None (MicroSD/Cloud)", channels: 0, label: "WiFi cameras do not need a DVR/NVR — they record on MicroSD card or cloud." };
-    if (store.cameraSystem === "analog") return { type: "DVR", channels: suggestedChannels, label: `${suggestedChannels}-Channel DVR (HD-TVI or HD-CVI, match camera brand)` };
-    return { type: "NVR", channels: suggestedChannels, label: `${suggestedChannels}-Channel NVR with PoE (supports up to ${suggestedChannels} IP cameras)` };
-  }, [totalCameras, store.cameraSystem, suggestedChannels]);
+    return getRecorderConfig(totalCameras, store.cameraSystem as CameraSystem);
+  }, [totalCameras, store.cameraSystem]);
 
-  const powerSuggestion = useMemo(() => {
-    if (totalCameras === 0 || store.cameraSystem === "wifi") return null;
-    const hasAbove2mp = store.cameraSelections.some(c => c.mp !== "2MP");
-    if (store.cameraSystem === "analog") {
-      return { type: "SMPS", channels: suggestedChannels, variant: "standard" as const, label: `${suggestedChannels}-Channel SMPS Power Supply (12V DC)` };
-    }
-    if (hasAbove2mp) {
-      return { type: "PoE Switch", channels: suggestedChannels, variant: "giga" as const, label: `${suggestedChannels}-Port Gigabit PoE Switch (required for cameras above 2MP)` };
-    }
-    return { type: "PoE Switch", channels: suggestedChannels, variant: "standard" as const, label: `${suggestedChannels}-Port Fast Ethernet PoE Switch (sufficient for 2MP cameras)` };
-  }, [totalCameras, store.cameraSystem, suggestedChannels, store.cameraSelections]);
+  // ─── Auto-calculated: Power Config ───
+  const powerConfig = useMemo(() => {
+    if (totalCameras === 0) return null;
+    return getPowerConfig(totalCameras, store.cameraSystem as CameraSystem, hasAbove2mp);
+  }, [totalCameras, store.cameraSystem, hasAbove2mp]);
 
-  const hddSize = useMemo(() => {
-    if (totalCameras === 0 || store.cameraSystem === "wifi") return "";
-    const mps = store.cameraSelections.map(c => c.mp);
-    if (mps.length === 0) return "";
-    const avgMp = mps[0];
-    return getHddSize(totalCameras, avgMp, store.retentionDays, store.cameraSystem);
+  // ─── Auto-calculated: HDD Size ───
+  const hddCalc = useMemo(() => {
+    if (totalCameras === 0 || store.cameraSystem === "wifi") return { size: "", breakdown: "" };
+    return calculateHdd(store.cameraSelections, store.retentionDays);
   }, [totalCameras, store.cameraSelections, store.retentionDays, store.cameraSystem]);
 
+  // ─── Auto-calculated: Cable ───
   const totalCableMeters = useMemo(() => getTotalCableMeters(totalCameras, store.cableLengthPerCamera), [totalCameras, store.cableLengthPerCamera]);
-
   const cableRolls90 = useMemo(() => getCableRolls(totalCableMeters, 90), [totalCableMeters]);
   const cableRolls180 = useMemo(() => getCableRolls(totalCableMeters, 180), [totalCableMeters]);
   const cableRolls100 = useMemo(() => getCableRolls(totalCableMeters, 100), [totalCableMeters]);
   const cableRolls305 = useMemo(() => getCableRolls(totalCableMeters, 305), [totalCableMeters]);
 
+  // ─── Sync auto-calculated values to store ───
+  useEffect(() => {
+    if (recorderConfig) {
+      store.setRecorderUnits(recorderConfig.units.map(u => ({ ...u, type: recorderConfig.type })));
+    } else {
+      store.setRecorderUnits([]);
+    }
+  }, [recorderConfig, store.setRecorderUnits]);
+
+  useEffect(() => {
+    if (powerConfig) {
+      store.setPowerUnits(powerConfig.units);
+    } else {
+      store.setPowerUnits([]);
+    }
+  }, [powerConfig, store.setPowerUnits]);
+
+  useEffect(() => {
+    store.setHddSuggestion(hddCalc.size);
+    store.setHddBreakdown(hddCalc.breakdown);
+  }, [hddCalc.size, hddCalc.breakdown, store.setHddSuggestion, store.setHddBreakdown]);
+
+  useEffect(() => {
+    if (cameraSuggestion) {
+      store.setSuggestedCameras(cameraSuggestion.suggested);
+    }
+  }, [cameraSuggestion, store.setSuggestedCameras]);
+
   // ─── Auto-calculate accessories ───
   useEffect(() => {
-    if (totalCameras === 0) return;
+    if (totalCameras === 0) {
+      store.setJunctionBox4x4(0);
+      store.setJunctionBox5x5(0);
+      store.setDcConnector(0);
+      store.setBncConnector(0);
+      store.setRj45Connector(0);
+      return;
+    }
     const bulletCount = store.cameraSelections.filter(c => c.form === "bullet").reduce((s, c) => s + c.qty, 0);
     const domeCount = store.cameraSelections.filter(c => c.form === "dome").reduce((s, c) => s + c.qty, 0);
     if (store.cameraSystem === "analog") {
@@ -213,45 +377,43 @@ export function CctvBuilder() {
       store.setDcConnector(0);
       store.setBncConnector(0);
       store.setRj45Connector(totalCameras * 2);
+    } else {
+      store.setJunctionBox4x4(0);
+      store.setJunctionBox5x5(0);
+      store.setDcConnector(0);
+      store.setBncConnector(0);
+      store.setRj45Connector(0);
     }
-  }, [totalCameras, store.cameraSystem, store.cameraSelections]);
-
-  useEffect(() => {
-    store.setRecorderSuggestion(recorderSuggestion);
-  }, [recorderSuggestion, store.setRecorderSuggestion]);
-
-  useEffect(() => {
-    store.setPowerSuggestion(powerSuggestion);
-  }, [powerSuggestion, store.setPowerSuggestion]);
-
-  useEffect(() => {
-    store.setHddSuggestion(hddSize);
-  }, [hddSize, store.setHddSuggestion]);
-
-  useEffect(() => {
-    if (cameraSuggestion) {
-      store.setSuggestedCameras(cameraSuggestion.suggested);
-    }
-  }, [cameraSuggestion, store.setSuggestedCameras]);
+  }, [totalCameras, store.cameraSystem, store.cameraSelections, store.setJunctionBox4x4, store.setJunctionBox5x5, store.setDcConnector, store.setBncConnector, store.setRj45Connector]);
 
   // ─── Camera Selection Handlers ───
   const updateCameraQty = (mp: string, form: CameraForm, delta: number) => {
     const current = [...store.cameraSelections];
     const idx = current.findIndex(c => c.mp === mp && c.form === form);
+    const defaultTech = store.cameraTechs.length > 0 ? store.cameraTechs[0] : "night_vision" as CameraTech;
     if (idx >= 0) {
-      const newQty = Math.max(0, Math.min(32, current[idx].qty + delta));
+      const newQty = Math.max(0, Math.min(256, current[idx].qty + delta));
       if (newQty === 0) {
         current.splice(idx, 1);
       } else {
         current[idx].qty = newQty;
       }
     } else if (delta > 0) {
-      current.push({ mp, form, qty: 1, tech: store.cameraTech as CameraTech });
+      current.push({ mp, form, qty: 1, tech: defaultTech });
     }
     store.setCameraSelections(current);
   };
 
-  // ─── Determine which steps are active/reached ───
+  const updateCameraTech = (mp: string, form: CameraForm, tech: CameraTech) => {
+    const current = [...store.cameraSelections];
+    const idx = current.findIndex(c => c.mp === mp && c.form === form);
+    if (idx >= 0) {
+      current[idx] = { ...current[idx], tech };
+      store.setCameraSelections(current);
+    }
+  };
+
+  // ─── Step visibility ───
   const stepActive = (step: number) => {
     switch (step) {
       case 1: return true;
@@ -277,13 +439,76 @@ export function CctvBuilder() {
       case 4: return hasSystem;
       case 5: return hasTech;
       case 6: return totalCameras > 0;
-      case 7: return recorderSuggestion !== null;
-      case 8: return powerSuggestion !== null || store.cameraSystem === "wifi";
-      case 9: return hddSize !== "" || store.cameraSystem === "wifi";
+      case 7: return recorderConfig !== null;
+      case 8: return powerConfig !== null || store.cameraSystem === "wifi";
+      case 9: return hddCalc.size !== "" || store.cameraSystem === "wifi";
       case 10: return totalCameras > 0;
       case 11: return totalCameras > 0;
       default: return false;
     }
+  };
+
+  // ─── Copy/Print quote ───
+  const handleCopyQuote = () => {
+    const lines: string[] = [];
+    lines.push("=== CCTV SETUP QUOTE ===");
+    lines.push("");
+    lines.push("Property: " + (propertyTypes.find(p => p.value === store.propertyType)?.label || "-"));
+    lines.push("Area: " + (store.areaSqft || "-") + " sq ft");
+    lines.push("System: " + (store.cameraSystem || "-").toUpperCase());
+    lines.push("");
+    lines.push("--- CAMERAS ---");
+    for (const cam of store.cameraSelections) {
+      const techLabel = cameraTechs.find(t => t.value === cam.tech)?.label || cam.tech;
+      lines.push(`${cam.qty}x ${cam.mp} ${cam.form} (${techLabel})`);
+    }
+    lines.push("Total Cameras: " + totalCameras);
+    if (recorderConfig && recorderConfig.units.length > 0) {
+      lines.push("");
+      lines.push("--- RECORDER ---");
+      lines.push(recorderConfig.summary);
+    }
+    if (powerConfig && powerConfig.units.length > 0) {
+      lines.push("");
+      lines.push("--- POWER SUPPLY ---");
+      lines.push(powerConfig.summary);
+    }
+    if (hddCalc.size) {
+      lines.push("");
+      lines.push("--- STORAGE ---");
+      lines.push("HDD Required: " + hddCalc.size);
+      lines.push("Retention: " + store.retentionDays + " days");
+      lines.push(hddCalc.breakdown);
+    }
+    if (store.cameraSystem !== "wifi" && totalCameras > 0) {
+      lines.push("");
+      lines.push("--- CABLING ---");
+      lines.push("Total Cable: " + totalCableMeters + " meters (" + store.cableLengthPerCamera + "m per camera)");
+      if (store.cameraSystem === "analog") {
+        lines.push("Coaxial 90m rolls: " + cableRolls90 + " OR 180m rolls: " + cableRolls180);
+      } else {
+        lines.push("Cat6 100m rolls: " + cableRolls100 + " OR 305m rolls: " + cableRolls305);
+      }
+    }
+    lines.push("");
+    lines.push("--- ACCESSORIES ---");
+    if (store.junctionBox4x4 > 0) lines.push("Junction Box 4x4 (bullet): " + store.junctionBox4x4);
+    if (store.junctionBox5x5 > 0) lines.push("Junction Box 5x5 (dome): " + store.junctionBox5x5);
+    if (store.dcConnector > 0) lines.push("DC Connector: " + store.dcConnector);
+    if (store.bncConnector > 0) lines.push("BNC Connector: " + store.bncConnector);
+    if (store.rj45Connector > 0) lines.push("RJ45 Connector: " + store.rj45Connector);
+    if (store.networkingRack > 0) lines.push("Networking Rack: " + store.networkingRack);
+    if (store.monitor > 0) lines.push("Monitor " + store.monitorSize + ": " + store.monitor);
+    if (store.extensionBoard > 0) lines.push("Extension Board: " + store.extensionBoard);
+    if (store.wirelessMouse > 0) lines.push("Wireless Mouse: " + store.wirelessMouse);
+    if (store.wirelessKeyboard > 0) lines.push("Wireless Keyboard: " + store.wirelessKeyboard);
+    if (store.ups > 0) lines.push("UPS: " + store.ups);
+
+    navigator.clipboard.writeText(lines.join("\n")).then(() => {
+      toast.success("Quote copied to clipboard!");
+    }).catch(() => {
+      toast.error("Failed to copy");
+    });
   };
 
   return (
@@ -298,8 +523,19 @@ export function CctvBuilder() {
           Build Your Complete <span className="text-emerald-600">CCTV Setup</span>
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Follow each step below to configure your complete CCTV system. We will auto-calculate the recorder, power supply, cables, HDD, and accessories based on your selections.
+          Follow each step below to configure your complete CCTV system. We auto-calculate the recorder, power supply, cables, HDD, and accessories based on your selections.
         </p>
+        <div className="flex justify-center gap-2 pt-2">
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleCopyQuote} disabled={totalCameras === 0}>
+            <Copy className="h-3.5 w-3.5" /> Copy Quote
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()} disabled={totalCameras === 0}>
+            <Printer className="h-3.5 w-3.5" /> Print
+          </Button>
+          <Button variant="outline" size="sm" className="gap-1.5 text-red-600 hover:text-red-700" onClick={() => { store.resetBuilder(); toast.success("Configuration reset"); }}>
+            <RotateCcw className="h-3.5 w-3.5" /> Reset
+          </Button>
+        </div>
       </div>
 
       {/* ═══ STEP 1: PROPERTY TYPE ═══ */}
@@ -378,7 +614,7 @@ export function CctvBuilder() {
             </div>
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
               <Lightbulb className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-sm text-blue-700">These are estimates. You can choose the exact quantity in Step 6. Consider covering all entry points, parking, and blind spots. Outdoor areas need more coverage than indoor spaces.</p>
+              <p className="text-sm text-blue-700">These are estimates. You can choose the exact quantity in Step 6. Cover all entry points, parking areas, corridors, and blind spots. Outdoor areas typically need more coverage than indoor spaces.</p>
             </div>
           </CardContent>
         )}
@@ -391,7 +627,7 @@ export function CctvBuilder() {
         </CardHeader>
         {stepActive(4) && (
           <CardContent className="pt-0 space-y-4">
-            <p className="text-sm text-muted-foreground">Choose the type of CCTV system. This determines the cable type, recorder, and power supply you will need.</p>
+            <p className="text-sm text-muted-foreground">Choose the type of CCTV system. This determines cable type, recorder, and power supply.</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {cameraSystems.map((cs) => (
                 <button key={cs.value} onClick={() => store.setCameraSystem(cs.value)}
@@ -404,7 +640,7 @@ export function CctvBuilder() {
                   <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{cs.desc}</p>
                   {store.cameraSystem === cs.value && (
                     <div className="mt-3 space-y-1.5">
-                      <p className="text-xs font-semibold text-emerald-600">Advantages:</p>
+                      <p className="text-xs font-semibold text-emerald-600">Key Benefits:</p>
                       {cs.pros.map(p => <p key={p} className="text-xs flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{p}</p>)}
                     </div>
                   )}
@@ -415,29 +651,43 @@ export function CctvBuilder() {
         )}
       </Card>
 
-      {/* ═══ STEP 5: CAMERA TECHNOLOGY ═══ */}
+      {/* ═══ STEP 5: CAMERA TECHNOLOGY (MULTI-SELECT) ═══ */}
       <Card className={cn("border-2 transition-colors", stepActive(5) ? "border-emerald-300" : "border-muted opacity-60")}>
         <CardHeader className="pb-3">
-          <StepBadge num={5} title="Camera Technology" active={stepActive(5)} done={stepDone(5)} />
+          <StepBadge num={5} title="Camera Technology (Select Multiple)" active={stepActive(5)} done={stepDone(5)} />
         </CardHeader>
         {stepActive(5) && (
           <CardContent className="pt-0 space-y-4">
-            <p className="text-sm text-muted-foreground">Choose the camera technology level. Higher technology means better night recording and audio capabilities.</p>
+            <p className="text-sm text-muted-foreground">Choose one or more camera technology levels. You can mix different technologies in your setup — for example, some cameras with basic night vision and a few with two-way talk at the entrance.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {cameraTechs.map((ct) => (
-                <button key={ct.value} onClick={() => store.setCameraTech(ct.value)}
-                  className={cn(
-                    "text-left flex items-start gap-3 p-4 rounded-xl border-2 transition-all",
-                    store.cameraTech === ct.value ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300"
-                  )}>
-                  <div className={cn("p-2 rounded-lg shrink-0", store.cameraTech === ct.value ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>{ct.icon}</div>
-                  <div>
-                    <h3 className="font-semibold text-sm">{ct.label}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{ct.desc}</p>
-                  </div>
-                </button>
-              ))}
+              {cameraTechs.map((ct) => {
+                const isSelected = store.cameraTechs.includes(ct.value);
+                return (
+                  <button key={ct.value} onClick={() => store.toggleCameraTech(ct.value)}
+                    className={cn(
+                      "text-left flex items-start gap-3 p-4 rounded-xl border-2 transition-all",
+                      isSelected ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300"
+                    )}>
+                    <div className={cn("p-2 rounded-lg shrink-0", isSelected ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>{ct.icon}</div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-sm">{ct.label}</h3>
+                        <div className={cn("w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ml-2", isSelected ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/30")}>
+                          {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{ct.desc}</p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
+            {store.cameraTechs.length > 0 && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <p className="text-sm text-emerald-700">Selected: {store.cameraTechs.map(t => cameraTechs.find(ct => ct.value === t)?.label).join(", ")}</p>
+              </div>
+            )}
           </CardContent>
         )}
       </Card>
@@ -470,35 +720,44 @@ export function CctvBuilder() {
               </div>
             </div>
 
-            {/* Camera Grid: MP × Form with Qty */}
+            {/* Camera Grid: MP × Form with Qty and Tech */}
             {store.cameraSelections.length > 0 && (
               <div className="border rounded-xl overflow-hidden">
-                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-0 bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span>Resolution</span><span>Camera Type</span><span>Technology</span><span className="text-right pr-2">Quantity</span>
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span>Resolution</span><span>Type</span><span>Technology</span><span className="text-center">Quantity</span><span className="w-8"></span>
                 </div>
                 {[...store.cameraSelections].sort((a, b) => mpOptions.indexOf(a.mp) - mpOptions.indexOf(b.mp)).map((cam, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t">
+                  <div key={cam.mp + "-" + cam.form + "-" + i} className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t">
                     <Badge variant="outline" className="w-fit">{cam.mp}</Badge>
                     <div className="flex items-center gap-1.5">
                       {formOptions.find(f => f.value === cam.form)?.icon}
                       <span className="text-sm capitalize">{cam.form}</span>
                     </div>
-                    <span className="text-xs text-muted-foreground">{cameraTechs.find(t => t.value === cam.tech)?.label}</span>
-                    <div className="flex items-center justify-end gap-1">
+                    <Select value={cam.tech} onValueChange={(v) => updateCameraTech(cam.mp, cam.form, v as CameraTech)}>
+                      <SelectTrigger className="h-8 text-xs w-full max-w-[160px]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cameraTechs.filter(ct => store.cameraTechs.includes(ct.value)).map(ct => (
+                          <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <div className="flex justify-center">
                       <QtyControl value={cam.qty} onChange={(v) => updateCameraQty(cam.mp, cam.form, v - cam.qty)} />
-                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => updateCameraQty(cam.mp, cam.form, -cam.qty)}>
-                        <span className="text-lg leading-none">&times;</span>
-                      </Button>
                     </div>
+                    <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => updateCameraQty(cam.mp, cam.form, -cam.qty)}>
+                      <span className="text-lg leading-none">&times;</span>
+                    </Button>
                   </div>
                 ))}
-                <div className="grid grid-cols-[1fr_1fr_1fr_auto] gap-0 px-4 py-3 bg-emerald-50 border-t font-bold text-sm">
-                  <span>Total</span><span></span><span></span><span className="text-right pr-3 text-emerald-700">{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</span>
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 bg-emerald-50 border-t font-bold text-sm">
+                  <span>Total</span><span></span><span></span><span className="text-center text-emerald-700">{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</span><span></span>
                 </div>
               </div>
             )}
 
-            {/* Quick Add Buttons */}
+            {/* Empty state */}
             {store.cameraSelections.length === 0 && (
               <div className="bg-muted/50 rounded-xl p-6 text-center">
                 <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
@@ -519,6 +778,12 @@ export function CctvBuilder() {
                       </Button>
                     ))
                   )}
+                  {/* Add new MP options not yet added */}
+                  {mpOptions.filter(mp => !store.cameraSelections.some(c => c.mp === mp)).map(mp => (
+                    <Button key={"new-" + mp} variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => updateCameraQty(mp, "dome", 1)}>
+                      <Plus className="h-3 w-3" /> Add {mp}
+                    </Button>
+                  ))}
                 </div>
               </div>
             )}
@@ -533,29 +798,54 @@ export function CctvBuilder() {
         </CardHeader>
         {stepActive(7) && (
           <CardContent className="pt-0 space-y-4">
-            <p className="text-sm text-muted-foreground">Based on your {totalCameras} camera{totalCameras !== 1 ? "s" : ""} and {store.cameraSystem} system, here is the recommended recorder:</p>
-            {recorderSuggestion ? (
-              <Card className={cn("border-2", store.cameraSystem === "analog" ? "border-sky-200 bg-sky-50" : store.cameraSystem === "ip" ? "border-emerald-200 bg-emerald-50" : "border-violet-200 bg-violet-50")}>
-                <CardContent className="p-5 flex items-start gap-4">
-                  <div className={cn("p-3 rounded-xl", store.cameraSystem === "analog" ? "bg-sky-100 text-sky-700" : store.cameraSystem === "ip" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700")}>
-                    {store.cameraSystem === "analog" ? <HardDrive className="h-6 w-6" /> : store.cameraSystem === "ip" ? <Cloud className="h-6 w-6" /> : <Wifi className="h-6 w-6" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold">{recorderSuggestion.type}</h3>
-                      {recorderSuggestion.channels > 0 && <Badge variant="secondary">{recorderSuggestion.channels}-Channel</Badge>}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{recorderSuggestion.label}</p>
-                    {store.cameraSystem === "analog" && (
-                      <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start gap-2">
-                        <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
-                        <p className="text-xs text-amber-700">Match the DVR brand with camera brand — Hikvision cameras need Hikvision DVR, Dahua cameras need Dahua DVR.</p>
+            <p className="text-sm text-muted-foreground">Based on your <strong>{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</strong> and <strong>{store.cameraSystem}</strong> system, here is the recommended recorder configuration:</p>
+            {recorderConfig ? (
+              <div className="space-y-3">
+                {/* Summary */}
+                <Card className={cn("border-2", store.cameraSystem === "analog" ? "border-sky-200 bg-sky-50" : store.cameraSystem === "ip" ? "border-emerald-200 bg-emerald-50" : "border-violet-200 bg-violet-50")}>
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className={cn("p-3 rounded-xl shrink-0", store.cameraSystem === "analog" ? "bg-sky-100 text-sky-700" : store.cameraSystem === "ip" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700")}>
+                        {store.cameraSystem === "analog" ? <HardDrive className="h-6 w-6" /> : store.cameraSystem === "ip" ? <Server className="h-6 w-6" /> : <Cloud className="h-6 w-6" />}
                       </div>
-                    )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold">{recorderConfig.type}</h3>
+                          {recorderConfig.units.length > 0 && <Badge variant="secondary">{recorderConfig.units.length} unit{recorderConfig.units.length > 1 ? "s" : ""} required</Badge>}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{recorderConfig.summary}</p>
+                        {store.cameraSystem === "analog" && (
+                          <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start gap-2">
+                            <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+                            <p className="text-xs text-amber-700">Match the DVR brand with camera brand — Hikvision cameras need Hikvision DVR (HD-TVI), Dahua cameras need Dahua DVR (HD-CVI). They are NOT cross-compatible.</p>
+                          </div>
+                        )}
+                      </div>
+                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Individual unit cards */}
+                {recorderConfig.units.length > 1 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Unit Breakdown</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {recorderConfig.units.map((unit, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3 border">
+                          <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                            <HardDrive className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">{unit.channels}-Channel {recorderConfig.type} #{i + 1}</p>
+                            <p className="text-xs text-muted-foreground">{unit.usedPorts} camera{unit.usedPorts !== 1 ? "s" : ""} connected, {unit.channels - unit.usedPorts} channel{unit.channels - unit.usedPorts !== 1 ? "s" : ""} spare</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
-                </CardContent>
-              </Card>
+                )}
+              </div>
             ) : (
               <div className="bg-muted/50 rounded-xl p-6 text-center">
                 <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
@@ -588,28 +878,60 @@ export function CctvBuilder() {
                   </div>
                 </CardContent>
               </Card>
-            ) : powerSuggestion ? (
-              <Card className="border-2 border-amber-200 bg-amber-50">
-                <CardContent className="p-5 flex items-start gap-4">
-                  <div className="bg-amber-100 text-amber-700 p-3 rounded-xl">
-                    {store.cameraSystem === "analog" ? <Zap className="h-6 w-6" /> : <Router className="h-6 w-6" />}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold">{powerSuggestion.type}</h3>
-                      <Badge variant="secondary">{powerSuggestion.channels > 0 ? (store.cameraSystem === "analog" ? `${powerSuggestion.channels}-Channel` : `${powerSuggestion.channels}-Port`) : ""}</Badge>
-                      {powerSuggestion.variant === "giga" && <Badge className="bg-amber-600 text-white">Gigabit</Badge>}
-                    </div>
-                    <p className="text-sm text-muted-foreground">{powerSuggestion.label}</p>
-                    {powerSuggestion.variant === "giga" && (
-                      <div className="mt-2 bg-amber-100 border border-amber-300 rounded-lg p-2">
-                        <p className="text-xs text-amber-700 flex items-center gap-1"><Info className="h-3 w-3" /> Gigabit PoE switch is required because you selected cameras above 2MP which need higher bandwidth.</p>
+            ) : powerConfig ? (
+              <div className="space-y-3">
+                <Card className="border-2 border-amber-200 bg-amber-50">
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className="bg-amber-100 text-amber-700 p-3 rounded-xl shrink-0">
+                        {store.cameraSystem === "analog" ? <Zap className="h-6 w-6" /> : <Router className="h-6 w-6" />}
                       </div>
-                    )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-bold">{store.cameraSystem === "analog" ? "SMPS Power Supply" : "PoE Switch"}</h3>
+                          {powerConfig.units.length > 0 && <Badge variant="secondary">{powerConfig.units.length} unit{powerConfig.units.length > 1 ? "s" : ""} required</Badge>}
+                          {hasAbove2mp && store.cameraSystem === "ip" && <Badge className="bg-amber-600 text-white">Gigabit</Badge>}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{powerConfig.summary}</p>
+                        {hasAbove2mp && store.cameraSystem === "ip" && (
+                          <div className="mt-2 bg-amber-100 border border-amber-300 rounded-lg p-2">
+                            <p className="text-xs text-amber-700 flex items-center gap-1"><Info className="h-3 w-3" /> Gigabit PoE switch is required because you selected cameras above 2MP which need higher bandwidth.</p>
+                          </div>
+                        )}
+                      </div>
+                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Individual unit cards */}
+                {powerConfig.units.length > 1 && (
+                  <div>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Unit Breakdown</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {powerConfig.units.map((unit, i) => (
+                        <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3 border">
+                          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", store.cameraSystem === "analog" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700")}>
+                            {store.cameraSystem === "analog" ? <Zap className="h-5 w-5" /> : <Router className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold">{unit.ports}-{store.cameraSystem === "analog" ? "Channel SMPS" : "Port PoE Switch"} #{i + 1}</p>
+                            <p className="text-xs text-muted-foreground">{unit.usedPorts} camera{unit.usedPorts !== 1 ? "s" : ""} connected, {unit.ports - unit.usedPorts} port{unit.ports - unit.usedPorts !== 1 ? "s" : ""} spare</p>
+                            {unit.variant === "giga" && <Badge className="mt-1 bg-amber-600 text-white text-[10px]">Gigabit</Badge>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
-                </CardContent>
-              </Card>
+                )}
+
+                {store.cameraSystem === "ip" && totalCameras > 24 && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                    <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, and 24-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port PoE switches do not exist in the mainstream market.</p>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="bg-muted/50 rounded-xl p-6 text-center">
                 <Zap className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
@@ -629,8 +951,8 @@ export function CctvBuilder() {
           <CardContent className="pt-0 space-y-4">
             <p className="text-sm text-muted-foreground">
               {store.cameraSystem === "wifi"
-                ? "WiFi cameras use MicroSD cards. A 64GB card gives approximately 7-10 days for 1 camera. You can also use cloud storage."
-                : "Choose how many days of recording you want to keep. We will calculate the required HDD size."}
+                ? "WiFi cameras use MicroSD cards. A 64GB card gives approximately 7-10 days for 1 camera."
+                : "Choose how many days of recording you want to keep. We calculate the required HDD size using real H.265+ bitrate data."}
             </p>
             {store.cameraSystem === "wifi" ? (
               <Card className="border-2 border-violet-200 bg-violet-50">
@@ -638,7 +960,7 @@ export function CctvBuilder() {
                   <HardDrive className="h-5 w-5 text-violet-500" />
                   <div>
                     <p className="font-semibold text-sm">MicroSD Card Storage</p>
-                    <p className="text-xs text-muted-foreground">Recommended: 64GB or 128GB MicroSD card per camera. Supports up to 7-20 days depending on recording mode.</p>
+                    <p className="text-xs text-muted-foreground">Recommended: 64GB or 128GB MicroSD card per camera. Supports 7-20 days depending on recording mode.</p>
                   </div>
                 </CardContent>
               </Card>
@@ -657,19 +979,49 @@ export function CctvBuilder() {
                     ))}
                   </div>
                 </div>
-                {hddSize && (
-                  <Card className="border-2 border-emerald-200 bg-emerald-50">
-                    <CardContent className="p-5 flex items-center gap-4">
-                      <div className="bg-emerald-100 text-emerald-700 p-3 rounded-xl"><HardDrive className="h-6 w-6" /></div>
-                      <div className="flex-1">
-                        <h3 className="font-bold">Recommended HDD: {hddSize}</h3>
-                        <p className="text-sm text-muted-foreground mt-0.5">
-                          For {totalCameras} camera{totalCameras !== 1 ? "s" : ""} ({store.cameraSelections[0]?.mp || "4MP"}) with {store.retentionDays}-day retention using H.265+ compression
-                        </p>
+                {hddCalc.size && (
+                  <div className="space-y-3">
+                    <Card className="border-2 border-emerald-200 bg-emerald-50">
+                      <CardContent className="p-5 flex items-start gap-4">
+                        <div className="bg-emerald-100 text-emerald-700 p-3 rounded-xl shrink-0">
+                          <HardDrive className="h-6 w-6" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg">{hddCalc.size} HDD Required</h3>
+                          <p className="text-sm text-muted-foreground mt-0.5">{hddCalc.breakdown}</p>
+                          <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-2">
+                            <p className="text-xs text-blue-700 flex items-center gap-1">
+                              <Calculator className="h-3 w-3" />
+                              Calculated using H.265+ compression at ~70% motion activity factor per camera
+                            </p>
+                          </div>
+                        </div>
+                        <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+                      </CardContent>
+                    </Card>
+
+                    {/* Per-camera-type breakdown */}
+                    {store.cameraSelections.length > 1 && (
+                      <div className="bg-muted/50 rounded-lg p-3 space-y-1.5">
+                        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Storage Breakdown by Camera Type</p>
+                        {store.cameraSelections.map((cam, i) => {
+                          const gbPerDay = BITRATE_GB_PER_DAY[cam.mp] || 30.2;
+                          const totalGB = gbPerDay * cam.qty * store.retentionDays;
+                          return (
+                            <div key={i} className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">{cam.qty}x {cam.mp} {cam.form}</span>
+                              <span className="font-medium">{(totalGB / 1024).toFixed(1)} TB</span>
+                            </div>
+                          );
+                        })}
+                        <Separator className="my-1" />
+                        <div className="flex justify-between text-xs font-bold">
+                          <span>Total for {store.retentionDays} days</span>
+                          <span>{hddCalc.size}</span>
+                        </div>
                       </div>
-                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
-                    </CardContent>
-                  </Card>
+                    )}
+                  </div>
                 )}
               </>
             )}
@@ -684,77 +1036,61 @@ export function CctvBuilder() {
         </CardHeader>
         {stepActive(10) && (
           <CardContent className="pt-0 space-y-4">
-            {store.cameraSystem === "wifi" ? (
-              <Card className="border-2 border-violet-200 bg-violet-50">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <Wifi className="h-5 w-5 text-violet-500" />
-                  <div>
-                    <p className="font-semibold text-sm">No Cable Needed</p>
-                    <p className="text-xs text-muted-foreground">WiFi cameras are completely wireless. Just power them with the included adapter.</p>
+            <p className="text-sm text-muted-foreground">
+              {store.cameraSystem === "analog"
+                ? "Analog cameras use RG59 coaxial cable. Available in 90m and 180m rolls. Average cable run per camera is 20-30 meters."
+                : "IP cameras use Cat6 Ethernet cable. Available in 100m and 305m (bulk box) rolls. Maximum cable run per camera is 100m (Ethernet limit)."}
+            </p>
+            <div className="max-w-xs">
+              <Label>Average cable length per camera (meters)</Label>
+              <div className="flex items-center gap-2 mt-1.5">
+                <Input type="number" value={store.cableLengthPerCamera} onChange={(e) => store.setCableLengthPerCamera(Math.max(1, Math.min(store.cameraSystem === "ip" ? 100 : 300, parseInt(e.target.value) || 20)))} className="w-24" min="1" />
+                <span className="text-sm text-muted-foreground">meters</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">Typical: 20-30m per camera. Adjust based on your property layout.</p>
+            </div>
+            {totalCameras > 0 && (
+              <div className="space-y-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <Calculator className="h-4 w-4 text-blue-500" />
+                    <p className="text-sm font-medium text-blue-700">
+                      Total Cable: <strong>{totalCableMeters} meters</strong> ({totalCameras} cameras x {store.cableLengthPerCamera}m)
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Cable is auto-calculated based on {totalCameras} camera{totalCameras !== 1 ? "s" : ""}. Adjust the average cable length per camera if needed (standard: 20-30 meters).
-                </p>
-                <div className="flex items-center gap-4 max-w-sm">
-                  <div className="flex-1">
-                    <Label>Avg. Cable per Camera (meters)</Label>
-                    <Input type="number" value={store.cableLengthPerCamera} onChange={(e) => store.setCableLengthPerCamera(Math.max(5, parseInt(e.target.value) || 20))} min="5" max="100" className="mt-1" />
-                  </div>
-                </div>
-                <div className="bg-muted/50 rounded-lg p-3 flex items-center gap-2">
-                  <Calculator className="h-4 w-4 text-muted-foreground" />
-                  <p className="text-sm">Total cable needed: <strong>{totalCableMeters} meters</strong> ({totalCameras} cameras &times; {store.cableLengthPerCamera}m average)</p>
                 </div>
                 {store.cameraSystem === "analog" ? (
-                  <div>
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">Coaxial Cable (RG59) — Select Roll Length</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                      {[
-                        { roll: 90, qty: cableRolls90, label: "90 meter roll" },
-                        { roll: 180, qty: cableRolls180, label: "180 meter roll" },
-                      ].map(opt => (
-                        <Card key={opt.roll} className={cn("border-2 cursor-pointer transition-all hover:shadow-sm", "border-sky-200 hover:border-sky-400")}>
-                          <CardContent className="p-4 flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-sm">{opt.label}</p>
-                              <p className="text-xs text-muted-foreground">Rolls needed: <strong>{opt.qty}</strong></p>
-                              <p className="text-xs text-muted-foreground">Total: {opt.qty * opt.roll}m cable</p>
-                            </div>
-                            <Badge className="bg-sky-100 text-sky-700 border-sky-200">{opt.qty} roll{opt.qty !== 1 ? "s" : ""}</Badge>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">💡 180m rolls are more economical for larger installations (fewer joints).</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button onClick={() => store.setCableSelection({ type: "90m", qty: cableRolls90 })}
+                      className={cn("text-left p-4 rounded-xl border-2 transition-all", store.cableSelection?.type === "90m" ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300")}>
+                      <p className="font-bold">RG59 Coaxial — 90m Roll</p>
+                      <p className="text-2xl font-bold text-emerald-700 mt-1">{cableRolls90} <span className="text-sm font-normal text-muted-foreground">rolls</span></p>
+                      <p className="text-xs text-muted-foreground mt-1">Better for smaller properties. Easier to handle during installation.</p>
+                    </button>
+                    <button onClick={() => store.setCableSelection({ type: "180m", qty: cableRolls180 })}
+                      className={cn("text-left p-4 rounded-xl border-2 transition-all", store.cableSelection?.type === "180m" ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300")}>
+                      <p className="font-bold">RG59 Coaxial — 180m Roll</p>
+                      <p className="text-2xl font-bold text-emerald-700 mt-1">{cableRolls180} <span className="text-sm font-normal text-muted-foreground">rolls</span></p>
+                      <p className="text-xs text-muted-foreground mt-1">Better value for larger properties. Less joints needed.</p>
+                    </button>
                   </div>
                 ) : (
-                  <div>
-                    <Label className="text-xs text-muted-foreground uppercase tracking-wide">Ethernet Cable (Cat6) — Select Roll Length</Label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                      {[
-                        { roll: 100, qty: cableRolls100, label: "100 meter box" },
-                        { roll: 305, qty: cableRolls305, label: "305 meter box" },
-                      ].map(opt => (
-                        <Card key={opt.roll} className={cn("border-2 cursor-pointer transition-all hover:shadow-sm", "border-emerald-200 hover:border-emerald-400")}>
-                          <CardContent className="p-4 flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-sm">{opt.label}</p>
-                              <p className="text-xs text-muted-foreground">Boxes needed: <strong>{opt.qty}</strong></p>
-                              <p className="text-xs text-muted-foreground">Total: {opt.qty * opt.roll}m cable</p>
-                            </div>
-                            <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200">{opt.qty} box{opt.qty !== 1 ? "es" : ""}</Badge>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">💡 305m boxes are more economical. Cat6 supports up to 10Gbps and is required for PoE+ cameras.</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button onClick={() => store.setCableSelection({ type: "100m", qty: cableRolls100 })}
+                      className={cn("text-left p-4 rounded-xl border-2 transition-all", store.cableSelection?.type === "100m" ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300")}>
+                      <p className="font-bold">Cat6 Ethernet — 100m Roll</p>
+                      <p className="text-2xl font-bold text-emerald-700 mt-1">{cableRolls100} <span className="text-sm font-normal text-muted-foreground">rolls</span></p>
+                      <p className="text-xs text-muted-foreground mt-1">Standard length. Matches maximum Ethernet distance of 100m per run.</p>
+                    </button>
+                    <button onClick={() => store.setCableSelection({ type: "305m", qty: cableRolls305 })}
+                      className={cn("text-left p-4 rounded-xl border-2 transition-all", store.cableSelection?.type === "305m" ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300")}>
+                      <p className="font-bold">Cat6 Ethernet — 305m Box</p>
+                      <p className="text-2xl font-bold text-emerald-700 mt-1">{cableRolls305} <span className="text-sm font-normal text-muted-foreground">boxes</span></p>
+                      <p className="text-xs text-muted-foreground mt-1">Bulk box (1000ft). Best value for installations with many cameras.</p>
+                    </button>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </CardContent>
         )}
@@ -763,118 +1099,148 @@ export function CctvBuilder() {
       {/* ═══ STEP 11: ACCESSORIES ═══ */}
       <Card className={cn("border-2 transition-colors", stepActive(11) ? "border-emerald-300" : "border-muted opacity-60")}>
         <CardHeader className="pb-3">
-          <StepBadge num={11} title="Accessories" active={stepActive(11)} done={stepDone(11)} />
+          <StepBadge num={11} title="Accessories — Auto Calculated + Optional" active={stepActive(11)} done={stepDone(11)} />
         </CardHeader>
-        {stepActive(11) && (
-          <CardContent className="pt-0 space-y-5">
-            {store.cameraSystem === "wifi" ? (
-              <p className="text-sm text-muted-foreground">WiFi cameras include mounting hardware. Below are optional accessories you may want.</p>
-            ) : (
-              <p className="text-sm text-muted-foreground">Junction boxes and connectors are auto-calculated based on your camera selections. Below are optional extras.</p>
-            )}
+        {stepActive(11) && totalCameras > 0 && (
+          <CardContent className="pt-0 space-y-6">
 
-            {/* Auto-calculated Accessories */}
-            {store.cameraSystem !== "wifi" && totalCameras > 0 && (
-              <div>
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2 flex items-center gap-1.5"><Calculator className="h-3.5 w-3.5" /> Auto-Calculated (based on your {totalCameras} cameras)</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {/* Auto-calculated accessories */}
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Auto-Calculated (based on your {totalCameras} cameras)</p>
+              {store.cameraSystem === "wifi" ? (
+                <p className="text-sm text-muted-foreground">WiFi cameras do not need junction boxes, connectors, or cables.</p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {store.junctionBox4x4 > 0 && (
-                    <Card className="border bg-slate-50"><CardContent className="p-3 text-center"><Box className="h-5 w-5 mx-auto text-slate-500 mb-1" /><p className="text-xs font-semibold">Junction Box 4&times;4</p><p className="text-lg font-bold text-slate-700">{store.junctionBox4x4}</p><p className="text-[10px] text-muted-foreground">For bullet cameras</p></CardContent></Card>
+                    <div className="bg-muted/50 rounded-lg p-3 border">
+                      <Box className="h-4 w-4 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">Junction Box 4x4 (Bullet)</p>
+                      <p className="text-lg font-bold">{store.junctionBox4x4}</p>
+                    </div>
                   )}
                   {store.junctionBox5x5 > 0 && (
-                    <Card className="border bg-slate-50"><CardContent className="p-3 text-center"><Box className="h-5 w-5 mx-auto text-slate-500 mb-1" /><p className="text-xs font-semibold">Junction Box 5&times;5</p><p className="text-lg font-bold text-slate-700">{store.junctionBox5x5}</p><p className="text-[10px] text-muted-foreground">For dome cameras</p></CardContent></Card>
+                    <div className="bg-muted/50 rounded-lg p-3 border">
+                      <Box className="h-4 w-4 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">Junction Box 5x5 (Dome)</p>
+                      <p className="text-lg font-bold">{store.junctionBox5x5}</p>
+                    </div>
                   )}
                   {store.dcConnector > 0 && (
-                    <Card className="border bg-slate-50"><CardContent className="p-3 text-center"><Plug className="h-5 w-5 mx-auto text-slate-500 mb-1" /><p className="text-xs font-semibold">DC Connector</p><p className="text-lg font-bold text-slate-700">{store.dcConnector}</p><p className="text-[10px] text-muted-foreground">1 per camera</p></CardContent></Card>
+                    <div className="bg-muted/50 rounded-lg p-3 border">
+                      <Link className="h-4 w-4 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">DC Connector (1 per camera)</p>
+                      <p className="text-lg font-bold">{store.dcConnector}</p>
+                    </div>
                   )}
                   {store.bncConnector > 0 && (
-                    <Card className="border bg-slate-50"><CardContent className="p-3 text-center"><Link className="h-5 w-5 mx-auto text-slate-500 mb-1" /><p className="text-xs font-semibold">BNC Connector</p><p className="text-lg font-bold text-slate-700">{store.bncConnector}</p><p className="text-[10px] text-muted-foreground">2 per camera</p></CardContent></Card>
+                    <div className="bg-muted/50 rounded-lg p-3 border">
+                      <Link className="h-4 w-4 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">BNC Connector (2 per camera)</p>
+                      <p className="text-lg font-bold">{store.bncConnector}</p>
+                    </div>
                   )}
                   {store.rj45Connector > 0 && (
-                    <Card className="border bg-slate-50"><CardContent className="p-3 text-center"><Link className="h-5 w-5 mx-auto text-slate-500 mb-1" /><p className="text-xs font-semibold">RJ45 Connector</p><p className="text-lg font-bold text-slate-700">{store.rj45Connector}</p><p className="text-[10px] text-muted-foreground">2 per camera</p></CardContent></Card>
+                    <div className="bg-muted/50 rounded-lg p-3 border">
+                      <Link className="h-4 w-4 text-muted-foreground mb-1" />
+                      <p className="text-xs text-muted-foreground">RJ45 Connector (2 per camera)</p>
+                      <p className="text-lg font-bold">{store.rj45Connector}</p>
+                    </div>
                   )}
                 </div>
-              </div>
-            )}
+              )}
+            </div>
 
             <Separator />
 
-            {/* Optional Accessories */}
+            {/* Extra / Optional accessories */}
             <div>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-1.5"><Plus className="h-3.5 w-3.5" /> Optional Accessories</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Optional Extra Accessories</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Networking Rack */}
-                <Card className="border">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Server className="h-5 w-5 text-slate-500" />
-                      <div><p className="text-sm font-semibold">Networking Rack</p><p className="text-[11px] text-muted-foreground">To mount DVR/NVR, switch, UPS</p></div>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Server className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Networking Rack</span>
                     </div>
-                    <QtyControl value={store.networkingRack} onChange={store.setNetworkingRack} max={4} />
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.networkingRack} onChange={(v) => store.setNetworkingRack(v)} min={0} max={4} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">To mount NVR, PoE switches, and router. 6U or 9U rack recommended. Needed for {totalCameras > 4 ? "large" : "small"} setups.</p>
+                </div>
+
                 {/* Monitor */}
-                <Card className="border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <Monitor className="h-5 w-5 text-slate-500" />
-                        <div><p className="text-sm font-semibold">Monitor</p><p className="text-[11px] text-muted-foreground">For live viewing</p></div>
-                      </div>
-                      <QtyControl value={store.monitor} onChange={store.setMonitor} max={4} />
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Monitor</span>
                     </div>
-                    {store.monitor > 0 && (
-                      <div className="flex gap-2 mt-1">
-                        {['21.5"', '27"', '32"', '43"'].map(size => (
-                          <button key={size} onClick={() => store.setMonitorSize(size)}
-                            className={cn("px-2 py-1 rounded text-xs border transition-all", store.monitorSize === size ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-semibold" : "border-muted hover:border-emerald-300")}>
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.monitor} onChange={(v) => store.setMonitor(v)} min={0} max={4} />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[11px] text-muted-foreground">Size:</Label>
+                    <Select value={store.monitorSize} onValueChange={(v) => store.setMonitorSize(v)}>
+                      <SelectTrigger className="h-7 text-xs w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="21.5">21.5 inch</SelectItem>
+                        <SelectItem value="27">27 inch</SelectItem>
+                        <SelectItem value="32">32 inch</SelectItem>
+                        <SelectItem value="43">43 inch</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">For live viewing. 21.5 inch for 4-8 cameras, 32 inch for 16+, 43 inch for 32+.</p>
+                </div>
+
                 {/* Extension Board */}
-                <Card className="border">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Plug className="h-5 w-5 text-slate-500" />
-                      <div><p className="text-sm font-semibold">Extension Board</p><p className="text-[11px] text-muted-foreground">Power for DVR, monitor, router</p></div>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Plug className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Extension Board</span>
                     </div>
-                    <QtyControl value={store.extensionBoard} onChange={store.setExtensionBoard} max={4} />
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.extensionBoard} onChange={(v) => store.setExtensionBoard(v)} min={0} max={4} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">6-way or 8-way extension board with surge protection for powering all equipment at the setup location.</p>
+                </div>
+
                 {/* Wireless Mouse */}
-                <Card className="border">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Mouse className="h-5 w-5 text-slate-500" />
-                      <div><p className="text-sm font-semibold">Wireless Mouse</p><p className="text-[11px] text-muted-foreground">For DVR/NVR navigation</p></div>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Mouse className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Wireless Mouse</span>
                     </div>
-                    <QtyControl value={store.wirelessMouse} onChange={store.setWirelessMouse} max={4} />
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.wirelessMouse} onChange={(v) => store.setWirelessMouse(v)} min={0} max={2} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">USB wireless mouse for NVR/DVR navigation. Much easier than using the front panel buttons.</p>
+                </div>
+
                 {/* Wireless Keyboard */}
-                <Card className="border">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Keyboard className="h-5 w-5 text-slate-500" />
-                      <div><p className="text-sm font-semibold">Wireless Keyboard</p><p className="text-[11px] text-muted-foreground">For DVR/NVR text input</p></div>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Keyboard className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">Wireless Keyboard</span>
                     </div>
-                    <QtyControl value={store.wirelessKeyboard} onChange={store.setWirelessKeyboard} max={4} />
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.wirelessKeyboard} onChange={(v) => store.setWirelessKeyboard(v)} min={0} max={2} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">USB wireless keyboard with touchpad for NVR/DVR operation and text input (search, camera naming).</p>
+                </div>
+
                 {/* UPS */}
-                <Card className="border">
-                  <CardContent className="p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Battery className="h-5 w-5 text-slate-500" />
-                      <div><p className="text-sm font-semibold">UPS (Backup Power)</p><p className="text-[11px] text-muted-foreground">Keeps CCTV running during power cuts</p></div>
+                <div className="border rounded-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">UPS (Uninterruptible Power Supply)</span>
                     </div>
-                    <QtyControl value={store.ups} onChange={store.setUps} max={4} />
-                  </CardContent>
-                </Card>
+                    <QtyControl value={store.ups} onChange={(v) => store.setUps(v)} min={0} max={4} />
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Keeps your NVR/DVR running during power cuts. Recommended: 1KVA for small setups, 2KVA for 16+ cameras.</p>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -883,182 +1249,41 @@ export function CctvBuilder() {
 
       {/* ═══ FINAL SUMMARY ═══ */}
       {totalCameras > 0 && (
-        <Card className="border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 to-sky-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-emerald-700">
-              <CheckCircle2 className="h-5 w-5" /> Your Complete CCTV Setup Summary
-            </CardTitle>
+        <Card className="border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+              <p className="font-bold text-emerald-800">Complete Setup Summary — {totalCameras} Camera{totalCameras !== 1 ? "s" : ""}</p>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Property Info */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-white rounded-lg p-3 border text-center">
-                <p className="text-[10px] text-muted-foreground uppercase">Property</p>
-                <p className="font-bold text-sm mt-0.5">{propertyTypes.find(p => p.value === store.propertyType)?.label}</p>
-              </div>
-              <div className="bg-white rounded-lg p-3 border text-center">
-                <p className="text-[10px] text-muted-foreground uppercase">Area</p>
-                <p className="font-bold text-sm mt-0.5">{area.toLocaleString()} sq ft</p>
-              </div>
-              <div className="bg-white rounded-lg p-3 border text-center">
-                <p className="text-[10px] text-muted-foreground uppercase">System</p>
-                <p className="font-bold text-sm mt-0.5 capitalize">{store.cameraSystem === "ip" ? "IP (Network)" : store.cameraSystem === "analog" ? "Analog (HD-TVI/CVI)" : "WiFi (Wireless)"}</p>
-              </div>
-              <div className="bg-white rounded-lg p-3 border text-center">
-                <p className="text-[10px] text-muted-foreground uppercase">Total Cameras</p>
-                <p className="font-bold text-lg text-emerald-700 mt-0.5">{totalCameras}</p>
-              </div>
+          <CardContent className="pt-0 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              <div className="flex justify-between"><span className="text-muted-foreground">Property:</span><span className="font-medium">{propertyTypes.find(p => p.value === store.propertyType)?.label}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Area:</span><span className="font-medium">{store.areaSqft} sq ft</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">System:</span><span className="font-medium uppercase">{store.cameraSystem}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Technologies:</span><span className="font-medium">{store.cameraTechs.map(t => cameraTechs.find(ct => ct.value === t)?.label).join(", ")}</span></div>
             </div>
-
             <Separator />
-
-            {/* Camera Breakdown */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Camera Breakdown</h4>
-              <div className="bg-white rounded-lg border overflow-hidden">
-                <div className="grid grid-cols-4 gap-0 px-3 py-2 bg-muted text-xs font-semibold uppercase text-muted-foreground">
-                  <span>MP</span><span>Type</span><span>Technology</span><span className="text-right">Qty</span>
-                </div>
-                {[...store.cameraSelections].sort((a, b) => mpOptions.indexOf(a.mp) - mpOptions.indexOf(b.mp)).map((cam, i) => (
-                  <div key={i} className="grid grid-cols-4 gap-0 px-3 py-2 border-t text-sm">
-                    <span className="font-medium">{cam.mp}</span>
-                    <span className="capitalize">{cam.form}</span>
-                    <span className="text-xs text-muted-foreground">{cameraTechs.find(t => t.value === cam.tech)?.label?.split(" ")[0]}</span>
-                    <span className="text-right font-bold">{cam.qty}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+              {recorderConfig && recorderConfig.units.length > 0 && (
+                <div className="flex justify-between"><span className="text-muted-foreground">Recorder:</span><span className="font-medium">{recorderConfig.units.map(u => `${u.channels}ch ${recorderConfig.type}`).join(" + ")}</span></div>
+              )}
+              {powerConfig && powerConfig.units.length > 0 && (
+                <div className="flex justify-between"><span className="text-muted-foreground">Power:</span><span className="font-medium">{powerConfig.units.map(u => `${u.ports}-${store.cameraSystem === "analog" ? "ch SMPS" : "port PoE"}`).join(" + ")}</span></div>
+              )}
+              {hddCalc.size && (
+                <div className="flex justify-between"><span className="text-muted-foreground">Storage ({store.retentionDays}d):</span><span className="font-medium">{hddCalc.size} HDD</span></div>
+              )}
+              {store.cableSelection && (
+                <div className="flex justify-between"><span className="text-muted-foreground">Cable ({totalCableMeters}m):</span><span className="font-medium">{store.cableSelection.qty}x {store.cableSelection.type} roll{store.cableSelection.qty > 1 ? "s" : ""}</span></div>
+              )}
             </div>
-
-            {/* Components List */}
-            <div>
-              <h4 className="font-semibold text-sm mb-2">Complete Component List</h4>
-              <div className="space-y-1.5">
-                {/* Cameras */}
-                {[...store.cameraSelections].sort((a, b) => mpOptions.indexOf(a.mp) - mpOptions.indexOf(b.mp)).map((cam, i) => (
-                  <div key={i} className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4 text-emerald-500" />
-                      <span>{cam.mp} {cam.form.charAt(0).toUpperCase() + cam.form.slice(1)} Camera ({cameraTechs.find(t => t.value === cam.tech)?.label})</span>
-                    </div>
-                    <Badge variant="secondary">×{cam.qty}</Badge>
-                  </div>
-                ))}
-                {/* Recorder */}
-                {recorderSuggestion && recorderSuggestion.channels > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2">
-                      {store.cameraSystem === "analog" ? <HardDrive className="h-4 w-4 text-sky-500" /> : <Cloud className="h-4 w-4 text-emerald-500" />}
-                      <span>{recorderSuggestion.label}</span>
-                    </div>
-                    <Badge variant="secondary">×1</Badge>
-                  </div>
-                )}
-                {/* Power */}
-                {powerSuggestion && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2">
-                      {store.cameraSystem === "analog" ? <Zap className="h-4 w-4 text-amber-500" /> : <Router className="h-4 w-4 text-amber-500" />}
-                      <span>{powerSuggestion.label}</span>
-                    </div>
-                    <Badge variant="secondary">×1</Badge>
-                  </div>
-                )}
-                {/* HDD */}
-                {hddSize && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><HardDrive className="h-4 w-4 text-slate-500" /><span>HDD ({hddSize}) — {store.retentionDays}-day retention</span></div>
-                    <Badge variant="secondary">×1</Badge>
-                  </div>
-                )}
-                {/* Cable */}
-                {store.cameraSystem !== "wifi" && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2">
-                      <Cable className="h-4 w-4 text-slate-500" />
-                      <span>{store.cameraSystem === "analog" ? "Coaxial Cable (RG59)" : "Ethernet Cable (Cat6)"} — {totalCableMeters}m total</span>
-                    </div>
-                    <Badge variant="secondary">
-                      {store.cameraSystem === "analog" ? `${cableRolls180} × 180m roll${cableRolls180 !== 1 ? "s" : ""}` : `${cableRolls305} × 305m box${cableRolls305 !== 1 ? "es" : ""}`}
-                    </Badge>
-                  </div>
-                )}
-                {/* Junction Boxes */}
-                {store.junctionBox4x4 > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-slate-500" /><span>Junction Box 4×4 (for bullet cameras)</span></div>
-                    <Badge variant="secondary">×{store.junctionBox4x4}</Badge>
-                  </div>
-                )}
-                {store.junctionBox5x5 > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Box className="h-4 w-4 text-slate-500" /><span>Junction Box 5×5 (for dome cameras)</span></div>
-                    <Badge variant="secondary">×{store.junctionBox5x5}</Badge>
-                  </div>
-                )}
-                {/* Connectors */}
-                {store.dcConnector > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Plug className="h-4 w-4 text-slate-500" /><span>DC Connector (1 per camera)</span></div>
-                    <Badge variant="secondary">×{store.dcConnector}</Badge>
-                  </div>
-                )}
-                {store.bncConnector > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Link className="h-4 w-4 text-slate-500" /><span>BNC Connector (2 per camera)</span></div>
-                    <Badge variant="secondary">×{store.bncConnector}</Badge>
-                  </div>
-                )}
-                {store.rj45Connector > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Link className="h-4 w-4 text-slate-500" /><span>RJ45 Connector (2 per camera)</span></div>
-                    <Badge variant="secondary">×{store.rj45Connector}</Badge>
-                  </div>
-                )}
-                {/* Optional Accessories */}
-                {store.networkingRack > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Server className="h-4 w-4 text-slate-500" /><span>Networking Rack</span></div>
-                    <Badge variant="secondary">×{store.networkingRack}</Badge>
-                  </div>
-                )}
-                {store.monitor > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Monitor className="h-4 w-4 text-slate-500" /><span>Monitor ({store.monitorSize})</span></div>
-                    <Badge variant="secondary">×{store.monitor}</Badge>
-                  </div>
-                )}
-                {store.extensionBoard > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Plug className="h-4 w-4 text-slate-500" /><span>Extension Board</span></div>
-                    <Badge variant="secondary">×{store.extensionBoard}</Badge>
-                  </div>
-                )}
-                {store.wirelessMouse > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Mouse className="h-4 w-4 text-slate-500" /><span>Wireless Mouse</span></div>
-                    <Badge variant="secondary">×{store.wirelessMouse}</Badge>
-                  </div>
-                )}
-                {store.wirelessKeyboard > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Keyboard className="h-4 w-4 text-slate-500" /><span>Wireless Keyboard</span></div>
-                    <Badge variant="secondary">×{store.wirelessKeyboard}</Badge>
-                  </div>
-                )}
-                {store.ups > 0 && (
-                  <div className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border text-sm">
-                    <div className="flex items-center gap-2"><Battery className="h-4 w-4 text-slate-500" /><span>UPS (Backup Power)</span></div>
-                    <Badge variant="secondary">×{store.ups}</Badge>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Reset Button */}
-            <div className="flex justify-end pt-2">
-              <Button variant="outline" size="sm" className="gap-2" onClick={() => store.resetBuilder()}>
-                <RotateCcw className="h-4 w-4" /> Reset All Selections
+            <div className="flex gap-2 pt-2">
+              <Button size="sm" className="gap-1.5" onClick={handleCopyQuote}>
+                <Copy className="h-3.5 w-3.5" /> Copy Full Quote
+              </Button>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => window.print()}>
+                <Printer className="h-3.5 w-3.5" /> Print Quote
               </Button>
             </div>
           </CardContent>
