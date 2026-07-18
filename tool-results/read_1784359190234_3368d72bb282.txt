@@ -1,0 +1,477 @@
+    25→
+    26→// ─── Camera type icons/colors ───
+    27→const typeConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
+    28→  Dome: { icon: <Camera className="h-4 w-4" />, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
+    29→  Bullet: { icon: <Camera className="h-4 w-4" />, color: "text-sky-700", bg: "bg-sky-50 border-sky-200" },
+    30→  WiFi: { icon: <Wifi className="h-4 w-4" />, color: "text-violet-700", bg: "bg-violet-50 border-violet-200" },
+    31→  PTZ: { icon: <Radio className="h-4 w-4" />, color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
+    32→  "4G": { icon: <Signal className="h-4 w-4" />, color: "text-rose-700", bg: "bg-rose-50 border-rose-200" },
+    33→  DVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
+    34→  NVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
+    35→};
+    36→
+    37→// ─── Price formatter ───
+    38→function fmt(n: number) {
+    39→  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+    40→}
+    41→
+    42→function DiscountBadge({ sale, price }: { sale: number | null; price: number }) {
+    43→  if (!sale || sale >= price) return null;
+    44→  const pct = Math.round(((price - sale) / price) * 100);
+    45→  return <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold">-{pct}%</Badge>;
+    46→}
+    47→
+    48→// ═══════════════════════════════════════════
+    49→// Product Card
+    50→// ═══════════════════════════════════════════
+    51→function ProductCard({ p }: { p: CctvProduct }) {
+    52→  const { selectedProduct: sel, setSelectedProduct, toggleCompare, compareList } = useStore();
+    53→  const isCompared = compareList.some((c) => c.id === p.id);
+    54→  const cfg = typeConfig[p.cameraType] || typeConfig.Bullet;
+    55→
+    56→  return (
+    57→    <Card className="group overflow-hidden border hover:shadow-lg transition-all duration-200 flex flex-col h-full">
+    58→      <div className="relative aspect-[4/3] bg-muted overflow-hidden cursor-pointer" onClick={() => setSelectedProduct(p)}>
+    59→        <img
+    60→          src={p.imageUrl}
+    61→          alt={`${p.brand} ${p.modelName}`}
+    62→          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+    63→          onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }}
+    64→        />
+    65→        <DiscountBadge sale={p.salePrice} price={p.price} />
+    66→        <Badge variant="outline" className={`absolute top-2 left-2 ${cfg.bg} ${cfg.color} border gap-1 text-xs`}>
+    67→          {cfg.icon} {p.cameraType}
+    68→        </Badge>
+    69→        {p.sampleVideoUrl && (
+    70→          <Badge className="absolute bottom-2 left-2 bg-black/70 text-white text-xs gap-1">
+    71→            <Video className="h-3 w-3" /> Sample Video
+    72→          </Badge>
+    73→        )}
+    74→      </div>
+    75→      <CardContent className="p-4 flex-1 flex flex-col gap-2" onClick={() => setSelectedProduct(p)}>
+    76→        <div className="flex items-start justify-between gap-2">
+    77→          <div>
+    78→            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{p.brand}</p>
+    79→            <h3 className="font-semibold text-sm leading-tight mt-0.5">{p.modelName}</h3>
+    80→          </div>
+    81→        </div>
+    82→        <div className="flex flex-wrap gap-1 mt-1">
+    83→          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.resolution}</Badge>
+    84→          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.technology}</Badge>
+    85→          {p.weatherRating !== "N/A" && p.weatherRating !== "Indoor" && (
+    86→            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.weatherRating}</Badge>
+    87→          )}
+    88→        </div>
+    89→      </CardContent>
+    90→      <CardFooter className="px-4 pb-4 pt-0 flex items-center justify-between gap-2">
+    91→        <div className="flex flex-col">
+    92→          <span className="font-bold text-base">{fmt(p.salePrice ?? p.price)}</span>
+    93→          {p.salePrice && p.salePrice < p.price && (
+    94→            <span className="text-xs text-muted-foreground line-through">{fmt(p.price)}</span>
+    95→          )}
+    96→        </div>
+    97→        <div className="flex gap-1">
+    98→          <Button size="sm" variant={isCompared ? "default" : "outline"} className="h-8 w-8 p-0" onClick={(e) => { e.stopPropagation(); toggleCompare(p); }}>
+    99→            <GitCompareArrows className="h-3.5 w-3.5" />
+   100→          </Button>
+   101→          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={(e) => { e.stopPropagation(); setSelectedProduct(p); }}>
+   102→            <Eye className="h-3.5 w-3.5" />
+   103→          </Button>
+   104→        </div>
+   105→      </CardFooter>
+   106→    </Card>
+   107→  );
+   108→}
+   109→
+   110→// ═══════════════════════════════════════════
+   111→// Product Detail View
+   112→// ═══════════════════════════════════════════
+   113→function ProductDetail({ product, onBack }: { product: CctvProduct; onBack: () => void }) {
+   114→  const { toggleCompare, compareList } = useStore();
+   115→  const isCompared = compareList.some((c) => c.id === product.id);
+   116→  const cfg = typeConfig[product.cameraType] || typeConfig.Bullet;
+   117→  const featureList = product.features.split(",").map((f) => f.trim()).filter(Boolean);
+   118→  const specs = [
+   119→    { label: "Brand", value: product.brand },
+   120→    { label: "Model", value: product.modelName },
+   121→    { label: "Type", value: product.cameraType },
+   122→    { label: "Resolution", value: product.resolution },
+   123→    { label: "Technology", value: product.technology },
+   124→    { label: "Recorder", value: product.recorderType },
+   125→    { label: "Night Vision", value: product.nightVision },
+   126→    { label: "IR Range", value: product.irRange },
+   127→    { label: "Field of View", value: product.fieldOfView },
+   128→    { label: "Weather Rating", value: product.weatherRating },
+   129→  ];
+   130→
+   131→  return (
+   132→    <div className="space-y-6">
+   133→      <Button variant="ghost" size="sm" onClick={onBack} className="gap-1">
+   134→        <ChevronLeft className="h-4 w-4" /> Back to Catalog
+   135→      </Button>
+   136→      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+   137→        <div className="space-y-4">
+   138→          <div className="aspect-square rounded-xl overflow-hidden bg-muted border">
+   139→            <img src={product.imageUrl} alt={product.modelName} className="w-full h-full object-contain p-4"
+   140→              onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
+   141→          </div>
+   142→          {product.sampleVideoUrl && (
+   143→            <div className="aspect-video rounded-xl overflow-hidden bg-muted border">
+   144→              <iframe src={product.sampleVideoUrl} className="w-full h-full" allowFullScreen title="Sample video" />
+   145→            </div>
+   146→          )}
+   147→        </div>
+   148→        <div className="space-y-5">
+   149→          <div>
+   150→            <div className="flex items-center gap-2 mb-2">
+   151→              <Badge variant="outline" className={`${cfg.bg} ${cfg.color} border gap-1`}>{cfg.icon} {product.cameraType}</Badge>
+   152→              <Badge variant="secondary">{product.resolution}</Badge>
+   153→              <Badge variant="secondary">{product.technology}</Badge>
+   154→            </div>
+   155→            <h1 className="text-2xl font-bold">{product.brand} {product.modelName}</h1>
+   156→          </div>
+   157→          <div className="flex items-end gap-3">
+   158→            <span className="text-3xl font-bold text-emerald-600">{fmt(product.salePrice ?? product.price)}</span>
+   159→            {product.salePrice && product.salePrice < product.price && (
+   160→              <>
+   161→                <span className="text-lg text-muted-foreground line-through">{fmt(product.price)}</span>
+   162→                <Badge className="bg-red-500 text-white">Save {fmt(product.price - product.salePrice)}</Badge>
+   163→              </>
+   164→            )}
+   165→          </div>
+   166→          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
+   167→          <Separator />
+   168→          <div>
+   169→            <h3 className="font-semibold mb-3">Key Features</h3>
+   170→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+   171→              {featureList.map((f, i) => (
+   172→                <div key={i} className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}</div>
+   173→              ))}
+   174→            </div>
+   175→          </div>
+   176→          <Separator />
+   177→          <div>
+   178→            <h3 className="font-semibold mb-3">Specifications</h3>
+   179→            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+   180→              {specs.map((s) => (
+   181→                <div key={s.label} className="flex justify-between py-1 border-b border-muted">
+   182→                  <span className="text-muted-foreground">{s.label}</span>
+   183→                  <span className="font-medium">{s.value}</span>
+   184→                </div>
+   185→              ))}
+   186→            </div>
+   187→          </div>
+   188→          <Button className="w-full" size="lg" variant={isCompared ? "secondary" : "default"} onClick={() => toggleCompare(product)}>
+   189→            <GitCompareArrows className="h-4 w-4 mr-2" />
+   190→            {isCompared ? "Remove from Compare" : "Add to Compare"}
+   191→          </Button>
+   192→        </div>
+   193→      </div>
+   194→    </div>
+   195→  );
+   196→}
+   197→
+   198→// ═══════════════════════════════════════════
+   199→// Compare View
+   200→// ═══════════════════════════════════════════
+   201→function CompareView() {
+   202→  const { compareList, clearCompare, setView, setSelectedProduct } = useStore();
+   203→  if (compareList.length === 0) {
+   204→    return (
+   205→      <div className="text-center py-16 space-y-4">
+   206→        <GitCompareArrows className="h-12 w-12 mx-auto text-muted-foreground" />
+   207→        <h2 className="text-xl font-semibold">No products to compare</h2>
+   208→        <p className="text-muted-foreground">Add products using the compare button on product cards.</p>
+   209→        <Button onClick={() => setView("catalog")}>Browse Catalog</Button>
+   210→      </div>
+   211→    );
+   212→  }
+   213→  const rows = [
+   214→    { label: "Image", fn: (p: CctvProduct) => <img src={p.imageUrl} alt={p.modelName} className="w-full max-w-[140px] h-24 object-contain mx-auto" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} /> },
+   215→    { label: "Brand", fn: (p: CctvProduct) => <Badge variant="outline">{p.brand}</Badge> },
+   216→    { label: "Model", fn: (p: CctvProduct) => <span className="font-semibold text-sm">{p.modelName}</span> },
+   217→    { label: "Type", fn: (p: CctvProduct) => <Badge variant="secondary">{p.cameraType}</Badge> },
+   218→    { label: "Resolution", fn: (p: CctvProduct) => p.resolution },
+   219→    { label: "Technology", fn: (p: CctvProduct) => p.technology },
+   220→    { label: "Recorder", fn: (p: CctvProduct) => p.recorderType },
+   221→    { label: "Night Vision", fn: (p: CctvProduct) => p.nightVision },
+   222→    { label: "IR Range", fn: (p: CctvProduct) => p.irRange || "-" },
+   223→    { label: "Field of View", fn: (p: CctvProduct) => p.fieldOfView || "-" },
+   224→    { label: "Weather", fn: (p: CctvProduct) => p.weatherRating },
+   225→    { label: "Price", fn: (p: CctvProduct) => <span className="font-bold">{fmt(p.price)}</span> },
+   226→    { label: "Sale Price", fn: (p: CctvProduct) => p.salePrice ? <span className="font-bold text-emerald-600">{fmt(p.salePrice)}</span> : "-" },
+   227→    { label: "Video", fn: (p: CctvProduct) => p.sampleVideoUrl ? <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1"><Video className="h-3 w-3" /> Available</Badge> : <span className="text-muted-foreground text-sm">None</span> },
+   228→  ];
+   229→
+   230→  return (
+   231→    <div className="space-y-4">
+   232→      <div className="flex items-center justify-between">
+   233→        <h2 className="text-xl font-bold">Compare Products ({compareList.length})</h2>
+   234→        <div className="flex gap-2">
+   235→          <Button variant="outline" size="sm" onClick={clearCompare}>Clear All</Button>
+   236→          <Button variant="outline" size="sm" onClick={() => setView("catalog")}>Back to Catalog</Button>
+   237→        </div>
+   238→      </div>
+   239→      <div className="overflow-x-auto">
+   240→        <table className="w-full text-sm">
+   241→          <thead>
+   242→            <tr>
+   243→              <th className="text-left p-3 w-28 bg-muted rounded-tl-lg sticky left-0 z-10">Feature</th>
+   244→              {compareList.map((p) => (
+   245→                <th key={p.id} className="p-3 text-center bg-muted min-w-[180px]">
+   246→                  <div className="relative">
+   247→                    <button onClick={() => setSelectedProduct(p)} className="font-semibold hover:underline cursor-pointer">{p.brand}</button>
+   248→                    <button onClick={() => setSelectedProduct(p)} className="block text-xs text-muted-foreground hover:underline cursor-pointer">{p.modelName}</button>
+   249→                  </div>
+   250→                </th>
+   251→              ))}
+   252→            </tr>
+   253→          </thead>
+   254→          <tbody>
+   255→            {rows.map((row, i) => (
+   256→              <tr key={row.label} className={i % 2 === 0 ? "bg-muted/30" : ""}>
+   257→                <td className="p-3 font-medium text-muted-foreground bg-background sticky left-0 z-10 border-r">{row.label}</td>
+   258→                {compareList.map((p) => (
+   259→                  <td key={p.id} className="p-3 text-center">{row.fn(p)}</td>
+   260→                ))}
+   261→              </tr>
+   262→            ))}
+   263→          </tbody>
+   264→        </table>
+   265→      </div>
+   266→    </div>
+   267→  );
+   268→}
+   269→
+   270→// ═══════════════════════════════════════════
+   271→// Admin Add/Edit Form
+   272→// ═══════════════════════════════════════════
+   273→function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClose: () => void }) {
+   274→  const [form, setForm] = useState(
+   275→    editProduct
+   276→      ? { ...editProduct, price: String(editProduct.price), salePrice: editProduct.salePrice ? String(editProduct.salePrice) : "" }
+   277→      : { brand: "", modelName: "", cameraType: "Bullet", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "", salePrice: "", description: "", features: "", imageUrl: "", videoUrl: "", sampleVideoUrl: "", irRange: "", fieldOfView: "" }
+   278→  );
+   279→  const [saving, setSaving] = useState(false);
+   280→
+   281→  const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+   282→
+   283→  const handleImageUpload = async (field: "imageUrl" | "videoUrl" | "sampleVideoUrl", file: File) => {
+   284→    const fd = new FormData();
+   285→    fd.append("file", file);
+   286→    const res = await fetch("/api/upload", { method: "POST", body: fd });
+   287→    const data = await res.json();
+   288→    if (data.url) { update(field, data.url); toast.success("Uploaded successfully"); }
+   289→    else toast.error("Upload failed");
+   290→  };
+   291→
+   292→  const handleSubmit = async () => {
+   293→    if (!form.brand || !form.modelName || !form.price) { toast.error("Brand, Model, and Price are required"); return; }
+   294→    setSaving(true);
+   295→    try {
+   296→      const url = editProduct ? `/api/products/${editProduct.id}` : "/api/products";
+   297→      const method = editProduct ? "PUT" : "POST";
+   298→      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+   299→      const data = await res.json();
+   300→      if (data.success) {
+   301→        toast.success(editProduct ? "Product updated!" : "Product added!");
+   302→        onClose();
+   303→      } else toast.error(data.error || "Failed");
+   304→    } catch { toast.error("Network error"); }
+   305→    setSaving(false);
+   306→  };
+   307→
+   308→  const handleDelete = async () => {
+   309→    if (!editProduct) return;
+   310→    if (!confirm("Delete this product?")) return;
+   311→    const res = await fetch(`/api/products/${editProduct.id}`, { method: "DELETE" });
+   312→    const data = await res.json();
+   313→    if (data.success) { toast.success("Deleted"); onClose(); }
+   314→    else toast.error("Failed to delete");
+   315→  };
+   316→
+   317→  return (
+   318→    <div className="space-y-4 max-h-[85vh] overflow-y-auto pr-2">
+   319→      <div className="grid grid-cols-2 gap-4">
+   320→        <div className="space-y-2"><Label>Brand *</Label><Input value={form.brand} onChange={(e) => update("brand", e.target.value)} placeholder="Hikvision / Dahua" /></div>
+   321→        <div className="space-y-2"><Label>Model Number *</Label><Input value={form.modelName} onChange={(e) => update("modelName", e.target.value)} placeholder="DS-2CE56D0T-IRP" /></div>
+   322→        <div className="space-y-2"><Label>Camera Type</Label>
+   323→          <Select value={form.cameraType} onValueChange={(v) => update("cameraType", v)}>
+   324→            <SelectTrigger><SelectValue /></SelectTrigger>
+   325→            <SelectContent>
+   326→              <SelectItem value="Dome">Dome</SelectItem><SelectItem value="Bullet">Bullet</SelectItem><SelectItem value="WiFi">WiFi</SelectItem><SelectItem value="PTZ">PTZ</SelectItem><SelectItem value="4G">4G</SelectItem><SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem>
+   327→            </SelectContent>
+   328→          </Select>
+   329→        </div>
+   330→        <div className="space-y-2"><Label>Resolution</Label>
+   331→          <Select value={form.resolution} onValueChange={(v) => update("resolution", v)}>
+   332→            <SelectTrigger><SelectValue /></SelectTrigger>
+   333→            <SelectContent>
+   334→              <SelectItem value="1MP">1MP (720p)</SelectItem><SelectItem value="2MP">2MP (1080p)</SelectItem><SelectItem value="4MP">4MP (1440p)</SelectItem><SelectItem value="5MP">5MP</SelectItem><SelectItem value="4K">4K (8MP)</SelectItem>
+   335→            </SelectContent>
+   336→          </Select>
+   337→        </div>
+   338→        <div className="space-y-2"><Label>Technology</Label>
+   339→          <Select value={form.technology} onValueChange={(v) => update("technology", v)}>
+   340→            <SelectTrigger><SelectValue /></SelectTrigger>
+   341→            <SelectContent>
+   342→              <SelectItem value="HD-TVI">HD-TVI (Hikvision)</SelectItem><SelectItem value="HD-CVI">HD-CVI (Dahua)</SelectItem><SelectItem value="IP">IP</SelectItem><SelectItem value="WiFi IP">WiFi IP</SelectItem><SelectItem value="4G LTE">4G LTE</SelectItem><SelectItem value="AHD">AHD</SelectItem>
+   343→            </SelectContent>
+   344→          </Select>
+   345→        </div>
+   346→        <div className="space-y-2"><Label>Compatible Recorder</Label>
+   347→          <Select value={form.recorderType} onValueChange={(v) => update("recorderType", v)}>
+   348→            <SelectTrigger><SelectValue /></SelectTrigger>
+   349→            <SelectContent>
+   350→              <SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem><SelectItem value="Cloud/NVR">Cloud / NVR</SelectItem><SelectItem value="Cloud/SD Card">Cloud / SD Card</SelectItem>
+   351→            </SelectContent>
+   352→          </Select>
+   353→        </div>
+   354→        <div className="space-y-2"><Label>Price (INR) *</Label><Input type="number" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="1500" /></div>
+   355→        <div className="space-y-2"><Label>Sale Price (INR)</Label><Input type="number" value={form.salePrice} onChange={(e) => update("salePrice", e.target.value)} placeholder="1299 (optional)" /></div>
+   356→        <div className="space-y-2"><Label>Night Vision</Label><Input value={form.nightVision} onChange={(e) => update("nightVision", e.target.value)} placeholder="IR (20m) / ColorVu / Starlight" /></div>
+   357→        <div className="space-y-2"><Label>Weather Rating</Label><Input value={form.weatherRating} onChange={(e) => update("weatherRating", e.target.value)} placeholder="IP67 / IP66 / Indoor" /></div>
+   358→        <div className="space-y-2"><Label>IR Range</Label><Input value={form.irRange} onChange={(e) => update("irRange", e.target.value)} placeholder="20m / 50m" /></div>
+   359→        <div className="space-y-2"><Label>Field of View</Label><Input value={form.fieldOfView} onChange={(e) => update("fieldOfView", e.target.value)} placeholder="90° / 360°" /></div>
+   360→      </div>
+   361→      <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Product description..." /></div>
+   362→      <div className="space-y-2"><Label>Features (comma separated)</Label><Textarea value={form.features} onChange={(e) => update("features", e.target.value)} rows={2} placeholder="2MP, IR 20m, IP67, Smart IR" /></div>
+   363→      <div className="space-y-2">
+   364→        <Label>Product Image</Label>
+   365→        <div className="flex gap-2 items-center">
+   366→          <Input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} placeholder="/uploads/image.jpg or URL" />
+   367→          <label className="cursor-pointer"><Input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload("imageUrl", e.target.files[0])} /><Button variant="outline" size="sm" asChild><span>Upload</span></Button></label>
+   368→        </div>
+   369→        {form.imageUrl && <img src={form.imageUrl} alt="preview" className="w-24 h-24 object-contain rounded border bg-muted mt-1" />}
+   370→      </div>
+   371→      <div className="space-y-2">
+   372→        <Label>Sample Video URL (YouTube embed)</Label>
+   373→        <Input value={form.sampleVideoUrl} onChange={(e) => update("sampleVideoUrl", e.target.value)} placeholder="https://www.youtube.com/embed/..." />
+   374→      </div>
+   375→      <div className="flex gap-2 pt-2">
+   376→        <Button onClick={handleSubmit} disabled={saving} className="flex-1">{saving ? "Saving..." : editProduct ? "Update Product" : "Add Product"}</Button>
+   377→        {editProduct && <Button variant="destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>}
+   378→        <Button variant="outline" onClick={onClose}>Cancel</Button>
+   379→      </div>
+   380→    </div>
+   381→  );
+   382→}
+   383→
+   384→// ═══════════════════════════════════════════
+   385→// Admin Panel
+   386→// ═══════════════════════════════════════════
+   387→function AdminPanel({ onBack }: { onBack: () => void }) {
+   388→  const { products, setProducts } = useStore();
+   389→  const [editing, setEditing] = useState<CctvProduct | undefined>();
+   390→  const [adding, setAdding] = useState(false);
+   391→
+   392→  const refresh = useCallback(async () => {
+   393→    const res = await fetch("/api/products");
+   394→    const data = await res.json();
+   395→    if (data.success) setProducts(data.data);
+   396→  }, [setProducts]);
+   397→
+   398→  const handleDialogClose = () => { setEditing(undefined); setAdding(false); refresh(); };
+   399→
+   400→  return (
+   401→    <div className="space-y-4">
+   402→      <div className="flex items-center justify-between">
+   403→        <h2 className="text-xl font-bold">Product Management</h2>
+   404→        <div className="flex gap-2">
+   405→          <Dialog open={adding} onOpenChange={setAdding}>
+   406→            <DialogTrigger asChild><Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add Product</Button></DialogTrigger>
+   407→            <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add New Product</DialogTitle></DialogHeader><AdminForm onClose={handleDialogClose} /></DialogContent>
+   408→          </Dialog>
+   409→          <Button variant="outline" size="sm" onClick={onBack}>Back to Catalog</Button>
+   410→        </div>
+   411→      </div>
+   412→      <div className="border rounded-lg overflow-hidden">
+   413→        <div className="max-h-[70vh] overflow-y-auto">
+   414→          <table className="w-full text-sm">
+   415→            <thead className="bg-muted sticky top-0">
+   416→              <tr>
+   417→                <th className="p-3 text-left">Image</th>
+   418→                <th className="p-3 text-left">Brand</th>
+   419→                <th className="p-3 text-left">Model</th>
+   420→                <th className="p-3 text-left">Type</th>
+   421→                <th className="p-3 text-right">Price</th>
+   422→                <th className="p-3 text-right">Sale</th>
+   423→                <th className="p-3 text-center">Actions</th>
+   424→              </tr>
+   425→            </thead>
+   426→            <tbody>
+   427→              {products.map((p) => (
+   428→                <tr key={p.id} className="border-t hover:bg-muted/50">
+   429→                  <td className="p-2"><img src={p.imageUrl} alt="" className="w-12 h-10 object-contain bg-muted rounded" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} /></td>
+   430→                  <td className="p-3 font-medium">{p.brand}</td>
+   431→                  <td className="p-3">{p.modelName}</td>
+   432→                  <td className="p-3"><Badge variant="secondary" className="text-xs">{p.cameraType}</Badge></td>
+   433→                  <td className="p-3 text-right">{fmt(p.price)}</td>
+   434→                  <td className="p-3 text-right text-emerald-600">{p.salePrice ? fmt(p.salePrice) : "-"}</td>
+   435→                  <td className="p-3 text-center">
+   436→                    <Dialog open={editing?.id === p.id} onOpenChange={(open) => { if (open) setEditing(p); else setEditing(undefined); }}>
+   437→                      <DialogTrigger asChild><Button variant="ghost" size="sm">Edit</Button></DialogTrigger>
+   438→                      <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Edit Product</DialogTitle></DialogHeader><AdminForm editProduct={p} onClose={handleDialogClose} /></DialogContent>
+   439→                    </Dialog>
+   440→                  </td>
+   441→                </tr>
+   442→              ))}
+   443→            </tbody>
+   444→          </table>
+   445→        </div>
+   446→      </div>
+   447→    </div>
+   448→  );
+   449→}
+   450→
+   451→// ═══════════════════════════════════════════
+   452→// Filter Sidebar
+   453→// ═══════════════════════════════════════════
+   454→function FilterSidebar() {
+   455→  const { filters, setFilter, products, compareList, setView } = useStore();
+   456→  const brands = [...new Set(products.map((p) => p.brand))].sort();
+   457→  const types = [...new Set(products.map((p) => p.cameraType))].sort();
+   458→  const recorders = [...new Set(products.map((p) => p.recorderType))].sort();
+   459→
+   460→  return (
+   461→    <aside className="space-y-5 w-full lg:w-64 shrink-0">
+   462→      <div className="space-y-2">
+   463→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Search</Label>
+   464→        <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input value={filters.search} onChange={(e) => setFilter("search", e.target.value)} placeholder="Search brand or model..." className="pl-9" /></div>
+   465→      </div>
+   466→      <div className="space-y-2">
+   467→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Brand</Label>
+   468→        <Select value={filters.brand} onValueChange={(v) => setFilter("brand", v)}>
+   469→          <SelectTrigger><SelectValue placeholder="All Brands" /></SelectTrigger>
+   470→          <SelectContent><SelectItem value="all">All Brands</SelectItem>{brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}</SelectContent>
+   471→        </Select>
+   472→      </div>
+   473→      <div className="space-y-2">
+   474→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Camera Type</Label>
+   475→        <Select value={filters.cameraType} onValueChange={(v) => setFilter("cameraType", v)}>
+   476→          <SelectTrigger><SelectValue placeholder="All Types" /></SelectTrigger>
+   477→          <SelectContent><SelectItem value="all">All Types</SelectItem>{types.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+   478→        </Select>
+   479→      </div>
+   480→      <div className="space-y-2">
+   481→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Recorder Type</Label>
+   482→        <Select value={filters.recorderType} onValueChange={(v) => setFilter("recorderType", v)}>
+   483→          <SelectTrigger><SelectValue placeholder="All" /></SelectTrigger>
+   484→          <SelectContent><SelectItem value="all">All</SelectItem>{recorders.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+   485→        </Select>
+   486→      </div>
+   487→      <div className="space-y-2">
+   488→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Max Price (INR)</Label>
+   489→        <Input type="number" value={filters.maxPrice} onChange={(e) => setFilter("maxPrice", e.target.value)} placeholder="e.g. 10000" />
+   490→      </div>
+   491→      <div className="space-y-2">
+   492→        <Label className="text-xs text-muted-foreground uppercase tracking-wide">Sort By</Label>
+   493→        <Select value={filters.sortBy} onValueChange={(v) => setFilter("sortBy", v)}>
+   494→          <SelectTrigger><SelectValue /></SelectTrigger>
+   495→          <SelectContent>
+   496→            <SelectItem value="price">Price: Low to High</SelectItem>
+   497→            <SelectItem value="price_desc">Price: High to Low</SelectItem>
+   498→            <SelectItem value="createdAt">Newest First</SelectItem>
+   499→            <SelectItem value="brand">Brand A-Z</SelectItem>
+
+[showing lines 25-499 of 653; use offset=500 with limit to continue reading]

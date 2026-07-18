@@ -1,25 +1,24 @@
 "use client";
 
-import { useEffect, useCallback, useState } from "react";
+import { useEffect, useCallback } from "react";
 import { useStore, type CctvProduct } from "@/store/cctv-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearningSystem } from "@/components/learning-system";
 import { CctvBuilder } from "@/components/cctv-builder";
+import { AdminPanel } from "@/components/admin-panel";
+import { cn } from "@/lib/utils";
 import {
-  Search, Plus, Shield, Eye, GitCompareArrows, Trash2, X,
-  Camera, Wifi, Radio, Signal, MonitorPlay, ChevronLeft,
-  Tag, DollarSign, Zap, Droplets, Wind, Video, CheckCircle2, Star,
-  GraduationCap, Wrench,
+  Search, Shield, Eye, GitCompareArrows, X,
+  Camera, Wifi, Radio, Signal, MonitorPlay,
+  Tag, DollarSign, Star,
+  GraduationCap, Wrench, Play,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -29,166 +28,127 @@ const typeConfig: Record<string, { icon: React.ReactNode; color: string; bg: str
   Bullet: { icon: <Camera className="h-4 w-4" />, color: "text-sky-700", bg: "bg-sky-50 border-sky-200" },
   WiFi: { icon: <Wifi className="h-4 w-4" />, color: "text-violet-700", bg: "bg-violet-50 border-violet-200" },
   PTZ: { icon: <Radio className="h-4 w-4" />, color: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  "4G": { icon: <Signal className="h-4 w-4" />, color: "text-rose-700", bg: "bg-rose-50 border-rose-200" },
+  "4G": { icon: <Signal className="h-4 w-4" />, color: "text-red-700", bg: "bg-red-50 border-red-200" },
   DVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
-  NVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-slate-700", bg: "bg-slate-50 border-slate-200" },
+  NVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
 };
 
 // ─── Price formatter ───
-function fmt(n: number) {
-  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
-}
-
-function DiscountBadge({ sale, price }: { sale: number | null; price: number }) {
-  if (!sale || sale >= price) return null;
-  const pct = Math.round(((price - sale) / price) * 100);
-  return <Badge className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold">-{pct}%</Badge>;
-}
+const fmt = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
 // ═══════════════════════════════════════════
 // Product Card
 // ═══════════════════════════════════════════
+
 function ProductCard({ p }: { p: CctvProduct }) {
-  const { selectedProduct: sel, setSelectedProduct, toggleCompare, compareList } = useStore();
+  const { setView, setSelectedProduct, compareList, toggleCompare } = useStore();
   const isCompared = compareList.some((c) => c.id === p.id);
   const cfg = typeConfig[p.cameraType] || typeConfig.Bullet;
 
   return (
-    <Card className="group overflow-hidden border hover:shadow-lg transition-all duration-200 flex flex-col h-full">
-      <div className="relative aspect-[4/3] bg-muted overflow-hidden cursor-pointer" onClick={() => setSelectedProduct(p)}>
-        <img
-          src={p.imageUrl}
-          alt={`${p.brand} ${p.modelName}`}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }}
-        />
-        <DiscountBadge sale={p.salePrice} price={p.price} />
-        <Badge variant="outline" className={`absolute top-2 left-2 ${cfg.bg} ${cfg.color} border gap-1 text-xs`}>
-          {cfg.icon} {p.cameraType}
-        </Badge>
-        {p.sampleVideoUrl && (
-          <Badge className="absolute bottom-2 left-2 bg-black/70 text-white text-xs gap-1">
-            <Video className="h-3 w-3" /> Sample Video
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow group">
+      <div className={cn("aspect-[4/3] bg-muted relative overflow-hidden cursor-pointer", cfg.bg)} onClick={() => { setSelectedProduct(p); setView("detail"); }}>
+        {p.imageUrl && <img src={p.imageUrl} alt={p.modelName} className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />}
+        {p.salePrice && p.salePrice < p.price && (
+          <Badge className="absolute top-2 left-2 bg-red-500 text-white text-[10px]">
+            {Math.round(((p.price - p.salePrice) / p.price) * 100)}% OFF
           </Badge>
         )}
-      </div>
-      <CardContent className="p-4 flex-1 flex flex-col gap-2" onClick={() => setSelectedProduct(p)}>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">{p.brand}</p>
-            <h3 className="font-semibold text-sm leading-tight mt-0.5">{p.modelName}</h3>
+        {p.videoUrl && (
+          <div className="absolute bottom-2 right-2 bg-black/60 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+            <Play className="h-4 w-4" />
           </div>
+        )}
+      </div>
+      <CardContent className="p-4 space-y-2">
+        <div className="flex items-center gap-1.5">
+          <Badge variant="outline" className={cn("text-[10px]", cfg.color, cfg.bg)}>{cfg.icon}{p.cameraType}</Badge>
+          <Badge variant="outline" className="text-[10px]">{p.resolution}</Badge>
         </div>
-        <div className="flex flex-wrap gap-1 mt-1">
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.resolution}</Badge>
-          <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.technology}</Badge>
-          {p.weatherRating !== "N/A" && p.weatherRating !== "Indoor" && (
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{p.weatherRating}</Badge>
-          )}
+        <p className="font-semibold text-sm">{p.brand}</p>
+        <p className="text-xs text-muted-foreground">{p.modelName}</p>
+        <div className="flex items-end justify-between">
+          <div>
+            {p.salePrice && p.salePrice < p.price ? (
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-emerald-600">{fmt(p.salePrice)}</span>
+                <span className="text-xs text-muted-foreground line-through">{fmt(p.price)}</span>
+              </div>
+            ) : (
+              <span className="text-lg font-bold">{fmt(p.price)}</span>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant={isCompared ? "default" : "outline"}
+            className="text-xs h-8"
+            onClick={() => toggleCompare(p)}
+            disabled={!isCompared && compareList.length >= 4}
+          >
+            <GitCompareArrows className="h-3 w-3 mr-1" />
+            {isCompared ? "Added" : "Compare"}
+          </Button>
         </div>
       </CardContent>
-      <CardFooter className="px-4 pb-4 pt-0 flex items-center justify-between gap-2">
-        <div className="flex flex-col">
-          <span className="font-bold text-base">{fmt(p.salePrice ?? p.price)}</span>
-          {p.salePrice && p.salePrice < p.price && (
-            <span className="text-xs text-muted-foreground line-through">{fmt(p.price)}</span>
-          )}
-        </div>
-        <div className="flex gap-1">
-          <Button size="sm" variant={isCompared ? "default" : "outline"} className="h-8 w-8 p-0" onClick={(e) => { e.stopPropagation(); toggleCompare(p); }}>
-            <GitCompareArrows className="h-3.5 w-3.5" />
-          </Button>
-          <Button size="sm" variant="outline" className="h-8 w-8 p-0" onClick={(e) => { e.stopPropagation(); setSelectedProduct(p); }}>
-            <Eye className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </CardFooter>
     </Card>
   );
 }
 
 // ═══════════════════════════════════════════
-// Product Detail View
+// Product Detail
 // ═══════════════════════════════════════════
+
 function ProductDetail({ product, onBack }: { product: CctvProduct; onBack: () => void }) {
-  const { toggleCompare, compareList } = useStore();
+  const { compareList, toggleCompare } = useStore();
   const isCompared = compareList.some((c) => c.id === product.id);
   const cfg = typeConfig[product.cameraType] || typeConfig.Bullet;
-  const featureList = product.features.split(",").map((f) => f.trim()).filter(Boolean);
-  const specs = [
-    { label: "Brand", value: product.brand },
-    { label: "Model", value: product.modelName },
-    { label: "Type", value: product.cameraType },
-    { label: "Resolution", value: product.resolution },
-    { label: "Technology", value: product.technology },
-    { label: "Recorder", value: product.recorderType },
-    { label: "Night Vision", value: product.nightVision },
-    { label: "IR Range", value: product.irRange },
-    { label: "Field of View", value: product.fieldOfView },
-    { label: "Weather Rating", value: product.weatherRating },
-  ];
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" onClick={onBack} className="gap-1">
-        <ChevronLeft className="h-4 w-4" /> Back to Catalog
-      </Button>
+      <Button variant="ghost" size="sm" onClick={onBack} className="gap-1"><Eye className="h-4 w-4" /> Back to Catalog</Button>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className={cn("aspect-square rounded-xl border-2 flex items-center justify-center p-8", cfg.bg)}>
+          {product.imageUrl ? <img src={product.imageUrl} alt={product.modelName} className="max-h-full object-contain" /> : <Camera className="h-16 w-16 text-muted-foreground" />}
+        </div>
         <div className="space-y-4">
-          <div className="aspect-square rounded-xl overflow-hidden bg-muted border">
-            <img src={product.imageUrl} alt={product.modelName} className="w-full h-full object-contain p-4"
-              onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} />
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="outline" className={cn(cfg.color, cfg.bg)}>{cfg.icon}{product.cameraType}</Badge>
+              <Badge variant="outline">{product.resolution}</Badge>
+              <Badge variant="outline">{product.technology}</Badge>
+            </div>
+            <h1 className="text-2xl font-bold">{product.brand} {product.modelName}</h1>
+            <p className="text-muted-foreground mt-1">{product.description}</p>
           </div>
+          <div className="flex items-end gap-3">
+            {product.salePrice && product.salePrice < product.price ? (
+              <div>
+                <span className="text-3xl font-bold text-emerald-600">{fmt(product.salePrice)}</span>
+                <span className="text-lg text-muted-foreground line-through ml-2">{fmt(product.price)}</span>
+                <Badge className="ml-2 bg-red-500 text-white">Save {fmt(product.price - product.salePrice)}</Badge>
+              </div>
+            ) : (
+              <span className="text-3xl font-bold">{fmt(product.price)}</span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {product.nightVision && <div className="bg-muted/50 rounded-lg p-3"><p className="text-xs text-muted-foreground">Night Vision</p><p className="font-medium">{product.nightVision}</p></div>}
+            {product.weatherRating && <div className="bg-muted/50 rounded-lg p-3"><p className="text-xs text-muted-foreground">Weather</p><p className="font-medium">{product.weatherRating}</p></div>}
+            {product.irRange && <div className="bg-muted/50 rounded-lg p-3"><p className="text-xs text-muted-foreground">IR Range</p><p className="font-medium">{product.irRange}</p></div>}
+            {product.fieldOfView && <div className="bg-muted/50 rounded-lg p-3"><p className="text-xs text-muted-foreground">Field of View</p><p className="font-medium">{product.fieldOfView}</p></div>}
+            <div className="bg-muted/50 rounded-lg p-3"><p className="text-xs text-muted-foreground">Recorder</p><p className="font-medium">{product.recorderType}</p></div>
+          </div>
+          {product.features && (Array.isArray(product.features) ? product.features : product.features.split(",").map((s: string) => s.trim()).filter(Boolean)).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">{(Array.isArray(product.features) ? product.features : product.features.split(",").map((s: string) => s.trim()).filter(Boolean)).map((f: string) => <Badge key={f} variant="secondary" className="text-xs">{f}</Badge>)}</div>
+          )}
+          <Button className="gap-2" disabled={isCompared || compareList.length >= 4} onClick={() => { toggleCompare(product); toast.success("Added to compare!"); }}>
+            <GitCompareArrows className="h-4 w-4" /> {isCompared ? "In Compare List" : "Add to Compare"}
+          </Button>
           {product.sampleVideoUrl && (
-            <div className="aspect-video rounded-xl overflow-hidden bg-muted border">
+            <div className="rounded-xl overflow-hidden border aspect-video">
               <iframe src={product.sampleVideoUrl} className="w-full h-full" allowFullScreen title="Sample video" />
             </div>
           )}
-        </div>
-        <div className="space-y-5">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <Badge variant="outline" className={`${cfg.bg} ${cfg.color} border gap-1`}>{cfg.icon} {product.cameraType}</Badge>
-              <Badge variant="secondary">{product.resolution}</Badge>
-              <Badge variant="secondary">{product.technology}</Badge>
-            </div>
-            <h1 className="text-2xl font-bold">{product.brand} {product.modelName}</h1>
-          </div>
-          <div className="flex items-end gap-3">
-            <span className="text-3xl font-bold text-emerald-600">{fmt(product.salePrice ?? product.price)}</span>
-            {product.salePrice && product.salePrice < product.price && (
-              <>
-                <span className="text-lg text-muted-foreground line-through">{fmt(product.price)}</span>
-                <Badge className="bg-red-500 text-white">Save {fmt(product.price - product.salePrice)}</Badge>
-              </>
-            )}
-          </div>
-          <p className="text-muted-foreground leading-relaxed">{product.description}</p>
-          <Separator />
-          <div>
-            <h3 className="font-semibold mb-3">Key Features</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {featureList.map((f, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm"><CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />{f}</div>
-              ))}
-            </div>
-          </div>
-          <Separator />
-          <div>
-            <h3 className="font-semibold mb-3">Specifications</h3>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-              {specs.map((s) => (
-                <div key={s.label} className="flex justify-between py-1 border-b border-muted">
-                  <span className="text-muted-foreground">{s.label}</span>
-                  <span className="font-medium">{s.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <Button className="w-full" size="lg" variant={isCompared ? "secondary" : "default"} onClick={() => toggleCompare(product)}>
-            <GitCompareArrows className="h-4 w-4 mr-2" />
-            {isCompared ? "Remove from Compare" : "Add to Compare"}
-          </Button>
         </div>
       </div>
     </div>
@@ -198,68 +158,48 @@ function ProductDetail({ product, onBack }: { product: CctvProduct; onBack: () =
 // ═══════════════════════════════════════════
 // Compare View
 // ═══════════════════════════════════════════
+
 function CompareView() {
-  const { compareList, clearCompare, setView, setSelectedProduct } = useStore();
+  const { compareList, toggleCompare, setView } = useStore();
+
   if (compareList.length === 0) {
     return (
-      <div className="text-center py-16 space-y-4">
-        <GitCompareArrows className="h-12 w-12 mx-auto text-muted-foreground" />
-        <h2 className="text-xl font-semibold">No products to compare</h2>
-        <p className="text-muted-foreground">Add products using the compare button on product cards.</p>
-        <Button onClick={() => setView("catalog")}>Browse Catalog</Button>
+      <div className="text-center py-16">
+        <GitCompareArrows className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+        <h3 className="text-lg font-semibold">No products to compare</h3>
+        <p className="text-muted-foreground text-sm">Add products from the catalog to compare them.</p>
+        <Button className="mt-4" onClick={() => setView("catalog")}>Browse Catalog</Button>
       </div>
     );
   }
-  const rows = [
-    { label: "Image", fn: (p: CctvProduct) => <img src={p.imageUrl} alt={p.modelName} className="w-full max-w-[140px] h-24 object-contain mx-auto" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} /> },
-    { label: "Brand", fn: (p: CctvProduct) => <Badge variant="outline">{p.brand}</Badge> },
-    { label: "Model", fn: (p: CctvProduct) => <span className="font-semibold text-sm">{p.modelName}</span> },
-    { label: "Type", fn: (p: CctvProduct) => <Badge variant="secondary">{p.cameraType}</Badge> },
-    { label: "Resolution", fn: (p: CctvProduct) => p.resolution },
-    { label: "Technology", fn: (p: CctvProduct) => p.technology },
-    { label: "Recorder", fn: (p: CctvProduct) => p.recorderType },
-    { label: "Night Vision", fn: (p: CctvProduct) => p.nightVision },
-    { label: "IR Range", fn: (p: CctvProduct) => p.irRange || "-" },
-    { label: "Field of View", fn: (p: CctvProduct) => p.fieldOfView || "-" },
-    { label: "Weather", fn: (p: CctvProduct) => p.weatherRating },
-    { label: "Price", fn: (p: CctvProduct) => <span className="font-bold">{fmt(p.price)}</span> },
-    { label: "Sale Price", fn: (p: CctvProduct) => p.salePrice ? <span className="font-bold text-emerald-600">{fmt(p.salePrice)}</span> : "-" },
-    { label: "Video", fn: (p: CctvProduct) => p.sampleVideoUrl ? <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1"><Video className="h-3 w-3" /> Available</Badge> : <span className="text-muted-foreground text-sm">None</span> },
-  ];
+
+  const fields = ["brand", "modelName", "cameraType", "resolution", "technology", "recorderType", "nightVision", "weatherRating", "irRange", "fieldOfView", "price", "salePrice"];
+  const labels: Record<string, string> = { brand: "Brand", modelName: "Model", cameraType: "Type", resolution: "Resolution", technology: "Technology", recorderType: "Recorder", nightVision: "Night Vision", weatherRating: "Weather", irRange: "IR Range", fieldOfView: "FOV", price: "Price", salePrice: "Sale Price" };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Compare Products ({compareList.length})</h2>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={clearCompare}>Clear All</Button>
-          <Button variant="outline" size="sm" onClick={() => setView("catalog")}>Back to Catalog</Button>
-        </div>
+        <h2 className="text-xl font-bold">Compare ({compareList.length}/4)</h2>
+        <Button variant="outline" size="sm" onClick={() => setView("catalog")}>Back to Catalog</Button>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr>
-              <th className="text-left p-3 w-28 bg-muted rounded-tl-lg sticky left-0 z-10">Feature</th>
-              {compareList.map((p) => (
-                <th key={p.id} className="p-3 text-center bg-muted min-w-[180px]">
-                  <div className="relative">
-                    <button onClick={() => setSelectedProduct(p)} className="font-semibold hover:underline cursor-pointer">{p.brand}</button>
-                    <button onClick={() => setSelectedProduct(p)} className="block text-xs text-muted-foreground hover:underline cursor-pointer">{p.modelName}</button>
-                  </div>
-                </th>
-              ))}
-            </tr>
-          </thead>
+        <table className="w-full text-sm border">
+          <thead><tr><th className="p-3 text-left bg-muted min-w-[140px]">Feature</th>{compareList.map((p) => (<th key={p.id} className="p-3 text-center bg-muted min-w-[180px]">{p.brand}<br /><span className="text-xs font-normal">{p.modelName}</span></th>))}</tr></thead>
           <tbody>
-            {rows.map((row, i) => (
-              <tr key={row.label} className={i % 2 === 0 ? "bg-muted/30" : ""}>
-                <td className="p-3 font-medium text-muted-foreground bg-background sticky left-0 z-10 border-r">{row.label}</td>
-                {compareList.map((p) => (
-                  <td key={p.id} className="p-3 text-center">{row.fn(p)}</td>
-                ))}
+            {fields.map((f) => (
+              <tr key={f} className="border-t">
+                <td className="p-3 font-medium bg-muted/50">{labels[f]}</td>
+                {compareList.map((p) => {
+                  const val = p[f as keyof CctvProduct];
+                  return (
+                    <td key={p.id} className="p-3 text-center">
+                      {f === "price" || f === "salePrice" ? (val ? fmt(val as number) : "-") : (val as string) || "-"}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
+            <tr className="border-t"><td className="p-3 font-medium bg-muted/50">Actions</td>{compareList.map((p) => (<td key={p.id} className="p-3 text-center"><Button variant="ghost" size="sm" className="text-red-500" onClick={() => toggleCompare(p)}><X className="h-4 w-4" /></Button></td>))}</tr>
           </tbody>
         </table>
       </div>
@@ -268,189 +208,9 @@ function CompareView() {
 }
 
 // ═══════════════════════════════════════════
-// Admin Add/Edit Form
-// ═══════════════════════════════════════════
-function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClose: () => void }) {
-  const [form, setForm] = useState(
-    editProduct
-      ? { ...editProduct, price: String(editProduct.price), salePrice: editProduct.salePrice ? String(editProduct.salePrice) : "" }
-      : { brand: "", modelName: "", cameraType: "Bullet", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "", salePrice: "", description: "", features: "", imageUrl: "", videoUrl: "", sampleVideoUrl: "", irRange: "", fieldOfView: "" }
-  );
-  const [saving, setSaving] = useState(false);
-
-  const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  const handleImageUpload = async (field: "imageUrl" | "videoUrl" | "sampleVideoUrl", file: File) => {
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    if (data.url) { update(field, data.url); toast.success("Uploaded successfully"); }
-    else toast.error("Upload failed");
-  };
-
-  const handleSubmit = async () => {
-    if (!form.brand || !form.modelName || !form.price) { toast.error("Brand, Model, and Price are required"); return; }
-    setSaving(true);
-    try {
-      const url = editProduct ? `/api/products/${editProduct.id}` : "/api/products";
-      const method = editProduct ? "PUT" : "POST";
-      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
-      const data = await res.json();
-      if (data.success) {
-        toast.success(editProduct ? "Product updated!" : "Product added!");
-        onClose();
-      } else toast.error(data.error || "Failed");
-    } catch { toast.error("Network error"); }
-    setSaving(false);
-  };
-
-  const handleDelete = async () => {
-    if (!editProduct) return;
-    if (!confirm("Delete this product?")) return;
-    const res = await fetch(`/api/products/${editProduct.id}`, { method: "DELETE" });
-    const data = await res.json();
-    if (data.success) { toast.success("Deleted"); onClose(); }
-    else toast.error("Failed to delete");
-  };
-
-  return (
-    <div className="space-y-4 max-h-[85vh] overflow-y-auto pr-2">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2"><Label>Brand *</Label><Input value={form.brand} onChange={(e) => update("brand", e.target.value)} placeholder="Hikvision / Dahua" /></div>
-        <div className="space-y-2"><Label>Model Number *</Label><Input value={form.modelName} onChange={(e) => update("modelName", e.target.value)} placeholder="DS-2CE56D0T-IRP" /></div>
-        <div className="space-y-2"><Label>Camera Type</Label>
-          <Select value={form.cameraType} onValueChange={(v) => update("cameraType", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Dome">Dome</SelectItem><SelectItem value="Bullet">Bullet</SelectItem><SelectItem value="WiFi">WiFi</SelectItem><SelectItem value="PTZ">PTZ</SelectItem><SelectItem value="4G">4G</SelectItem><SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2"><Label>Resolution</Label>
-          <Select value={form.resolution} onValueChange={(v) => update("resolution", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="1MP">1MP (720p)</SelectItem><SelectItem value="2MP">2MP (1080p)</SelectItem><SelectItem value="4MP">4MP (1440p)</SelectItem><SelectItem value="5MP">5MP</SelectItem><SelectItem value="4K">4K (8MP)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2"><Label>Technology</Label>
-          <Select value={form.technology} onValueChange={(v) => update("technology", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="HD-TVI">HD-TVI (Hikvision)</SelectItem><SelectItem value="HD-CVI">HD-CVI (Dahua)</SelectItem><SelectItem value="IP">IP</SelectItem><SelectItem value="WiFi IP">WiFi IP</SelectItem><SelectItem value="4G LTE">4G LTE</SelectItem><SelectItem value="AHD">AHD</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2"><Label>Compatible Recorder</Label>
-          <Select value={form.recorderType} onValueChange={(v) => update("recorderType", v)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem><SelectItem value="Cloud/NVR">Cloud / NVR</SelectItem><SelectItem value="Cloud/SD Card">Cloud / SD Card</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2"><Label>Price (INR) *</Label><Input type="number" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="1500" /></div>
-        <div className="space-y-2"><Label>Sale Price (INR)</Label><Input type="number" value={form.salePrice} onChange={(e) => update("salePrice", e.target.value)} placeholder="1299 (optional)" /></div>
-        <div className="space-y-2"><Label>Night Vision</Label><Input value={form.nightVision} onChange={(e) => update("nightVision", e.target.value)} placeholder="IR (20m) / ColorVu / Starlight" /></div>
-        <div className="space-y-2"><Label>Weather Rating</Label><Input value={form.weatherRating} onChange={(e) => update("weatherRating", e.target.value)} placeholder="IP67 / IP66 / Indoor" /></div>
-        <div className="space-y-2"><Label>IR Range</Label><Input value={form.irRange} onChange={(e) => update("irRange", e.target.value)} placeholder="20m / 50m" /></div>
-        <div className="space-y-2"><Label>Field of View</Label><Input value={form.fieldOfView} onChange={(e) => update("fieldOfView", e.target.value)} placeholder="90° / 360°" /></div>
-      </div>
-      <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Product description..." /></div>
-      <div className="space-y-2"><Label>Features (comma separated)</Label><Textarea value={form.features} onChange={(e) => update("features", e.target.value)} rows={2} placeholder="2MP, IR 20m, IP67, Smart IR" /></div>
-      <div className="space-y-2">
-        <Label>Product Image</Label>
-        <div className="flex gap-2 items-center">
-          <Input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} placeholder="/uploads/image.jpg or URL" />
-          <label className="cursor-pointer"><Input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleImageUpload("imageUrl", e.target.files[0])} /><Button variant="outline" size="sm" asChild><span>Upload</span></Button></label>
-        </div>
-        {form.imageUrl && <img src={form.imageUrl} alt="preview" className="w-24 h-24 object-contain rounded border bg-muted mt-1" />}
-      </div>
-      <div className="space-y-2">
-        <Label>Sample Video URL (YouTube embed)</Label>
-        <Input value={form.sampleVideoUrl} onChange={(e) => update("sampleVideoUrl", e.target.value)} placeholder="https://www.youtube.com/embed/..." />
-      </div>
-      <div className="flex gap-2 pt-2">
-        <Button onClick={handleSubmit} disabled={saving} className="flex-1">{saving ? "Saving..." : editProduct ? "Update Product" : "Add Product"}</Button>
-        {editProduct && <Button variant="destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>}
-        <Button variant="outline" onClick={onClose}>Cancel</Button>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// Admin Panel
-// ═══════════════════════════════════════════
-function AdminPanel({ onBack }: { onBack: () => void }) {
-  const { products, setProducts } = useStore();
-  const [editing, setEditing] = useState<CctvProduct | undefined>();
-  const [adding, setAdding] = useState(false);
-
-  const refresh = useCallback(async () => {
-    const res = await fetch("/api/products");
-    const data = await res.json();
-    if (data.success) setProducts(data.data);
-  }, [setProducts]);
-
-  const handleDialogClose = () => { setEditing(undefined); setAdding(false); refresh(); };
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold">Product Management</h2>
-        <div className="flex gap-2">
-          <Dialog open={adding} onOpenChange={setAdding}>
-            <DialogTrigger asChild><Button size="sm" className="gap-1"><Plus className="h-4 w-4" /> Add Product</Button></DialogTrigger>
-            <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add New Product</DialogTitle></DialogHeader><AdminForm onClose={handleDialogClose} /></DialogContent>
-          </Dialog>
-          <Button variant="outline" size="sm" onClick={onBack}>Back to Catalog</Button>
-        </div>
-      </div>
-      <div className="border rounded-lg overflow-hidden">
-        <div className="max-h-[70vh] overflow-y-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-muted sticky top-0">
-              <tr>
-                <th className="p-3 text-left">Image</th>
-                <th className="p-3 text-left">Brand</th>
-                <th className="p-3 text-left">Model</th>
-                <th className="p-3 text-left">Type</th>
-                <th className="p-3 text-right">Price</th>
-                <th className="p-3 text-right">Sale</th>
-                <th className="p-3 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p) => (
-                <tr key={p.id} className="border-t hover:bg-muted/50">
-                  <td className="p-2"><img src={p.imageUrl} alt="" className="w-12 h-10 object-contain bg-muted rounded" onError={(e) => { (e.target as HTMLImageElement).src = "/logo.svg"; }} /></td>
-                  <td className="p-3 font-medium">{p.brand}</td>
-                  <td className="p-3">{p.modelName}</td>
-                  <td className="p-3"><Badge variant="secondary" className="text-xs">{p.cameraType}</Badge></td>
-                  <td className="p-3 text-right">{fmt(p.price)}</td>
-                  <td className="p-3 text-right text-emerald-600">{p.salePrice ? fmt(p.salePrice) : "-"}</td>
-                  <td className="p-3 text-center">
-                    <Dialog open={editing?.id === p.id} onOpenChange={(open) => { if (open) setEditing(p); else setEditing(undefined); }}>
-                      <DialogTrigger asChild><Button variant="ghost" size="sm">Edit</Button></DialogTrigger>
-                      <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Edit Product</DialogTitle></DialogHeader><AdminForm editProduct={p} onClose={handleDialogClose} /></DialogContent>
-                    </Dialog>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
 // Filter Sidebar
 // ═══════════════════════════════════════════
+
 function FilterSidebar() {
   const { filters, setFilter, products, compareList, setView } = useStore();
   const brands = [...new Set(products.map((p) => p.brand))].sort();
@@ -512,8 +272,9 @@ function FilterSidebar() {
 // ═══════════════════════════════════════════
 // MAIN PAGE
 // ═══════════════════════════════════════════
+
 export default function Home() {
-  const { view, products, filters, setProducts, loading, setLoading, setView, setLearnSection } = useStore();
+  const { view, products, filters, setFilter, setProducts, loading, setLoading, setView, setLearnSection, setSelectedProduct } = useStore();
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -546,13 +307,13 @@ export default function Home() {
               <span className="font-bold text-lg hidden sm:inline">CCTV Catalog</span>
             </button>
             <div className="flex items-center gap-2">
-              <Tabs value={view} onValueChange={(v) => { if (v === 'learn') setLearnSection('overview'); setView(v as typeof view); }}>
+              <Tabs value={view} onValueChange={(v) => { if (v === "learn") setLearnSection("overview"); setView(v as typeof view); }}>
                 <TabsList className="h-9">
                   <TabsTrigger value="builder" className="text-xs px-3 gap-1"><Wrench className="h-3.5 w-3.5 hidden sm:inline" />Builder</TabsTrigger>
                   <TabsTrigger value="catalog" className="text-xs px-3 gap-1"><Camera className="h-3.5 w-3.5 hidden sm:inline" />Catalog</TabsTrigger>
                   <TabsTrigger value="learn" className="text-xs px-3 gap-1"><GraduationCap className="h-3.5 w-3.5 hidden sm:inline" />Learn</TabsTrigger>
                   <TabsTrigger value="compare" className="text-xs px-3 gap-1"><GitCompareArrows className="h-3.5 w-3.5 hidden sm:inline" />Compare</TabsTrigger>
-                  <TabsTrigger value="admin" className="text-xs px-3 gap-1"><Plus className="h-3.5 w-3.5 hidden sm:inline" />Admin</TabsTrigger>
+                  <TabsTrigger value="admin" className="text-xs px-3 gap-1"><Star className="h-3.5 w-3.5 hidden sm:inline" />Admin</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -589,7 +350,7 @@ export default function Home() {
                 { icon: <DollarSign className="h-5 w-5" />, label: "Under 5K", value: products.filter((p) => p.price < 5000).length, color: "text-sky-600" },
               ].map((s) => (
                 <Card key={s.label} className="flex items-center gap-3 p-3">
-                  <div className={`${s.color}`}>{s.icon}</div>
+                  <div className={cn(s.color)}>{s.icon}</div>
                   <div><p className="text-2xl font-bold">{s.value}</p><p className="text-xs text-muted-foreground">{s.label}</p></div>
                 </Card>
               ))}

@@ -1,0 +1,1022 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState } from "react";
+     4→     4→import { useStore } from "@/store/cctv-store";
+     5→     5→import { cn } from "@/lib/utils";
+     6→     6→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     7→     7→import { Badge } from "@/components/ui/badge";
+     8→     8→import { Button } from "@/components/ui/button";
+     9→     9→import { Separator } from "@/components/ui/separator";
+    10→    10→import {
+    11→    11→  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+    12→    12→} from "@/components/ui/accordion";
+    13→    13→import {
+    14→    14→  Camera, Wifi, Radio, Signal, MonitorPlay, ChevronRight,
+    15→    15→  BookOpen, GraduationCap, ShieldCheck, Smartphone, DollarSign,
+    16→    16→  Zap, AlertTriangle, CheckCircle2, XCircle, Info, ArrowRight,
+    17→    17→  Sun, Moon, Droplets, Cable, HardDrive, Cloud, Settings,
+    18→    18→  Eye, ScanLine, RotateCcw, Move, Battery, Router,
+    19→    19→  HelpCircle, Lightbulb, Wrench, Users, Building2, Home,
+    20→    20→  TreePine, Video, MonitorSpeaker, Cpu, Tag,
+    21→    21→} from "lucide-react";
+    22→    22→
+    23→    23→// ═══════════════════════════════════════════════════════════════
+    24→    24→// LEARNING DATA
+    25→    25→// ═══════════════════════════════════════════════════════════════
+    26→    26→
+    27→    27→const cameraTypesData = [
+    28→    28→  {
+    29→    29→    id: "dome",
+    30→    30→    name: "Dome Camera",
+    31→    31→    icon: <Camera className="h-6 w-6" />,
+    32→    32→    color: "text-emerald-600",
+    33→    33→    bg: "bg-emerald-50",
+    34→    34→    border: "border-emerald-200",
+    35→    35→    accent: "bg-emerald-600",
+    36→    36→    image: "/cctv-guide-images/dome_camera.png",
+    37→    37→    tagline: "Indoor champion with a vandal-proof dome cover",
+    38→    38→    description: `Dome cameras get their name from their dome-shaped housing. They are the most popular choice for indoor installations like homes, offices, shops, and restaurants. The dome cover makes it very difficult for anyone to tell which direction the camera lens is pointing, which acts as a natural deterrent. Most dome cameras are designed for ceiling mounting and offer a clean, professional appearance that blends into any interior decor. They are available in both fixed and PTZ (pan-tilt-zoom) versions, with resolutions ranging from 2MP (1080p) to 4K (8MP). Many models now come with built-in infrared for night vision up to 20-30 meters, and some premium models feature ColorVu technology that can record in full color even in near-total darkness.`,
+    39→    39→    bestFor: ["Indoor home security", "Office & retail shops", "Reception areas & lobbies", "Restaurants & hotels", "Schools & hospitals"],
+    40→    40→    pros: ["Vandal-resistant dome cover", "Direction of lens is hidden", "Clean professional look", "Easy ceiling mount", "Wide field of view (80-110°)"],
+    41→    41→    cons: ["Limited outdoor use (non-weatherproof models)", "Shorter IR range than bullet cameras", "Harder to aim precisely after installation"],
+    42→    42→    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 20-30m or ColorVu", weatherRating: "IP66 (outdoor) / Indoor", fieldOfView: "80° - 110°", price: "₹1,200 - ₹6,000" },
+    43→    43→  },
+    44→    44→  {
+    45→    45→    id: "bullet",
+    46→    46→    name: "Bullet Camera",
+    47→    47→    icon: <Camera className="h-6 w-6" />,
+    48→    48→    color: "text-sky-600",
+    49→    49→    bg: "bg-sky-50",
+    50→    50→    border: "border-sky-200",
+    51→    51→    accent: "bg-sky-600",
+    52→    52→    image: "/cctv-guide-images/bullet_camera.png",
+    53→    53→    tagline: "Long-range outdoor performer with powerful night vision",
+    54→    54→    description: `Bullet cameras are cylindrical in shape and are designed primarily for outdoor surveillance. They are mounted on walls or ceilings using a bracket and their elongated body houses a larger lens assembly that provides superior long-range vision. This makes them ideal for monitoring driveways, parking lots, perimeters, and large open areas. Bullet cameras typically have a longer infrared (IR) range compared to dome cameras — often reaching 40-80 meters — making them excellent for nighttime surveillance. Their visible, deterrent appearance also makes them great for areas where you want potential intruders to clearly see that the premises are under surveillance. They are available with HD-TVI, HD-CVI, and IP technologies from brands like Hikvision and Dahua.`,
+    55→    55→    bestFor: ["Outdoor perimeter monitoring", "Driveways & gate entry", "Parking lots & garages", "Long corridors & hallways", "Warehouses & factories"],
+    56→    56→    pros: ["Long IR night vision range (40-80m)", "Visible deterrent effect", "Weatherproof (IP66/IP67)", "Easy to install and aim", "Longer detection distance"],
+    57→    57→    cons: ["More noticeable / less discreet", "Can be tampered with (vandalism risk)", "Not ideal for tight indoor spaces", "Larger physical size"],
+    58→    58→    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 40-80m or ColorVu", weatherRating: "IP66 / IP67", fieldOfView: "60° - 90°", price: "₹1,000 - ₹8,000" },
+    59→    59→  },
+    60→    60→  {
+    61→    61→    id: "wifi",
+    62→    62→    name: "WiFi Camera",
+    63→    63→    icon: <Wifi className="h-6 w-6" />,
+    64→    64→    color: "text-violet-600",
+    65→    65→    bg: "bg-violet-50",
+    66→    66→    border: "border-violet-200",
+    67→    67→    accent: "bg-violet-600",
+    68→    68→    image: "/cctv-guide-images/wifi_camera.png",
+    69→    69→    tagline: "No cables needed — plug, connect WiFi, and watch from anywhere",
+    70→    70→    description: `WiFi cameras (also called wireless IP cameras) connect to your home or office WiFi network instead of requiring a cable run back to a DVR/NVR. This makes them incredibly easy to install — you just need a power outlet near the camera. Most WiFi cameras store footage on a MicroSD card and/or upload to cloud storage, so you don't even need a separate DVR or NVR. They are perfect for renters, apartments, and small setups where running cables through walls is not possible. Popular models like Hikvision's Ezviz series and Dahua's Imou series come with dedicated mobile apps for live viewing, motion detection alerts, and two-way audio. Keep in mind that WiFi cameras require a strong, stable WiFi signal at the camera location for reliable performance.`,
+    71→    71→    bestFor: ["Apartments & rental homes", "Quick DIY installation", "Baby monitoring & pet watching", "Small shops & offices", "Indoor spaces where cabling is hard"],
+    72→    72→    pros: ["No cable running needed (only power)", "Easy DIY installation", "Works with MicroSD + Cloud storage", "Mobile app with instant alerts", "Two-way audio communication"],
+    73→    73→    cons: ["Depends on WiFi signal strength", "Limited range from router", "May have lag/delay on live view", "Higher bandwidth consumption", "Less reliable than wired systems"],
+    74→    74→    specs: { resolution: "2MP / 3MP / 4MP", nightVision: "IR 10-15m or ColorVu", weatherRating: "IP65 (outdoor) / Indoor", fieldOfView: "90° - 130°", price: "₹1,500 - ₹7,000" },
+    75→    75→  },
+    76→    76→  {
+    77→    77→    id: "ptz",
+    78→    78→    name: "PTZ Camera",
+    79→    79→    icon: <Radio className="h-6 w-6" />,
+    80→    80→    color: "text-amber-600",
+    81→    81→    bg: "bg-amber-50",
+    82→    82→    border: "border-amber-200",
+    83→    83→    accent: "bg-amber-600",
+    84→    84→    image: "/cctv-guide-images/ptz_camera.png",
+    85→    85→    tagline: "One camera that can pan, tilt, and zoom to cover a huge area",
+    86→    86→    description: `PTZ stands for Pan-Tilt-Zoom. These cameras can rotate horizontally (pan up to 360°), move vertically (tilt up to 90° to 180°), and optically zoom in on distant objects (up to 20x, 30x, or even 40x magnification). A single PTZ camera can replace 4-8 fixed cameras because it can monitor a very large area and zoom in on specific points of interest. They can be controlled manually via a DVR/NVR joystick, mobile app, or set to auto-tour/patrol a predefined pattern automatically. PTZ cameras also support auto-tracking, where the camera automatically follows moving objects like people or vehicles. They are commonly used in large premises like shopping malls, parking lots, airports, warehouses, and large factory floors. They are more expensive than fixed cameras but offer unmatched flexibility and coverage.`,
+    87→    87→    bestFor: ["Large open areas", "Parking lots & malls", "Warehouses & factories", "Traffic monitoring", "Any area needing 360° coverage"],
+    88→    88→    pros: ["360° pan + vertical tilt + optical zoom", "One camera covers a huge area", "Auto-tracking moving objects", "Remote controlled via app/Joystick", "Auto-tour / patrol mode"],
+    89→    89→    cons: ["More expensive (₹8,000 - ₹50,000+)", "Complex installation and setup", "Only records where it's pointing", "Moving parts can wear out", "Requires skilled operator for best use"],
+    90→    90→    specs: { resolution: "2MP / 4MP / 8MP", nightVision: "IR 100-200m", weatherRating: "IP66 / IP67", fieldOfView: "360° pan, 90° tilt, 20-40x zoom", price: "₹8,000 - ₹50,000+" },
+    91→    91→  },
+    92→    92→  {
+    93→    93→    id: "4g",
+    94→    94→    name: "4G LTE / Solar Camera",
+    95→    95→    icon: <Signal className="h-6 w-6" />,
+    96→    96→    color: "text-rose-600",
+    97→    97→    bg: "bg-rose-50",
+    98→    98→    border: "border-rose-200",
+    99→    99→    accent: "bg-rose-600",
+   100→   100→    image: "/cctv-guide-images/4g_camera.png",
+   101→   101→    tagline: "Works anywhere with a 4G signal — no WiFi, no power needed",
+   102→   102→    description: `4G LTE cameras are the ultimate solution for locations where neither WiFi nor power cables are available. They connect to the mobile 4G network using a SIM card (just like your phone) and many models come with a built-in solar panel that charges the internal battery during the day. This means you can install them literally anywhere — farm fields, construction sites, remote gates, forest areas, highway projects, or any off-grid location. The camera sends live video and motion alerts directly to your phone via the 4G network. You need an active 4G SIM card with a data plan (typically 30-50GB/month). Popular brands include Reolink, Ebitcam, and Hikvision's 4G series. The main ongoing cost is the monthly 4G data recharge. Battery/solar models can run 24/7 with just a few hours of sunlight per day.`,
+   103→   103→    bestFor: ["Farm fields & agriculture", "Construction sites", "Remote gates & entry points", "Highway & road projects", "Any place without WiFi/electricity"],
+   104→   104→    pros: ["Works without WiFi or electricity", "Solar powered (no electricity bill)", "Install anywhere with 4G signal", "Instant mobile alerts via 4G", "Truly wireless installation"],
+   105→   105→    cons: ["Requires 4G SIM + monthly data plan", "Higher initial cost", "Depends on 4G network coverage", "Limited bandwidth may reduce video quality", "Battery degrades over 2-3 years"],
+   106→   106→    specs: { resolution: "2MP / 4MP", nightVision: "IR 15-30m + Color", weatherRating: "IP66 / IP67", fieldOfView: "100° - 130°", price: "₹5,000 - ₹20,000" },
+   107→   107→  },
+   108→   108→];
+   109→   109→
+   110→   110→const dvrNvrData = {
+   111→   111→  dvr: {
+   112→   112→    name: "DVR (Digital Video Recorder)",
+   113→   113→    icon: <HardDrive className="h-5 w-5" />,
+   114→   114→    description: `A DVR records video from analog cameras connected via coaxial cable (the same type of cable used for TV connections). DVRs are used with HD-TVI (Hikvision), HD-CVI (Dahua), or AHD technology cameras. The coaxial cable carries both video signal and power (when using a power-over-coax setup), which simplifies wiring. DVRs are the most cost-effective solution for standard home and small business security. They come in 4-channel, 8-channel, and 16-channel versions, meaning you can connect 4, 8, or 16 cameras respectively. Setup involves running a coaxial cable from each camera back to the DVR and connecting each camera to power.`,
+   115→   115→    technology: "HD-TVI / HD-CVI / AHD",
+   116→   116→    cable: "Coaxial (RG59 / RG6) + Power cable",
+   117→   117→    maxResolution: "8MP (4K) on supported models",
+   118→   118→    channels: "4 / 8 / 16 channels",
+   119→   119→    brands: "Hikvision (HD-TVI), Dahua (HD-CVI), CP Plus",
+   120→   120→    priceRange: "₹2,500 - ₹15,000",
+   121→   121→    compatibility: "CRITICAL: Hikvision HD-TVI cameras work with Hikvision DVRs. Dahua HD-CVI cameras work with Dahua DVRs. They are NOT cross-compatible in most cases. Always match the camera technology with the DVR brand.",
+   122→   122→  },
+   123→   123→  nvr: {
+   124→   124→    name: "NVR (Network Video Recorder)",
+   125→   125→    icon: <Cloud className="h-5 w-5" />,
+   126→   126→    description: `An NVR records video from IP (network) cameras connected via Ethernet cable (Cat5e/Cat6). NVRs are the modern standard for high-resolution surveillance. They support Power over Ethernet (PoE), meaning a single Ethernet cable carries both video data and power to each camera — no separate power cable needed. NVRs support higher resolutions (up to 4K and beyond), offer better video compression (H.265+), and provide more advanced features like smart motion detection, face detection, and line-crossing alerts. They are ideal for larger installations, offices, and anyone who wants the best image quality and smartest features. The main drawback is that Ethernet cable runs are limited to 100 meters per segment (can be extended with switches).`,
+   127→   127→    technology: "IP (Internet Protocol)",
+   128→   128→    cable: "Ethernet (Cat5e / Cat6) with PoE",
+   129→   129→    maxResolution: "4K (8MP) and higher",
+   130→   130→    channels: "4 / 8 / 16 / 32 channels",
+   131→   131→    brands: "Hikvision, Dahua, Reolink, Uniview",
+   132→   132→    priceRange: "₹4,000 - ₹25,000",
+   133→   133→    compatibility: "NVRs are generally universal — most IP cameras work with most NVRs via ONVIF protocol. However, some advanced smart features (like face detection) may only work with same-brand camera+NVR combos.",
+   134→   134→  },
+   135→   135→};
+   136→   136→
+   137→   137→const mobileAppsData = [
+   138→   138→  {
+   139→   139→    brand: "Hikvision",
+   140→   140→    apps: [
+   141→   141→      { name: "iVMS-4500", use: "For DVR/NVR connected cameras", color: "bg-orange-50 text-orange-700 border-orange-200" },
+   142→   142→      { name: "Ezviz", use: "For WiFi/Cloud cameras (Ezviz brand by Hikvision)", color: "bg-blue-50 text-blue-700 border-blue-200" },
+   143→   143→      { name: "Hik-Connect", use: "For newer Hikvision IP cameras with cloud P2P", color: "bg-sky-50 text-sky-700 border-sky-200" },
+   144→   144→    ],
+   145→   145→    steps: [
+   146→   146→      "Download the correct app from Google Play Store or Apple App Store",
+   147→   147→      "Create a free account / sign up with your email and phone number",
+   148→   148→      "On your DVR/NVR, go to Menu → Network → Platform Access → Enable Hik-Connect",
+   149→   149→      "Scan the QR code displayed on your DVR/NVR monitor using the app",
+   150→   150→      "The camera will appear in your app — tap to view live video",
+   151→   151→      "Enable Push Notifications in app settings to get motion alerts on your phone",
+   152→   152→    ],
+   153→   153→  },
+   154→   154→  {
+   155→   155→    brand: "Dahua",
+   156→   156→    apps: [
+   157→   157→      { name: "DMSS", use: "For DVR/NVR and IP cameras", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+   158→   158→      { name: "Imou Life", use: "For WiFi/Cloud cameras (Imou brand by Dahua)", color: "bg-purple-50 text-purple-700 border-purple-200" },
+   159→   159→    ],
+   160→   160→    steps: [
+   161→   161→      "Download DMSS or Imou Life from Google Play Store or Apple App Store",
+   162→   162→      "Register a new account with your email address",
+   163→   163→      "On your DVR/NVR, go to Main Menu → System → Network → P2P → Enable",
+   164→   164→      "Note the Device Serial Number and verification code shown on screen",
+   165→   165→      "In the app, tap '+' → 'Scan QR Code' or enter serial number manually",
+   166→   166→      "Enter the verification code when prompted — your device will appear",
+   167→   167→      "Tap the device to view live streams from all connected cameras",
+   168→   168→    ],
+   169→   169→  },
+   170→   170→];
+   171→   171→
+   172→   172→const budgetGuides = [
+   173→   173→  {
+   174→   174→    range: "Under ₹5,000",
+   175→   175→    label: "Basic Starter Kit",
+   176→   176→    color: "bg-emerald-600",
+   177→   177→    lightColor: "bg-emerald-50",
+   178→   178→    textColor: "text-emerald-700",
+   179→   179→    borderColor: "border-emerald-200",
+   180→   180→    icon: <Home className="h-5 w-5" />,
+   181→   181→    description: "Perfect for small homes, single rooms, or shop counters. You get 1-2 basic cameras with a small DVR or WiFi camera setup. This is the most affordable entry point into CCTV security.",
+   182→   182→    recommended: [
+   183→   183→      "1x Dome or Bullet camera (2MP, HD-TVI) — ₹1,000 - ₹1,500",
+   184→   184→      "1x 4-channel DVR (Hikvision/Dahua) — ₹2,500 - ₹3,500",
+   185→   185→      "1x 500GB HDD (for recording) — ₹1,200 - ₹1,500",
+   186→   186→      "Cables & power supply — ₹500 - ₹800",
+   187→   187→    ],
+   188→   188→    totalCost: "₹5,200 - ₹7,300",
+   189→   189→    alternative: "1x WiFi camera with MicroSD card (no DVR needed) — ₹1,500 - ₹3,500",
+   190→   190→  },
+   191→   191→  {
+   192→   192→    range: "₹5,000 - ₹10,000",
+   193→   193→    label: "Home Security Pack",
+   194→   194→    color: "bg-sky-600",
+   195→   195→    lightColor: "bg-sky-50",
+   196→   196→    textColor: "text-sky-700",
+   197→   197→    borderColor: "border-sky-200",
+   198→   198→    icon: <Building2 className="h-5 w-5" />,
+   199→   199→    description: "Ideal for a complete home setup covering 2-4 cameras. This covers all entry points, parking area, and main living areas. You get better resolution, more storage, and night vision capabilities.",
+   200→   200→    recommended: [
+   201→   201→      "2-4x Dome/Bullet cameras (2-4MP) — ₹2,000 - ₹5,000",
+   202→   202→      "1x 4/8-channel DVR or NVR — ₹3,000 - ₹5,000",
+   203→   203→      "1x 1TB HDD — ₹2,000 - ₹2,500",
+   204→   204→      "Cables, connectors & power supply — ₹1,000 - ₹1,500",
+   205→   205→    ],
+   206→   206→    totalCost: "₹8,000 - ₹14,000",
+   207→   207→    alternative: "2x WiFi cameras + 1x PTZ for large room — ₹6,000 - ₹12,000",
+   208→   208→  },
+   209→   209→  {
+   210→   210→    range: "₹10,000 - ₹25,000",
+   211→   211→    label: "Premium Setup",
+   212→   212→    color: "bg-amber-600",
+   213→   213→    lightColor: "bg-amber-50",
+   214→   214→    textColor: "text-amber-700",
+   215→   215→    borderColor: "border-amber-200",
+   216→   216→    icon: <ShieldCheck className="h-5 w-5" />,
+   217→   217→    description: "Professional-grade setup for large homes, offices, or small businesses. Features 4-8 cameras with 4MP/5MP resolution, ColorVu night vision, smart motion detection, and remote viewing on mobile.",
+   218→   218→    recommended: [
+   219→   219→      "4-8x Dome/Bullet cameras (4-5MP, ColorVu) — ₹6,000 - ₹15,000",
+   220→   220→      "1x 8-channel NVR with PoE — ₹5,000 - ₹8,000",
+   221→   221→      "1x 2TB HDD — ₹3,500 - ₹4,500",
+   222→   222→      "Cat6 cables, PoE injectors, accessories — ₹2,000 - ₹3,000",
+   223→   223→    ],
+   224→   224→    totalCost: "₹16,500 - ₹30,500",
+   225→   225→    alternative: "Mix of 4x IP cameras + 1x PTZ + NVR — ₹18,000 - ₹28,000",
+   226→   226→  },
+   227→   227→  {
+   228→   228→    range: "₹25,000+",
+   229→   229→    label: "Enterprise / Commercial",
+   230→   230→    color: "bg-rose-600",
+   231→   231→    lightColor: "bg-rose-50",
+   232→   232→    textColor: "text-rose-700",
+   233→   233→    borderColor: "border-rose-200",
+   234→   234→    icon: <Building2 className="h-5 w-5" />,
+   235→   235→    description: "Complete commercial solution for malls, warehouses, factories, multi-story buildings. Includes 8-16+ cameras with 4K resolution, AI-powered analytics, PTZ cameras, and professional installation.",
+   236→   236→    recommended: [
+   237→   237→      "8-16x IP cameras (4-8MP) with AI features — ₹15,000 - ₹40,000",
+   238→   238→      "1-2x PTZ cameras (20x zoom) — ₹10,000 - ₹30,000",
+   239→   239→      "16-channel NVR with PoE — ₹8,000 - ₹15,000",
+   240→   240→      "4TB+ HDD or NAS storage — ₹5,000 - ₹10,000",
+   241→   241→      "Structured cabling, UPS backup, installation — ₹10,000 - ₹20,000",
+   242→   242→    ],
+   243→   243→    totalCost: "₹48,000 - ₹1,15,000",
+   244→   244→    alternative: "Complete with remote monitoring service — ₹50,000 - ₹2,00,000",
+   245→   245→  },
+   246→   246→];
+   247→   247→
+   248→   248→const faqData = [
+   249→   249→  {
+   250→   250→    q: "Can I use a Hikvision camera with a Dahua DVR?",
+   251→   251→    a: "In most cases, NO. Hikvision cameras use HD-TVI technology and Dahua DVRs use HD-CVI technology — they are different signal standards. A Hikvision HD-TVI camera will NOT work with a Dahua HD-CVI DVR, and vice versa. However, if both the camera and DVR are IP-based (network cameras + NVR), they usually work together via the ONVIF protocol. Always check compatibility before buying."
+   252→   252→  },
+   253→   253→  {
+   254→   254→    q: "How much HDD storage do I need?",
+   255→   255→    a: "For a 2MP (1080p) camera recording 24/7, you need approximately 20-30GB per day per camera. So for 4 cameras over 30 days: 4 × 25GB × 30 = 3,000GB (3TB). With H.265+ compression, this drops to about 1.5-2TB. For 4MP cameras, double these numbers. If you use motion-only recording instead of 24/7, storage needs drop by 40-60%."
+   256→   256→  },
+   257→   257→  {
+   258→   258→    q: "Can I view my CCTV cameras on my mobile phone?",
+   259→   259→    a: "Yes! Every modern DVR, NVR, and WiFi camera supports mobile viewing. For Hikvision systems, use iVMS-4500 or Hik-Connect app. For Dahua systems, use DMSS app. For WiFi cameras, use the brand's dedicated app (Ezviz, Imou Life, etc.). You just need an internet connection on the DVR/NVR and your phone. The setup usually takes 5-10 minutes."
+   260→   260→  },
+   261→   261→  {
+   262→   262→    q: "What is the difference between IR and ColorVu night vision?",
+   263→   263→    a: "IR (Infrared) night vision records in black and white in complete darkness. It's reliable and has longer range (20-80m). ColorVu (Hikvision) or Full-Color (Dahua) uses a large aperture lens and advanced sensor to record in full color even in very low light. ColorVu provides more detail (you can see clothing color, car color) but has shorter range. Some premium cameras offer both modes and switch automatically."
+   264→   264→  },
+   265→   265→  {
+   266→   266→    q: "Do I need internet for CCTV to work?",
+   267→   267→    a: "No! Your CCTV system works perfectly without internet. The cameras record to the DVR/NVR hard drive directly through cables. Internet is only needed for remote mobile viewing when you're away from home, and for cloud backup. Without internet, you can still watch live and recorded footage on a monitor connected directly to the DVR/NVR."
+   268→   268→  },
+   269→   269→  {
+   270→   270→    q: "How long does CCTV footage get stored?",
+   271→   271→    a: "It depends on your HDD size and recording settings. With motion-only recording on a 1TB HDD with 4 cameras (2MP): approximately 15-20 days. With 24/7 recording: approximately 7-10 days. With 4 cameras (4MP) on 2TB: approximately 10-15 days. You can extend storage by using motion recording, lower frame rates, or adding more HDDs."
+   272→   272→  },
+   273→   273→];
+   274→   274→
+   275→   275→// ═══════════════════════════════════════════════════════════════
+   276→   276→// LEARNING NAVIGATION
+   277→   277→// ═══════════════════════════════════════════════════════════════
+   278→   278→
+   279→   279→const learnSections = [
+   280→   280→  { id: "overview", label: "Overview", icon: <BookOpen className="h-4 w-4" /> },
+   281→   281→  { id: "camera-types", label: "Camera Types", icon: <Camera className="h-4 w-4" /> },
+   282→   282→  { id: "dvr-nvr", label: "DVR vs NVR", icon: <MonitorPlay className="h-4 w-4" /> },
+   283→   283→  { id: "compatibility", label: "Compatibility", icon: <Cpu className="h-4 w-4" /> },
+   284→   284→  { id: "mobile-setup", label: "Mobile Viewing", icon: <Smartphone className="h-4 w-4" /> },
+   285→   285→  { id: "budget", label: "Budget Guide", icon: <DollarSign className="h-4 w-4" /> },
+   286→   286→  { id: "installation", label: "Installation", icon: <Wrench className="h-4 w-4" /> },
+   287→   287→  { id: "faq", label: "FAQ", icon: <HelpCircle className="h-4 w-4" /> },
+   288→   288→];
+   289→   289→
+   290→   290→// ═══════════════════════════════════════════════════════════════
+   291→   291→// OVERVIEW SECTION
+   292→   292→// ═══════════════════════════════════════════════════════════════
+   293→   293→
+   294→   294→function OverviewSection() {
+   295→   295→  const { setLearnSection } = useStore();
+   296→   296→  return (
+   297→   297→    <div className="space-y-8">
+   298→   298→      {/* Hero */}
+   299→   299→      <div className="text-center max-w-3xl mx-auto space-y-4">
+   300→   300→        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium border border-emerald-200">
+   301→   301→          <GraduationCap className="h-4 w-4" /> Complete CCTV Learning Guide
+   302→   302→        </div>
+   303→   303→        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+   304→   304→          Learn CCTV Security Systems <span className="text-emerald-600">Step by Step</span>
+   305→   305→        </h1>
+   306→   306→        <p className="text-muted-foreground text-lg leading-relaxed">
+   307→   307→          This guide will teach you everything about CCTV cameras — from understanding different camera types to choosing the right setup for your budget. No technical background needed. Click on any topic below to start learning.
+   308→   308→        </p>
+   309→   309→      </div>
+   310→   310→
+   311→   311→      {/* Quick Start Cards */}
+   312→   312→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   313→   313→        {[
+   314→   314→          { section: "camera-types", title: "Camera Types", desc: "Learn about Dome, Bullet, WiFi, PTZ, and 4G cameras — what they are, where to use them, and their pros & cons.", icon: <Camera className="h-6 w-6 text-emerald-600" />, bg: "bg-emerald-50", border: "border-emerald-200" },
+   315→   315→          { section: "dvr-nvr", title: "DVR vs NVR", desc: "Understand the difference between DVR and NVR recording systems, which cable they use, and which one is right for you.", icon: <MonitorPlay className="h-6 w-6 text-sky-600" />, bg: "bg-sky-50", border: "border-sky-200" },
+   316→   316→          { section: "compatibility", title: "Brand Compatibility", desc: "Critical knowledge: Why Hikvision and Dahua cameras are NOT cross-compatible and how to choose the right combo.", icon: <Cpu className="h-6 w-6 text-amber-600" />, bg: "bg-amber-50", border: "border-amber-200" },
+   317→   317→          { section: "mobile-setup", title: "Mobile Viewing", desc: "Step-by-step guide to set up your phone to watch live CCTV footage from anywhere in the world.", icon: <Smartphone className="h-6 w-6 text-violet-600" />, bg: "bg-violet-50", border: "border-violet-200" },
+   318→   318→          { section: "budget", title: "Budget Guide", desc: "Find the perfect CCTV setup for your budget — from under ₹5,000 to enterprise-level installations.", icon: <DollarSign className="h-6 w-6 text-rose-600" />, bg: "bg-rose-50", border: "border-rose-200" },
+   319→   319→          { section: "installation", title: "Installation Guide", desc: "Step-by-step installation instructions for wired (DVR/NVR) and wireless (WiFi) camera systems.", icon: <Wrench className="h-6 w-6 text-slate-600" />, bg: "bg-slate-50", border: "border-slate-200" },
+   320→   320→        ].map((card) => (
+   321→   321→          <Card key={card.section} className={cn("cursor-pointer hover:shadow-md transition-shadow border group", card.border)} onClick={() => setLearnSection(card.section)}>
+   322→   322→            <CardContent className="p-5 space-y-3">
+   323→   323→              <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", card.bg)}>{card.icon}</div>
+   324→   324→              <h3 className="font-bold text-lg group-hover:text-emerald-600 transition-colors flex items-center gap-1">{card.title} <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" /></h3>
+   325→   325→              <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+   326→   326→            </CardContent>
+   327→   327→          </Card>
+   328→   328→        ))}
+   329→   329→      </div>
+   330→   330→
+   331→   331→      {/* How CCTV Works - Simple Diagram */}
+   332→   332→      <Card className="border-2">
+   333→   333→        <CardHeader>
+   334→   334→          <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-amber-500" /> How Does a CCTV System Work?</CardTitle>
+   335→   335→        </CardHeader>
+   336→   336→        <CardContent>
+   337→   337→          <p className="text-muted-foreground mb-6">A CCTV system has 3 main parts. Here is how they work together:</p>
+   338→   338→          <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-2">
+   339→   339→            <Card className="border-2 bg-emerald-100 text-emerald-700 border-emerald-300 w-full md:w-56 text-center">
+   340→   340→              <CardContent className="p-4 space-y-2">
+   341→   341→                <div className="flex justify-center"><Camera className="h-8 w-8" /></div>
+   342→   342→                <p className="font-bold">Camera</p>
+   343→   343→                <p className="text-xs opacity-80">Captures video of the area</p>
+   344→   344→              </CardContent>
+   345→   345→            </Card>
+   346→   346→            <ChevronRight className="h-8 w-8 text-muted-300 hidden md:block" />
+   347→   347→            <Card className="border-2 bg-sky-100 text-sky-700 border-sky-300 w-full md:w-56 text-center">
+   348→   348→              <CardContent className="p-4 space-y-2">
+   349→   349→                <div className="flex justify-center"><MonitorPlay className="h-8 w-8" /></div>
+   350→   350→                <p className="font-bold">DVR / NVR</p>
+   351→   351→                <p className="text-xs opacity-80">Records & stores the video on HDD</p>
+   352→   352→              </CardContent>
+   353→   353→            </Card>
+   354→   354→            <ChevronRight className="h-8 w-8 text-muted-300 hidden md:block" />
+   355→   355→            <Card className="border-2 bg-violet-100 text-violet-700 border-violet-300 w-full md:w-56 text-center">
+   356→   356→              <CardContent className="p-4 space-y-2">
+   357→   357→                <div className="flex justify-center"><MonitorSpeaker className="h-8 w-8" /></div>
+   358→   358→                <p className="font-bold">Monitor / Phone</p>
+   359→   359→                <p className="text-xs opacity-80">You watch the live or recorded video</p>
+   360→   360→              </CardContent>
+   361→   361→            </Card>
+   362→   362→          </div>
+   363→   363→          <p className="text-sm text-muted-foreground mt-4 text-center">The camera captures video → sends it through cable/wireless → DVR/NVR records it → you watch on monitor or phone app.</p>
+   364→   364→        </CardContent>
+   365→   365→      </Card>
+   366→   366→    </div>
+   367→   367→  );
+   368→   368→}
+   369→   369→
+   370→   370→// ═══════════════════════════════════════════════════════════════
+   371→   371→// CAMERA TYPES SECTION
+   372→   372→// ═══════════════════════════════════════════════════════════════
+   373→   373→
+   374→   374→function CameraTypesSection() {
+   375→   375→  const [selected, setSelected] = useState<string | null>(null);
+   376→   376→  const cam = cameraTypesData.find((c) => c.id === selected);
+   377→   377→
+   378→   378→  return (
+   379→   379→    <div className="space-y-6">
+   380→   380→      <div>
+   381→   381→        <h2 className="text-2xl font-bold mb-2">Understanding CCTV Camera Types</h2>
+   382→   382→        <p className="text-muted-foreground">Click on any camera type below to learn about it in detail. Each card shows where it works best, its advantages, and limitations.</p>
+   383→   383→      </div>
+   384→   384→
+   385→   385→      {/* Camera Type Cards */}
+   386→   386→      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   387→   387→        {cameraTypesData.map((ct) => (
+   388→   388→          <Card key={ct.id} className={cn("cursor-pointer hover:shadow-lg transition-all border-2", selected === ct.id && cn(ct.border, "ring-2 ring-offset-2"))}
+   389→   389→            style={selected === ct.id ? { ringColor: 'var(--tw-ring-color)' } : {}}
+   390→   390→            onClick={() => setSelected(selected === ct.id ? null : ct.id)}>
+   391→   391→            <CardContent className="p-5 space-y-3">
+   392→   392→              <div className="flex items-center gap-3">
+   393→   393→                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center border", ct.bg, ct.color, ct.border)}>{ct.icon}</div>
+   394→   394→                <div>
+   395→   395→                  <h3 className="font-bold">{ct.name}</h3>
+   396→   396→                  <p className="text-xs text-muted-foreground">{ct.tagline}</p>
+   397→   397→                </div>
+   398→   398→              </div>
+   399→   399→              {selected !== ct.id && (
+   400→   400→                <p className="text-sm text-muted-foreground line-clamp-2">{ct.description.slice(0, 120)}...</p>
+   401→   401→              )}
+   402→   402→              {selected === ct.id && (
+   403→   403→                <Button variant="ghost" size="sm" className="text-xs p-0 h-auto" onClick={(e) => { e.stopPropagation(); setSelected(null); }}>
+   404→   404→                  Click to collapse <ChevronRight className="h-3 w-3 rotate-90" />
+   405→   405→                </Button>
+   406→   406→              )}
+   407→   407→            </CardContent>
+   408→   408→          </Card>
+   409→   409→        ))}
+   410→   410→      </div>
+   411→   411→
+   412→   412→      {/* Expanded Detail */}
+   413→   413→      {cam && (
+   414→   414→        <Card className="border-2 overflow-hidden">
+   415→   415→          <div className={cn(cam.bg, "p-4 flex items-center gap-3 border-b", cam.border)}>
+   416→   416→            <div className={cn("w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm", cam.color)}>{cam.icon}</div>
+   417→   417→            <div>
+   418→   418→              <h3 className="text-xl font-bold">{cam.name}</h3>
+   419→   419→              <p className="text-sm text-muted-foreground">{cam.tagline}</p>
+   420→   420→            </div>
+   421→   421→          </div>
+   422→   422→          <CardContent className="p-6 space-y-6">
+   423→   423→            {/* Description */}
+   424→   424→            <p className="text-muted-foreground leading-relaxed">{cam.description}</p>
+   425→   425→
+   426→   426→            {/* Best For */}
+   427→   427→            <div>
+   428→   428→              <h4 className="font-semibold mb-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Best For</h4>
+   429→   429→              <div className="flex flex-wrap gap-2">
+   430→   430→                {cam.bestFor.map((b) => (
+   431→   431→                  <Badge key={b} variant="outline" className={cn(cam.border, cam.textColor)}>{b}</Badge>
+   432→   432→                ))}
+   433→   433→              </div>
+   434→   434→            </div>
+   435→   435→
+   436→   436→            {/* Pros & Cons */}
+   437→   437→            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   438→   438→              <div className="space-y-2">
+   439→   439→                <h4 className="font-semibold flex items-center gap-2 text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Advantages</h4>
+   440→   440→                <ul className="space-y-1.5">
+   441→   441→                  {cam.pros.map((p) => <li key={p} className="text-sm flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /><span>{p}</span></li>)}
+   442→   442→                </ul>
+   443→   443→              </div>
+   444→   444→              <div className="space-y-2">
+   445→   445→                <h4 className="font-semibold flex items-center gap-2 text-red-600"><XCircle className="h-4 w-4" /> Limitations</h4>
+   446→   446→                <ul className="space-y-1.5">
+   447→   447→                  {cam.cons.map((c) => <li key={c} className="text-sm flex items-start gap-2"><XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" /><span>{c}</span></li>)}
+   448→   448→                </ul>
+   449→   449→              </div>
+   450→   450→            </div>
+   451→   451→
+   452→   452→            {/* Specs Table */}
+   453→   453→            <div>
+   454→   454→              <h4 className="font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Typical Specifications</h4>
+   455→   455→              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+   456→   456→                {Object.entries(cam.specs).map(([key, val]) => (
+   457→   457→                  <Card key={key} className="bg-muted/50">
+   458→   458→                    <CardContent className="p-3">
+   459→   459→                      <p className="text-xs text-muted-foreground uppercase tracking-wide">{key.replace(/([A-Z])/g, ' $1')}</p>
+   460→   460→                      <p className="font-medium text-sm mt-1">{val}</p>
+   461→   461→                    </CardContent>
+   462→   462→                  </Card>
+   463→   463→                ))}
+   464→   464→              </div>
+   465→   465→            </div>
+   466→   466→          </CardContent>
+   467→   467→        </Card>
+   468→   468→      )}
+   469→   469→    </div>
+   470→   470→  );
+   471→   471→}
+   472→   472→
+   473→   473→// ═══════════════════════════════════════════════════════════════
+   474→   474→// DVR vs NVR SECTION
+   475→   475→// ═══════════════════════════════════════════════════════════════
+   476→   476→
+   477→   477→function DvrNvrSection() {
+   478→   478→  const d = dvrNvrData.dvr;
+   479→   479→  const n = dvrNvrData.nvr;
+   480→   480→
+   481→   481→  return (
+   482→   482→    <div className="space-y-6">
+   483→   483→      <div>
+   484→   484→        <h2 className="text-2xl font-bold mb-2">DVR vs NVR — Which One Do You Need?</h2>
+   485→   485→        <p className="text-muted-foreground">The recorder is the brain of your CCTV system. Understanding the difference between DVR and NVR is the most important decision you will make. Choose wrong and your cameras may not work at all.</p>
+   486→   486→      </div>
+   487→   487→
+   488→   488→      {/* DVR vs NVR Visual Comparison */}
+   489→   489→      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   490→   490→        <Card className="border-2 border-sky-200">
+   491→   491→          <CardHeader className="bg-sky-50 border-b border-sky-200">
+   492→   492→            <CardTitle className="flex items-center gap-2 text-sky-700">{d.icon} {d.name}</CardTitle>
+   493→   493→          </CardHeader>
+   494→   494→          <CardContent className="p-5 space-y-4">
+   495→   495→            <p className="text-sm text-muted-foreground leading-relaxed">{d.description}</p>
+   496→   496→            <div className="space-y-2.5">
+   497→   497→              {[
+   498→   498→                { label: "Technology", value: d.technology },
+   499→   499→                { label: "Cable Used", value: d.cable },
+   500→   500→                { label: "Max Resolution", value: d.maxResolution },
+   501→   501→                { label: "Channels", value: d.channels },
+   502→   502→                { label: "Top Brands", value: d.brands },
+   503→   503→                { label: "Price Range", value: d.priceRange },
+   504→   504→              ].map((row) => (
+   505→   505→                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-muted">
+   506→   506→                  <span className="text-muted-foreground">{row.label}</span>
+   507→   507→                  <span className="font-medium text-right max-w-[60%]">{row.value}</span>
+   508→   508→                </div>
+   509→   509→              ))}
+   510→   510→            </div>
+   511→   511→            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-3">
+   512→   512→              <p className="text-xs font-semibold text-amber-700 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Compatibility Note</p>
+   513→   513→              <p className="text-xs text-amber-700 mt-1">{d.compatibility}</p>
+   514→   514→            </div>
+   515→   515→          </CardContent>
+   516→   516→        </Card>
+   517→   517→
+   518→   518→        <Card className="border-2 border-emerald-200">
+   519→   519→          <CardHeader className="bg-emerald-50 border-b border-emerald-200">
+   520→   520→            <CardTitle className="flex items-center gap-2 text-emerald-700">{n.icon} {n.name}</CardTitle>
+   521→   521→          </CardHeader>
+   522→   522→          <CardContent className="p-5 space-y-4">
+   523→   523→            <p className="text-sm text-muted-foreground leading-relaxed">{n.description}</p>
+   524→   524→            <div className="space-y-2.5">
+   525→   525→              {[
+   526→   526→                { label: "Technology", value: n.technology },
+   527→   527→                { label: "Cable Used", value: n.cable },
+   528→   528→                { label: "Max Resolution", value: n.maxResolution },
+   529→   529→                { label: "Channels", value: n.channels },
+   530→   530→                { label: "Top Brands", value: n.brands },
+   531→   531→                { label: "Price Range", value: n.priceRange },
+   532→   532→              ].map((row) => (
+   533→   533→                <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-muted">
+   534→   534→                  <span className="text-muted-foreground">{row.label}</span>
+   535→   535→                  <span className="font-medium text-right max-w-[60%]">{row.value}</span>
+   536→   536→                </div>
+   537→   537→              ))}
+   538→   538→            </div>
+   539→   539→            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mt-3">
+   540→   540→              <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5" /> Compatibility Note</p>
+   541→   541→              <p className="text-xs text-emerald-700 mt-1">{n.compatibility}</p>
+   542→   542→            </div>
+   543→   543→          </CardContent>
+   544→   544→        </Card>
+   545→   545→      </div>
+   546→   546→
+   547→   547→      {/* Quick Decision Guide */}
+   548→   548→      <Card className="border-2 bg-gradient-to-r from-sky-50 to-emerald-50">
+   549→   549→        <CardHeader>
+   550→   550→          <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-amber-500" /> Quick Decision: Which One Should You Buy?</CardTitle>
+   551→   551→        </CardHeader>
+   552→   552→        <CardContent className="space-y-4">
+   553→   553→          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   554→   554→            <div className="flex items-start gap-3 p-4 bg-white rounded-lg border">
+   555→   555→              <div className="bg-sky-100 text-sky-700 rounded-lg p-2 mt-0.5"><HardDrive className="h-5 w-5" /></div>
+   556→   556→              <div>
+   557→   557→                <h4 className="font-bold text-sm">Choose DVR if:</h4>
+   558→   558→                <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+   559→   559→                  <li>• You are on a tight budget</li>
+   560→   560→                  <li>• You already have coaxial cable wiring</li>
+   561→   561→                  <li>• You only need 2-4 cameras</li>
+   562→   562→                  <li>• You are buying Hikvision or Dahua analog cameras</li>
+   563→   563→                </ul>
+   564→   564→              </div>
+   565→   565→            </div>
+   566→   566→            <div className="flex items-start gap-3 p-4 bg-white rounded-lg border">
+   567→   567→              <div className="bg-emerald-100 text-emerald-700 rounded-lg p-2 mt-0.5"><Cloud className="h-5 w-5" /></div>
+   568→   568→              <div>
+   569→   569→                <h4 className="font-bold text-sm">Choose NVR if:</h4>
+   570→   570→                <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+   571→   571→                  <li>• You want the best video quality (4K)</li>
+   572→   572→                  <li>• You want PoE (one cable for data + power)</li>
+   573→   573→                  <li>• You need 4+ cameras with smart features</li>
+   574→   574→                  <li>• You are doing a new installation (Ethernet is easier to route)</li>
+   575→   575→                </ul>
+   576→   576→              </div>
+   577→   577→            </div>
+   578→   578→          </div>
+   579→   579→        </CardContent>
+   580→   580→      </Card>
+   581→   581→    </div>
+   582→   582→  );
+   583→   583→}
+   584→   584→
+   585→   585→// ═══════════════════════════════════════════════════════════════
+   586→   586→// COMPATIBILITY SECTION
+   587→   587→// ═══════════════════════════════════════════════════════════════
+   588→   588→
+   589→   589→function CompatibilitySection() {
+   590→   590→  return (
+   591→   591→    <div className="space-y-6">
+   592→   592→      <div>
+   593→   593→        <h2 className="text-2xl font-bold mb-2">Camera & Recorder Compatibility Guide</h2>
+   594→   594→        <p className="text-muted-foreground">This is the MOST IMPORTANT thing to understand before buying CCTV equipment. Buying incompatible cameras and recorders is the #1 mistake beginners make.</p>
+   595→   595→      </div>
+   596→   596→
+   597→   597→      {/* Warning Box */}
+   598→   598→      <Card className="border-2 border-red-200 bg-red-50">
+   599→   599→        <CardContent className="p-5 flex items-start gap-4">
+   600→   600→          <AlertTriangle className="h-8 w-8 text-red-500 shrink-0 mt-0.5" />
+   601→   601→          <div>
+   602→   602→            <h3 className="font-bold text-red-700 text-lg">CRITICAL: Brand Matching Required</h3>
+   603→   603→            <p className="text-red-700 text-sm mt-2 leading-relaxed">
+   604→   604→              Hikvision cameras use <strong>HD-TVI</strong> technology. Dahua cameras use <strong>HD-CVI</strong> technology. These are <strong>NOT compatible</strong> with each other&apos;s DVRs. A Hikvision HD-TVI camera will NOT produce video on a Dahua HD-CVI DVR, and vice versa. Always buy cameras and DVR from the same brand, or use IP cameras + NVR which are more universal.
+   605→   605→            </p>
+   606→   606→          </div>
+   607→   607→        </CardContent>
+   608→   608→      </Card>
+   609→   609→
+   610→   610→      {/* Compatibility Matrix */}
+   611→   611→      <Card>
+   612→   612→        <CardHeader>
+   613→   613→          <CardTitle>Compatibility Matrix — Does This Camera Work With This Recorder?</CardTitle>
+   614→   614→        </CardHeader>
+   615→   615→        <CardContent>
+   616→   616→          <div className="overflow-x-auto">
+   617→   617→            <table className="w-full text-sm border-collapse">
+   618→   618→              <thead>
+   619→   619→                <tr className="bg-muted">
+   620→   620→                  <th className="p-3 text-left font-semibold border-b min-w-[160px]">Camera</th>
+   621→   621→                  <th className="p-3 text-center font-semibold border-b">Hikvision DVR<br /><span className="text-xs font-normal">(HD-TVI)</span></th>
+   622→   622→                  <th className="p-3 text-center font-semibold border-b">Dahua DVR<br /><span className="text-xs font-normal">(HD-CVI)</span></th>
+   623→   623→                  <th className="p-3 text-center font-semibold border-b">Any NVR<br /><span className="text-xs font-normal">(IP/ONVIF)</span></th>
+   624→   624→                  <th className="p-3 text-center font-semibold border-b">WiFi (Standalone)<br /><span className="text-xs font-normal">(No Recorder)</span></th>
+   625→   625→                </tr>
+   626→   626→              </thead>
+   627→   627→              <tbody>
+   628→   628→                {[
+   629→   629→                  { camera: "Hikvision HD-TVI Camera", hik: true, dah: false, nvr: false, wifi: false },
+   630→   630→                  { camera: "Dahua HD-CVI Camera", hik: false, dah: true, nvr: false, wifi: false },
+   631→   631→                  { camera: "Hikvision IP Camera", hik: false, dah: false, nvr: true, wifi: false },
+   632→   632→                  { camera: "Dahua IP Camera", hik: false, dah: false, nvr: true, wifi: false },
+   633→   633→                  { camera: "Any ONVIF IP Camera", hik: false, dah: false, nvr: true, wifi: false },
+   634→   634→                  { camera: "WiFi Camera (Ezviz/Imou)", hik: false, dah: false, nvr: false, wifi: true },
+   635→   635→                ].map((row, i) => (
+   636→   636→                  <tr key={row.camera} className={i % 2 === 0 ? "bg-muted/30" : ""}>
+   637→   637→                    <td className="p-3 font-medium border-b">{row.camera}</td>
+   638→   638→                    <td className="p-3 text-center border-b">{row.hik ? <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" /> : <XCircle className="h-5 w-5 text-red-400 mx-auto" />}</td>
+   639→   639→                    <td className="p-3 text-center border-b">{row.dah ? <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" /> : <XCircle className="h-5 w-5 text-red-400 mx-auto" />}</td>
+   640→   640→                    <td className="p-3 text-center border-b">{row.nvr ? <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" /> : <XCircle className="h-5 w-5 text-red-400 mx-auto" />}</td>
+   641→   641→                    <td className="p-3 text-center border-b">{row.wifi ? <CheckCircle2 className="h-5 w-5 text-emerald-500 mx-auto" /> : <XCircle className="h-5 w-5 text-red-400 mx-auto" />}</td>
+   642→   642→                  </tr>
+   643→   643→                ))}
+   644→   644→              </tbody>
+   645→   645→            </table>
+   646→   646→          </div>
+   647→   647→        </CardContent>
+   648→   648→      </Card>
+   649→   649→
+   650→   650→      {/* Safe Combos */}
+   651→   651→      <Card className="border-2 border-emerald-200">
+   652→   652→        <CardHeader className="bg-emerald-50 border-b border-emerald-200">
+   653→   653→          <CardTitle className="flex items-center gap-2 text-emerald-700"><CheckCircle2 className="h-5 w-5" /> Safe Buying Combinations (These WILL Work Together)</CardTitle>
+   654→   654→        </CardHeader>
+   655→   655→        <CardContent className="p-5">
+   656→   656→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   657→   657→            {[
+   658→   658→              { combo: "Hikvision HD-TVI Camera + Hikvision DVR", note: "Perfect match — recommended for budget setups" },
+   659→   659→              { combo: "Dahua HD-CVI Camera + Dahua DVR", note: "Perfect match — recommended for budget setups" },
+   660→   660→              { combo: "Any IP Camera + Any NVR (ONVIF)", note: "Universal — works across brands" },
+   661→   661→              { combo: "Hikvision IP Camera + Hikvision NVR", note: "Best combo — unlocks all smart features" },
+   662→   662→              { combo: "Dahua IP Camera + Dahua NVR", note: "Best combo — unlocks all smart features" },
+   663→   663→              { combo: "WiFi Camera + MicroSD Card (no recorder)", note: "Standalone — no DVR/NVR needed at all" },
+   664→   664→            ].map((item) => (
+   665→   665→              <div key={item.combo} className="flex items-start gap-2 p-3 bg-white rounded-lg border">
+   666→   666→                <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+   667→   667→                <div>
+   668→   668→                  <p className="font-medium text-sm">{item.combo}</p>
+   669→   669→                  <p className="text-xs text-muted-foreground mt-0.5">{item.note}</p>
+   670→   670→                </div>
+   671→   671→              </div>
+   672→   672→            ))}
+   673→   673→          </div>
+   674→   674→        </CardContent>
+   675→   675→      </Card>
+   676→   676→    </div>
+   677→   677→  );
+   678→   678→}
+   679→   679→
+   680→   680→// ═══════════════════════════════════════════════════════════════
+   681→   681→// MOBILE SETUP SECTION
+   682→   682→// ═══════════════════════════════════════════════════════════════
+   683→   683→
+   684→   684→function MobileSetupSection() {
+   685→   685→  return (
+   686→   686→    <div className="space-y-6">
+   687→   687→      <div>
+   688→   688→        <h2 className="text-2xl font-bold mb-2">How to View CCTV on Your Mobile Phone</h2>
+   689→   689→        <p className="text-muted-foreground">You can watch your CCTV cameras from anywhere in the world using free mobile apps. Here are the step-by-step instructions for both Hikvision and Dahua systems.</p>
+   690→   690→      </div>
+   691→   691→
+   692→   692→      {/* Prerequisites */}
+   693→   693→      <Card className="border-2 bg-sky-50">
+   694→   694→        <CardContent className="p-5">
+   695→   695→          <h3 className="font-bold flex items-center gap-2 mb-3"><Info className="h-5 w-5 text-sky-600" /> Before You Start — What You Need</h3>
+   696→   696→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   697→   697→            {[
+   698→   698→              { icon: <Router className="h-5 w-5" />, text: "Working internet connection on DVR/NVR (Ethernet cable to router)" },
+   699→   699→              { icon: <Smartphone className="h-5 w-5" />, text: "Smartphone with internet (WiFi or mobile data)" },
+   700→   700→              { icon: <MonitorPlay className="h-5 w-5" />, text: "DVR/NVR already set up and recording (cameras showing on monitor)" },
+   701→   701→              { icon: <Settings className="h-5 w-5" />, text: "Access to DVR/NVR menu (mouse connected to DVR/NVR)" },
+   702→   702→            ].map((item) => (
+   703→   703→              <div key={item.text} className="flex items-center gap-3 bg-white rounded-lg p-3 border">
+   704→   704→                <div className="text-sky-600">{item.icon}</div>
+   705→   705→                <p className="text-sm">{item.text}</p>
+   706→   706→              </div>
+   707→   707→            ))}
+   708→   708→          </div>
+   709→   709→        </CardContent>
+   710→   710→      </Card>
+   711→   711→
+   712→   712→      {/* Hikvision Steps */}
+   713→   713→      {mobileAppsData.map((brand) => (
+   714→   714→        <Card key={brand.brand} className="border-2">
+   715→   715→          <CardHeader>
+   716→   716→            <CardTitle className="flex items-center gap-2">{brand.brand} Mobile App Setup</CardTitle>
+   717→   717→          </CardHeader>
+   718→   718→          <CardContent className="p-5 space-y-4">
+   719→   719→            <div className="flex flex-wrap gap-2 mb-2">
+   720→   720→              <span className="text-sm font-medium text-muted-foreground">Available Apps:</span>
+   721→   721→              {brand.apps.map((app) => (
+   722→   722→                <Badge key={app.name} variant="outline" className={cn("border", app.color)}>{app.name} — {app.use}</Badge>
+   723→   723→              ))}
+   724→   724→            </div>
+   725→   725→            <Separator />
+   726→   726→            <div className="space-y-3">
+   727→   727→              <h4 className="font-semibold">Step-by-Step Instructions:</h4>
+   728→   728→              {brand.steps.map((step, i) => (
+   729→   729→                <div key={i} className="flex items-start gap-3">
+   730→   730→                  <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold shrink-0">{i + 1}</div>
+   731→   731→                  <p className="text-sm text-muted-foreground pt-1">{step}</p>
+   732→   732→                </div>
+   733→   733→              ))}
+   734→   734→            </div>
+   735→   735→          </CardContent>
+   736→   736→        </Card>
+   737→   737→      ))}
+   738→   738→
+   739→   739→      {/* Troubleshooting */}
+   740→   740→      <Card className="border-2 border-amber-200">
+   741→   741→        <CardHeader className="bg-amber-50 border-b border-amber-200">
+   742→   742→          <CardTitle className="flex items-center gap-2 text-amber-700"><AlertTriangle className="h-5 w-5" /> Common Issues & Fixes</CardTitle>
+   743→   743→        </CardHeader>
+   744→   744→        <CardContent className="p-5 space-y-3">
+   745→   745→          {[
+   746→   746→            { problem: "Device not showing in app", fix: "Make sure P2P/Cloud access is enabled in DVR/NVR settings. Check that the internet cable is connected to the DVR/NVR." },
+   747→   747→            { problem: "Video is very laggy or buffering", fix: "Your phone internet may be slow. Switch to a better WiFi or use lower quality stream in app settings." },
+   748→   748→            { problem: "Cannot connect when away from home", fix: "The DVR/NVR needs internet access 24/7. Check your router is working and the Ethernet cable is connected." },
+   749→   749→            { problem: '\"Device is offline\" error', fix: "The DVR/NVR lost internet. Restart the router and check the cable. The LED on the DVR network port should be blinking." },
+   750→   750→            { problem: "QR code scan not working", fix: "Manually enter the device serial number and verification code instead of scanning." },
+   751→   751→          ].map((item) => (
+   752→   752→            <div key={item.problem} className="flex items-start gap-3 p-3 bg-white rounded-lg border">
+   753→   753→              <XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
+   754→   754→              <div>
+   755→   755→                <p className="font-medium text-sm">{item.problem}</p>
+   756→   756→                <p className="text-xs text-emerald-600 mt-1 flex items-start gap-1"><CheckCircle2 className="h-3 w-3 mt-0.5 shrink-0" /> {item.fix}</p>
+   757→   757→              </div>
+   758→   758→            </div>
+   759→   759→          ))}
+   760→   760→        </CardContent>
+   761→   761→      </Card>
+   762→   762→    </div>
+   763→   763→  );
+   764→   764→}
+   765→   765→
+   766→   766→// ═══════════════════════════════════════════════════════════════
+   767→   767→// BUDGET GUIDE SECTION
+   768→   768→// ═══════════════════════════════════════════════════════════════
+   769→   769→
+   770→   770→function BudgetGuideSection() {
+   771→   771→  return (
+   772→   772→    <div className="space-y-6">
+   773→   773→      <div>
+   774→   774→        <h2 className="text-2xl font-bold mb-2">Choose the Right CCTV Setup for Your Budget</h2>
+   775→   775→        <p className="text-muted-foreground">Your budget determines how many cameras, what resolution, and which features you can get. Here are 4 recommended setups from basic to enterprise level.</p>
+   776→   776→      </div>
+   777→   777→
+   778→   778→      {/* Budget Cards */}
+   779→   779→      <div className="space-y-4">
+   780→   780→        {budgetGuides.map((tier) => (
+   781→   781→          <Card key={tier.range} className="border-2 overflow-hidden">
+   782→   782→            <div className={cn(tier.lightColor, "border-b p-4 flex items-center justify-between flex-wrap gap-2", tier.borderColor)}>
+   783→   783→              <div className="flex items-center gap-3">
+   784→   784→                <div className={tier.color + " text-white rounded-lg p-2"}>{tier.icon}</div>
+   785→   785→                <div>
+   786→   786→                  <div className="flex items-center gap-2">
+   787→   787→                    <h3 className="font-bold text-lg">{tier.label}</h3>
+   788→   788→                    <Badge className={tier.color + " text-white"}>{tier.range}</Badge>
+   789→   789→                  </div>
+   790→   790→                  <p className="text-sm text-muted-foreground">{tier.description}</p>
+   791→   791→                </div>
+   792→   792→              </div>
+   793→   793→            </div>
+   794→   794→            <CardContent className="p-5">
+   795→   795→              <h4 className="font-semibold text-sm mb-3">Recommended Setup:</h4>
+   796→   796→              <div className="space-y-2 mb-4">
+   797→   797→                {tier.recommended.map((item) => (
+   798→   798→                  <div key={item} className="flex items-start gap-2 text-sm">
+   799→   799→                    <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+   800→   800→                    <span>{item}</span>
+   801→   801→                  </div>
+   802→   802→                ))}
+   803→   803→              </div>
+   804→   804→              <div className="flex flex-wrap gap-3 items-center">
+   805→   805→                <div className={cn("px-3 py-1.5 rounded-lg", tier.lightColor, tier.textColor, "font-bold text-sm")}>
+   806→   806→                  Total Cost: {tier.totalCost}
+   807→   807→                </div>
+   808→   808→                {tier.alternative && (
+   809→   809→                  <p className="text-xs text-muted-foreground"><strong>Alternative:</strong> {tier.alternative}</p>
+   810→   810→                )}
+   811→   811→              </div>
+   812→   812→            </CardContent>
+   813→   813→          </Card>
+   814→   814→        ))}
+   815→   815→      </div>
+   816→   816→
+   817→   817→      {/* Budget Tips */}
+   818→   818→      <Card className="bg-gradient-to-r from-amber-50 to-emerald-50 border-2">
+   819→   819→        <CardHeader>
+   820→   820→          <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-amber-500" /> Smart Money-Saving Tips</CardTitle>
+   821→   821→        </CardHeader>
+   822→   822→        <CardContent>
+   823→   823→          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   824→   824→            {[
+   825→   825→              { tip: "Buy camera + DVR combo kits — they are 15-20% cheaper than buying separately.", icon: <DollarSign className="h-4 w-4" /> },
+   826→   826→              { tip: "Use motion-only recording to reduce HDD size needed by 40-60%.", icon: <ScanLine className="h-4 w-4" /> },
+   827→   827→              { tip: "2MP (1080p) is enough for most homes — don't overpay for 4K unless you need to zoom into details.", icon: <Eye className="h-4 w-4" /> },
+   828→   828→              { tip: "WiFi cameras are cheapest for 1-2 camera setups (no DVR needed).", icon: <Wifi className="h-4 w-4" /> },
+   829→   829→              { tip: "Always buy branded (Hikvision/Dahua) — cheap unbranded cameras fail in 6 months.", icon: <ShieldCheck className="h-4 w-4" /> },
+   830→   830→              { tip: "Check sale prices — CCTV cameras frequently go on sale with 10-25% discounts.", icon: <Tag className="h-4 w-4" /> },
+   831→   831→            ].map((item) => (
+   832→   832→              <div key={item.tip} className="flex items-start gap-2 bg-white rounded-lg p-3 border">
+   833→   833→                <div className="text-amber-600 mt-0.5 shrink-0">{item.icon}</div>
+   834→   834→                <p className="text-sm">{item.tip}</p>
+   835→   835→              </div>
+   836→   836→            ))}
+   837→   837→          </div>
+   838→   838→        </CardContent>
+   839→   839→      </Card>
+   840→   840→    </div>
+   841→   841→  );
+   842→   842→}
+   843→   843→
+   844→   844→// ═══════════════════════════════════════════════════════════════
+   845→   845→// INSTALLATION GUIDE SECTION
+   846→   846→// ═══════════════════════════════════════════════════════════════
+   847→   847→
+   848→   848→function InstallationSection() {
+   849→   849→  return (
+   850→   850→    <div className="space-y-6">
+   851→   851→      <div>
+   852→   852→        <h2 className="text-2xl font-bold mb-2">Step-by-Step CCTV Installation Guide</h2>
+   853→   853→        <p className="text-muted-foreground">Follow these guides to install your CCTV system. Choose the one that matches your setup type.</p>
+   854→   854→      </div>
+   855→   855→
+   856→   856→      {/* Wired System Installation */}
+   857→   857→      <Card className="border-2">
+   858→   858→        <CardHeader className="bg-sky-50 border-b border-sky-200">
+   859→   859→          <CardTitle className="flex items-center gap-2 text-sky-700"><Cable className="h-5 w-5" /> Wired System (DVR + Coaxial Cable)</CardTitle>
+   860→   860→        </CardHeader>
+   861→   861→        <CardContent className="p-5 space-y-4">
+   862→   862→          {[
+   863→   863→            { step: "Plan Camera Positions", detail: "Walk around your property and decide where each camera should go. Cover all entry points (doors, gates, windows), parking area, and any blind spots. Mark each camera location with a pencil." },
+   864→   864→            { step: "Run Cables from Each Camera to DVR", detail: "Run RG59 coaxial cable from each camera location to where the DVR will be placed. Use cable clips or conduit to secure cables along walls. Also run a power cable alongside each coaxial cable, or use a power-over-coax (POC) DVR that sends power through the coaxial cable itself." },
+   865→   865→            { step: "Mount the Cameras", detail: "Drill holes and mount the camera brackets at each marked location. For dome cameras, use the ceiling mount template. For bullet cameras, use the wall mount bracket. Connect the coaxial cable and power cable to each camera." },
+   866→   866→            { step: "Set Up the DVR", detail: "Place the DVR near your router (you need internet for mobile viewing). Connect all camera cables to the DVR input ports. Connect an HDMI cable from DVR to your monitor/TV. Connect an Ethernet cable from DVR to your router. Plug in the DVR power supply." },
+   867→   867→            { step: "Install HDD for Recording", detail: "Open the DVR cover and screw in a SATA HDD (1TB or 2TB recommended). The DVR will automatically detect and format it. This is where all your video footage gets stored." },
+   868→   868→            { step: "Power On and Configure", detail: "Turn on the DVR. You should see all cameras on the monitor. Go to settings and set the date/time, recording schedule (24/7 or motion-only), and enable P2P/cloud access for mobile viewing." },
+   869→   869→            { step: "Set Up Mobile App", detail: "Follow the Mobile Viewing guide to connect your phone. Scan the QR code from the DVR settings and you are done! Test all cameras from your phone to confirm everything is working." },
+   870→   870→          ].map((item, i) => (
+   871→   871→            <div key={i} className="flex items-start gap-4">
+   872→   872→              <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-700 flex items-center justify-center text-sm font-bold shrink-0">{i + 1}</div>
+   873→   873→              <div className="flex-1 pb-4 border-b border-muted last:border-0 last:pb-0">
+   874→   874→                <h4 className="font-semibold text-sm">{item.step}</h4>
+   875→   875→                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.detail}</p>
+   876→   876→              </div>
+   877→   877→            </div>
+   878→   878→          ))}
+   879→   879→        </CardContent>
+   880→   880→      </Card>
+   881→   881→
+   882→   882→      {/* WiFi Camera Installation */}
+   883→   883→      <Card className="border-2">
+   884→   884→        <CardHeader className="bg-violet-50 border-b border-violet-200">
+   885→   885→          <CardTitle className="flex items-center gap-2 text-violet-700"><Wifi className="h-5 w-5" /> WiFi Camera (No DVR Needed — Easiest Setup)</CardTitle>
+   886→   886→        </CardHeader>
+   887→   887→        <CardContent className="p-5 space-y-4">
+   888→   888→          {[
+   889→   889→            { step: "Download the App", detail: "Download Ezviz (for Hikvision WiFi cameras) or Imou Life (for Dahua WiFi cameras) from Google Play Store or Apple App Store. Create a free account." },
+   890→   890→            { step: "Plug In the Camera", detail: "Place the camera where you want it and plug it into a power outlet. Wait 1-2 minutes for the camera to boot up. You will hear a voice prompt saying the camera is ready to pair." },
+   891→   891→            { step: "Connect to WiFi", detail: "Open the app and tap '+' or 'Add Device'. The app will guide you to connect the camera to your WiFi. You may need to enter your WiFi password. The camera connects to your home WiFi network." },
+   892→   892→            { step: "Insert MicroSD Card (Optional)", detail: "Open the camera's MicroSD card slot and insert a card (16GB-128GB recommended). This stores recorded video locally. Without a card, you can still watch live video but cannot record." },
+   893→   893→            { step: "Adjust Camera Position", detail: "Use the live view in the app to adjust the camera angle. Make sure it covers the area you want to monitor. Tighten the mounting screws once you are happy with the position." },
+   894→   894→            { step: "Enable Notifications", detail: "In the app settings, enable push notifications and motion detection. Now you will get instant alerts on your phone whenever the camera detects movement. You are done!" },
+   895→   895→          ].map((item, i) => (
+   896→   896→            <div key={i} className="flex items-start gap-4">
+   897→   897→              <div className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center text-sm font-bold shrink-0">{i + 1}</div>
+   898→   898→              <div className="flex-1 pb-4 border-b border-muted last:border-0 last:pb-0">
+   899→   899→                <h4 className="font-semibold text-sm">{item.step}</h4>
+   900→   900→                <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.detail}</p>
+   901→   901→              </div>
+   902→   902→            </div>
+   903→   903→          ))}
+   904→   904→        </CardContent>
+   905→   905→      </Card>
+   906→   906→
+   907→   907→      {/* Tools Needed */}
+   908→   908→      <Card className="border-2 bg-slate-50">
+   909→   909→        <CardHeader>
+   910→   910→          <CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5" /> Tools You Will Need</CardTitle>
+   911→   911→        </CardHeader>
+   912→   912→        <CardContent>
+   913→   913→          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+   914→   914→            {[
+   915→   915→              "Drill machine + drill bits", "Screwdriver set", "RG59 coaxial cable", "BNC connectors / couplers",
+   916→   916→              "Power cable (2-core)", "Cable clips / ties", "Ethernet cable (Cat5e/Cat6)", "HDMI cable",
+   917→   917→              "SATA HDD (1TB-2TB)", "Ladder / step stool", "Measuring tape", "Cable tester (optional)",
+   918→   918→            ].map((tool) => (
+   919→   919→              <div key={tool} className="flex items-center gap-2 bg-white rounded-lg p-3 border text-sm">
+   920→   920→                <Wrench className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+   921→   921→                {tool}
+   922→   922→              </div>
+   923→   923→            ))}
+   924→   924→          </div>
+   925→   925→        </CardContent>
+   926→   926→      </Card>
+   927→   927→    </div>
+   928→   928→  );
+   929→   929→}
+   930→   930→
+   931→   931→// ═══════════════════════════════════════════════════════════════
+   932→   932→// FAQ SECTION
+   933→   933→// ═══════════════════════════════════════════════════════════════
+   934→   934→
+   935→   935→function FaqSection() {
+   936→   936→  return (
+   937→   937→    <div className="space-y-6">
+   938→   938→      <div>
+   939→   939→        <h2 className="text-2xl font-bold mb-2">Frequently Asked Questions</h2>
+   940→   940→        <p className="text-muted-foreground">Common questions people ask about CCTV systems. Click on any question to see the answer.</p>
+   941→   941→      </div>
+   942→   942→      <Accordion type="single" collapsible className="space-y-2">
+   943→   943→        {faqData.map((item, i) => (
+   944→   944→          <AccordionItem key={i} value={"faq-" + i} className="border rounded-lg px-4">
+   945→   945→            <AccordionTrigger className="text-left font-medium text-sm hover:no-underline">{item.q}</AccordionTrigger>
+   946→   946→            <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">{item.a}</AccordionContent>
+   947→   947→          </AccordionItem>
+   948→   948→        ))}
+   949→   949→      </Accordion>
+   950→   950→    </div>
+   951→   951→  );
+   952→   952→}
+   953→   953→
+   954→   954→// ═══════════════════════════════════════════════════════════════
+   955→   955→// MAIN LEARNING SYSTEM
+   956→   956→// ═══════════════════════════════════════════════════════════════
+   957→   957→
+   958→   958→export function LearningSystem() {
+   959→   959→  const { learnSection, setLearnSection, setView } = useStore();
+   960→   960→
+   961→   961→  const renderSection = () => {
+   962→   962→    switch (learnSection) {
+   963→   963→      case "camera-types": return <CameraTypesSection />;
+   964→   964→      case "dvr-nvr": return <DvrNvrSection />;
+   965→   965→      case "compatibility": return <CompatibilitySection />;
+   966→   966→      case "mobile-setup": return <MobileSetupSection />;
+   967→   967→      case "budget": return <BudgetGuideSection />;
+   968→   968→      case "installation": return <InstallationSection />;
+   969→   969→      case "faq": return <FaqSection />;
+   970→   970→      default: return <OverviewSection />;
+   971→   971→    }
+   972→   972→  };
+   973→   973→
+   974→   974→  return (
+   975→   975→    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+   976→   976→      {/* Breadcrumb */}
+   977→   977→      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+   978→   978→        <button onClick={() => setView("catalog")} className="hover:text-foreground transition-colors">Catalog</button>
+   979→   979→        <ChevronRight className="h-3.5 w-3.5" />
+   980→   980→        <span className="font-medium text-foreground">Learning Center</span>
+   981→   981→        {learnSection !== "overview" && (
+   982→   982→          <>
+   983→   983→            <ChevronRight className="h-3.5 w-3.5" />
+   984→   984→            <span className="font-medium">{learnSections.find((s) => s.id === learnSection)?.label}</span>
+   985→   985→          </>
+   986→   986→        )}
+   987→   987→      </div>
+   988→   988→
+   989→   989→      <div className="flex flex-col lg:flex-row gap-6">
+   990→   990→        {/* Sidebar Navigation */}
+   991→   991→        <aside className="w-full lg:w-56 shrink-0">
+   992→   992→          <nav className="sticky top-20 space-y-1">
+   993→   993→            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">Learning Topics</h3>
+   994→   994→            {learnSections.map((s) => (
+   995→   995→              <button
+   996→   996→                key={s.id}
+   997→   997→                onClick={() => setLearnSection(s.id)}
+   998→   998→                className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left", learnSection === s.id
+   999→   999→                    ? "bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200"
+  1000→  1000→                    : "hover:bg-muted text-muted-foreground hover:text-foreground")}
+  1001→  1001→              >
+  1002→  1002→                {s.icon} {s.label}
+  1003→  1003→              </button>
+  1004→  1004→            ))}
+  1005→  1005→            <Separator className="my-3" />
+  1006→  1006→            <button
+  1007→  1007→              onClick={() => setView("catalog")}
+  1008→  1008→              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+  1009→  1009→            >
+  1010→  1010→              <Camera className="h-4 w-4" /> Back to Product Catalog
+  1011→  1011→            </button>
+  1012→  1012→          </nav>
+  1013→  1013→        </aside>
+  1014→  1014→
+  1015→  1015→        {/* Content */}
+  1016→  1016→        <div className="flex-1 min-w-0">
+  1017→  1017→          {renderSection()}
+  1018→  1018→        </div>
+  1019→  1019→      </div>
+  1020→  1020→    </div>
+  1021→  1021→  );
+  1022→  1022→}
