@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useBuilderStore, type CameraForm, type CameraSelection, type CameraSystem, type CameraTech, type PropertyType } from "@/store/builder-store";
+import { useBuilderStore, type CameraSelection, type CameraSystem, type CameraTech, type PropertyType, normalizeResolution, cameraTypeToForm } from "@/store/builder-store";
+import type { CctvProduct } from "@/store/cctv-store";
+import { useStore } from "@/store/cctv-store";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,7 +20,7 @@ import {
   AlertTriangle, Lightbulb, Router, Zap, Box, Link,
   Calculator, RotateCcw, Info, Eye, Volume2, MessageSquare,
   Sun, Moon, Palette, Server, ChevronsDown, Copy, Printer,
-  Mouse, Keyboard,
+  Mouse, Keyboard, Search, Package,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -51,13 +53,6 @@ const cameraTechs: { value: CameraTech; label: string; icon: React.ReactNode; de
   { value: "night_vision_audio", label: "Night Vision + Audio", icon: <Volume2 className="h-5 w-5" />, desc: "IR night vision with built-in microphone for audio recording. Hear what is happening." },
   { value: "color_audio", label: "Full Color + Audio", icon: <Palette className="h-5 w-5" />, desc: "Records in full color even at night using ColorVu/Full-Color technology. Includes audio." },
   { value: "two_way_talk", label: "Two-Way Talk", icon: <MessageSquare className="h-5 w-5" />, desc: "Full color night vision + audio + built-in speaker for two-way communication through app." },
-];
-
-const mpOptions = ["2MP", "3MP", "4MP", "5MP", "8MP", "12MP"];
-const formOptions: { value: CameraForm; label: string; icon: React.ReactNode; desc: string }[] = [
-  { value: "dome", label: "Dome", icon: <Camera className="h-5 w-5" />, desc: "Indoor, vandal-proof, hidden direction" },
-  { value: "bullet", label: "Bullet", icon: <Eye className="h-5 w-5" />, desc: "Outdoor, long-range IR, visible deterrent" },
-  { value: "ptz", label: "PTZ", icon: <Radio className="h-5 w-5" />, desc: "Pan-tilt-zoom, 360 degree coverage, auto-track" },
 ];
 
 const retentionOptions = [7, 10, 15, 20, 30, 45, 60, 90];
@@ -127,7 +122,7 @@ function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: 
 }
 
 // ═══ POWER SUPPLY CONFIG ═══
-// Real market PoE switch ports: 4, 8, 16, 24, 48  (32-port PoE switches do NOT exist)
+// Real market PoE switch ports: 4, 8, 16, 24  (32-port and 48-port PoE switches do NOT exist)
 // SMPS channels for analog: 4ch, 8ch, 16ch
 function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp: boolean): { units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[]; summary: string } {
   if (system === "wifi") {
@@ -157,9 +152,9 @@ function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp:
   }
 
   // IP system - PoE Switch
-  // Real market: 4-port, 8-port, 16-port, 24-port, 48-port PoE switches
+  // Real market: 4-port, 8-port, 16-port, 24-port PoE switches (max 24)
   // Gigabit needed for >2MP cameras (higher bandwidth)
-  const poeOptions = [4, 8, 16, 24, 48];
+  const poeOptions = [4, 8, 16, 24];
   const variant: "standard" | "giga" = hasAbove2mp ? "giga" : "standard";
   const units: { type: string; ports: number; usedPorts: number; variant: "standard" | "giga" }[] = [];
   let remaining = totalCameras;
@@ -195,6 +190,7 @@ function getPowerConfig(totalCameras: number, system: CameraSystem, hasAbove2mp:
 // Total GB = Sum(camera_qty_i * GB_per_day_i * retention_days)
 
 const BITRATE_GB_PER_DAY: Record<string, number> = {
+  "1MP": 7.6,     // (1/8)*86400*0.7
   "2MP": 15.1,    // (2/8)*86400*0.7 = 15120 MB = 14.8 GB → rounded
   "3MP": 22.7,
   "4MP": 30.2,
@@ -390,32 +386,104 @@ export function CctvBuilder() {
     }
   }, [totalCameras, store.cameraSystem, store.cameraSelections, store.setJunctionBox4x4, store.setJunctionBox5x5, store.setDcConnector, store.setBncConnector, store.setRj45Connector]);
 
-  // ─── Camera Selection Handlers ───
-  const updateCameraQty = (mp: string, form: CameraForm, delta: number) => {
+  // ─── Product Fetching (for Step 6) ───
+  const [availableProducts, setAvailableProducts] = useState<CctvProduct[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productTypeFilter, setProductTypeFilter] = useState("all");
+
+  // Fetch camera products when system type changes
+  useEffect(() => {
+    if (!store.cameraSystem) { setAvailableProducts([]); return; }
+    setProductsLoading(true);
+    fetch("/api/products?sortBy=price&order=asc")
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          // Filter out recorders (DVR/NVR camera types) — only show actual cameras
+          const cameras = (data.data as CctvProduct[]).filter((p: CctvProduct) => {
+            if (p.cameraType === "DVR" || p.cameraType === "NVR") return false;
+            // Filter by system type
+            if (store.cameraSystem === "analog") return p.recorderType === "DVR" || p.technology === "HD-TVI" || p.technology === "HD-CVI" || p.technology === "AHD";
+            if (store.cameraSystem === "ip") return p.recorderType === "NVR" || p.recorderType === "Cloud/NVR" || p.technology === "IP";
+            if (store.cameraSystem === "wifi") return p.cameraType === "WiFi" || p.cameraType === "4G" || p.technology === "WiFi IP" || p.recorderType === "Cloud/SD Card";
+            return true;
+          });
+          setAvailableProducts(cameras);
+        }
+      })
+      .catch(() => setAvailableProducts([]))
+      .finally(() => setProductsLoading(false));
+  }, [store.cameraSystem]);
+
+  // Filter products for display
+  const filteredProducts = useMemo(() => {
+    let list = availableProducts;
+    if (productTypeFilter !== "all") {
+      list = list.filter(p => p.cameraType === productTypeFilter);
+    }
+    if (productSearch) {
+      const s = productSearch.toLowerCase();
+      list = list.filter(p => p.brand.toLowerCase().includes(s) || p.modelName.toLowerCase().includes(s) || p.resolution.toLowerCase().includes(s));
+    }
+    return list;
+  }, [availableProducts, productSearch, productTypeFilter]);
+
+  // ─── Product-based Camera Selection Handlers ───
+  const addProduct = (product: CctvProduct) => {
     const current = [...store.cameraSelections];
-    const idx = current.findIndex(c => c.mp === mp && c.form === form);
+    const idx = current.findIndex(c => c.productId === product.id);
     const defaultTech = store.cameraTechs.length > 0 ? store.cameraTechs[0] : "night_vision" as CameraTech;
     if (idx >= 0) {
-      const newQty = Math.max(0, Math.min(256, current[idx].qty + delta));
-      if (newQty === 0) {
-        current.splice(idx, 1);
-      } else {
-        current[idx].qty = newQty;
-      }
-    } else if (delta > 0) {
-      current.push({ mp, form, qty: 1, tech: defaultTech });
+      current[idx] = { ...current[idx], qty: Math.min(256, current[idx].qty + 1) };
+    } else {
+      current.push({
+        productId: product.id,
+        brand: product.brand,
+        modelName: product.modelName,
+        mp: normalizeResolution(product.resolution),
+        form: cameraTypeToForm(product.cameraType),
+        qty: 1,
+        tech: defaultTech,
+        price: product.price,
+        salePrice: product.salePrice,
+        imageUrl: product.imageUrl || "",
+        cameraType: product.cameraType,
+      });
     }
     store.setCameraSelections(current);
   };
 
-  const updateCameraTech = (mp: string, form: CameraForm, tech: CameraTech) => {
+  const updateSelectionQty = (productId: string, newQty: number) => {
     const current = [...store.cameraSelections];
-    const idx = current.findIndex(c => c.mp === mp && c.form === form);
+    const idx = current.findIndex(c => c.productId === productId);
+    if (idx < 0) return;
+    if (newQty <= 0) {
+      current.splice(idx, 1);
+    } else {
+      current[idx] = { ...current[idx], qty: Math.min(256, newQty) };
+    }
+    store.setCameraSelections(current);
+  };
+
+  const updateSelectionTech = (productId: string, tech: CameraTech) => {
+    const current = [...store.cameraSelections];
+    const idx = current.findIndex(c => c.productId === productId);
     if (idx >= 0) {
       current[idx] = { ...current[idx], tech };
       store.setCameraSelections(current);
     }
   };
+
+  const removeSelection = (productId: string) => {
+    store.setCameraSelections(store.cameraSelections.filter(c => c.productId !== productId));
+  };
+
+  // Camera total price
+  const totalPrice = useMemo(() => store.cameraSelections.reduce((s, c) => {
+    const unitPrice = c.salePrice && c.salePrice < c.price ? c.salePrice : c.price;
+    return s + unitPrice * c.qty;
+  }, 0), [store.cameraSelections]);
 
   // ─── Step visibility ───
   const stepActive = (step: number) => {
@@ -464,9 +532,11 @@ export function CctvBuilder() {
     lines.push("--- CAMERAS ---");
     for (const cam of store.cameraSelections) {
       const techLabel = cameraTechs.find(t => t.value === cam.tech)?.label || cam.tech;
-      lines.push(`${cam.qty}x ${cam.mp} ${cam.form} (${techLabel})`);
+      const unitPrice = cam.salePrice && cam.salePrice < cam.price ? cam.salePrice : cam.price;
+      lines.push(`${cam.qty}x ${cam.brand} ${cam.modelName} (${cam.mp} ${cam.cameraType}, ${techLabel}) - ${fmt(unitPrice)} each = ${fmt(unitPrice * cam.qty)}`);
     }
     lines.push("Total Cameras: " + totalCameras);
+    lines.push("Camera Subtotal: " + fmt(totalPrice));
     if (recorderConfig && recorderConfig.units.length > 0) {
       lines.push("");
       lines.push("--- RECORDER ---");
@@ -696,99 +766,167 @@ export function CctvBuilder() {
         )}
       </Card>
 
-      {/* ═══ STEP 6: MEGAPIXEL + CAMERA FORM + QTY ═══ */}
+      {/* ═══ STEP 6: SELECT CAMERAS FROM PRODUCT CATALOG ═══ */}
       <Card className={cn("border-2 transition-colors", stepActive(6) ? "border-emerald-300" : "border-muted opacity-60")}>
         <CardHeader className="pb-3">
-          <StepBadge num={6} title="Select Cameras (Megapixel + Type + Quantity)" active={stepActive(6)} done={stepDone(6)} />
+          <StepBadge num={6} title="Select Cameras (from Product Catalog)" active={stepActive(6)} done={stepDone(6)} />
         </CardHeader>
         {stepActive(6) && (
           <CardContent className="pt-0 space-y-4">
             <p className="text-sm text-muted-foreground">
-              Select the megapixel resolution and camera form factor. You can choose multiple combinations. Use +/- to adjust quantity.
+              Choose cameras from your product catalog. Click a product to add it. Adjust quantities with +/-.
               {cameraSuggestion && <span> <strong>Recommended: {cameraSuggestion.suggested} cameras total.</strong></span>}
             </p>
 
-            {/* MP Selection */}
-            <div>
-              <Label className="text-xs text-muted-foreground uppercase tracking-wide">Megapixel Resolution</Label>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {mpOptions.map(mp => {
-                  const hasThisMp = store.cameraSelections.some(c => c.mp === mp);
+            {/* Product Search & Filter */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search by brand, model, resolution..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+              </div>
+              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+                <SelectTrigger className="w-32 h-9 text-sm"><SelectValue placeholder="All Types" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Dome">Dome</SelectItem>
+                  <SelectItem value="Bullet">Bullet</SelectItem>
+                  <SelectItem value="PTZ">PTZ</SelectItem>
+                  <SelectItem value="WiFi">WiFi</SelectItem>
+                  <SelectItem value="4G">4G</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Available Products Grid */}
+            {productsLoading ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="border rounded-xl p-3 space-y-2 animate-pulse">
+                    <div className="aspect-square bg-muted rounded-lg" />
+                    <div className="h-3 bg-muted rounded w-16" />
+                    <div className="h-4 bg-muted rounded w-24" />
+                    <div className="h-3 bg-muted rounded w-20" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+                <Package className="h-10 w-10 mx-auto text-amber-400 mb-2" />
+                <p className="text-sm font-medium text-amber-700">No cameras found for {store.cameraSystem.toUpperCase()} system</p>
+                <p className="text-xs text-amber-600 mt-1">Add {store.cameraSystem === "analog" ? "analog (DVR)" : store.cameraSystem === "ip" ? "IP (NVR)" : "WiFi"} cameras via the Admin panel first.</p>
+                <Button variant="outline" size="sm" className="mt-3 gap-1.5" onClick={() => useStore.getState().setView("admin")}>
+                  <Shield className="h-3.5 w-3.5" /> Go to Admin Panel
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-1">
+                {filteredProducts.map((product) => {
+                  const isSelected = store.cameraSelections.some(c => c.productId === product.id);
+                  const selectedQty = store.cameraSelections.find(c => c.productId === product.id)?.qty || 0;
+                  const unitPrice = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
                   return (
-                    <button key={mp} onClick={() => updateCameraQty(mp, "dome", hasThisMp ? 0 : 1)}
-                      className={cn("px-4 py-2 rounded-lg border-2 text-sm font-semibold transition-all", hasThisMp ? "border-emerald-500 bg-emerald-50 text-emerald-700" : "border-muted hover:border-emerald-300")}>
-                      {mp}
+                    <button key={product.id} onClick={() => addProduct(product)}
+                      className={cn(
+                        "text-left rounded-xl border-2 p-3 transition-all hover:shadow-md relative",
+                        isSelected ? "border-emerald-500 bg-emerald-50 shadow-sm" : "border-muted hover:border-emerald-300"
+                      )}>
+                      {isSelected && (
+                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          {selectedQty}
+                        </div>
+                      )}
+                      <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+                        {product.imageUrl ? (
+                          <img src={product.imageUrl} alt={product.modelName} className="w-full h-full object-contain p-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        ) : (
+                          <Camera className="h-8 w-8 text-muted-foreground" />
+                        )}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground uppercase">{product.brand}</p>
+                      <p className="text-xs font-semibold truncate" title={product.modelName}>{product.modelName}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.resolution}</Badge>
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.cameraType}</Badge>
+                      </div>
+                      <div className="mt-1.5">
+                        {product.salePrice && product.salePrice < product.price ? (
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm font-bold text-emerald-600">{fmt(unitPrice)}</span>
+                            <span className="text-[10px] text-muted-foreground line-through">{fmt(product.price)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm font-bold">{fmt(product.price)}</span>
+                        )}
+                      </div>
+                      {isSelected && <p className="text-[10px] text-emerald-600 font-medium mt-1">{selectedQty} added (click to +1)</p>}
                     </button>
                   );
                 })}
               </div>
-            </div>
+            )}
 
-            {/* Camera Grid: MP × Form with Qty and Tech */}
+            <p className="text-xs text-muted-foreground">{filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} available</p>
+
+            {/* Selected Cameras Table */}
             {store.cameraSelections.length > 0 && (
               <div className="border rounded-xl overflow-hidden">
-                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  <span>Resolution</span><span>Type</span><span>Technology</span><span className="text-center">Quantity</span><span className="w-8"></span>
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span>Product</span><span>Resolution</span><span>Technology</span><span className="text-center">Qty</span><span className="text-right">Price</span><span className="w-8"></span>
                 </div>
-                {[...store.cameraSelections].sort((a, b) => mpOptions.indexOf(a.mp) - mpOptions.indexOf(b.mp)).map((cam, i) => (
-                  <div key={cam.mp + "-" + cam.form + "-" + i} className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t">
-                    <Badge variant="outline" className="w-fit">{cam.mp}</Badge>
-                    <div className="flex items-center gap-1.5">
-                      {formOptions.find(f => f.value === cam.form)?.icon}
-                      <span className="text-sm capitalize">{cam.form}</span>
-                    </div>
-                    <Select value={cam.tech} onValueChange={(v) => updateCameraTech(cam.mp, cam.form, v as CameraTech)}>
-                      <SelectTrigger className="h-8 text-xs w-full max-w-[160px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {cameraTechs.filter(ct => store.cameraTechs.includes(ct.value)).map(ct => (
-                          <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <div className="flex justify-center">
-                      <QtyControl value={cam.qty} onChange={(v) => updateCameraQty(cam.mp, cam.form, v - cam.qty)} />
-                    </div>
-                    <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => updateCameraQty(cam.mp, cam.form, -cam.qty)}>
-                      <span className="text-lg leading-none">&times;</span>
-                    </Button>
-                  </div>
-                ))}
-                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 bg-emerald-50 border-t font-bold text-sm">
-                  <span>Total</span><span></span><span></span><span className="text-center text-emerald-700">{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</span><span></span>
-                </div>
-              </div>
-            )}
-
-            {/* Empty state */}
-            {store.cameraSelections.length === 0 && (
-              <div className="bg-muted/50 rounded-xl p-6 text-center">
-                <Camera className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">Click on a megapixel option above to start adding cameras. You can then add different form factors (Dome, Bullet, PTZ).</p>
-              </div>
-            )}
-
-            {/* Add More Form Factor for existing MP */}
-            {store.cameraSelections.length > 0 && (
-              <div>
-                <Label className="text-xs text-muted-foreground uppercase tracking-wide">Add More Cameras</Label>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {mpOptions.filter(mp => store.cameraSelections.some(c => c.mp === mp)).flatMap(mp =>
-                    formOptions.filter(f => !store.cameraSelections.some(c => c.mp === mp && c.form === f.value)).map(f => (
-                      <Button key={mp + "-" + f.value} variant="outline" size="sm" className="gap-1.5 text-xs"
-                        onClick={() => updateCameraQty(mp, f.value, 1)}>
-                        {f.icon} {mp} {f.label} <Plus className="h-3 w-3" />
+                {store.cameraSelections.map((cam) => {
+                  const unitPrice = cam.salePrice && cam.salePrice < cam.price ? cam.salePrice : cam.price;
+                  return (
+                    <div key={cam.productId} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {cam.imageUrl ? (
+                          <img src={cam.imageUrl} alt="" className="w-8 h-8 rounded object-contain bg-muted border shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                        ) : (
+                          <div className="w-8 h-8 rounded bg-muted border flex items-center justify-center shrink-0"><Camera className="h-4 w-4 text-muted-foreground" /></div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold truncate">{cam.brand} {cam.modelName}</p>
+                          <p className="text-[10px] text-muted-foreground">{cam.cameraType}</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="w-fit text-xs">{cam.mp}</Badge>
+                      <Select value={cam.tech} onValueChange={(v) => updateSelectionTech(cam.productId, v as CameraTech)}>
+                        <SelectTrigger className="h-8 text-xs w-full max-w-[130px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cameraTechs.filter(ct => store.cameraTechs.includes(ct.value)).map(ct => (
+                            <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex justify-center">
+                        <QtyControl value={cam.qty} onChange={(v) => updateSelectionQty(cam.productId, v)} />
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs font-semibold">{fmt(unitPrice * cam.qty)}</p>
+                        <p className="text-[10px] text-muted-foreground">{fmt(unitPrice)} x {cam.qty}</p>
+                      </div>
+                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeSelection(cam.productId)}>
+                        <span className="text-lg leading-none">&times;</span>
                       </Button>
-                    ))
-                  )}
-                  {/* Add new MP options not yet added */}
-                  {mpOptions.filter(mp => !store.cameraSelections.some(c => c.mp === mp)).map(mp => (
-                    <Button key={"new-" + mp} variant="outline" size="sm" className="gap-1.5 text-xs" onClick={() => updateCameraQty(mp, "dome", 1)}>
-                      <Plus className="h-3 w-3" /> Add {mp}
-                    </Button>
-                  ))}
+                    </div>
+                  );
+                })}
+                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 bg-emerald-50 border-t font-bold text-sm">
+                  <span>{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</span>
+                  <span></span><span></span>
+                  <span></span>
+                  <span className="text-right text-emerald-700">{fmt(totalPrice)}</span>
+                  <span></span>
                 </div>
+              </div>
+            )}
+
+            {/* Empty selected state */}
+            {store.cameraSelections.length === 0 && !productsLoading && filteredProducts.length > 0 && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+                <Lightbulb className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-blue-700">Click on any product above to add it to your configuration. You can add the same product multiple times — click again to increase quantity, or use +/- in the table below.</p>
               </div>
             )}
           </CardContent>
@@ -940,7 +1078,7 @@ export function CctvBuilder() {
                 {store.cameraSystem === "ip" && totalCameras > 24 && (
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
                     <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
-                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, 24, and 48-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port PoE switches do not exist in the mainstream market.</p>
+                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, and 24-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port and 48-port PoE switches do not exist.</p>
                   </div>
                 )}
               </div>
@@ -1020,8 +1158,8 @@ export function CctvBuilder() {
                           const gbPerDay = BITRATE_GB_PER_DAY[cam.mp] || 30.2;
                           const totalGB = gbPerDay * cam.qty * store.retentionDays;
                           return (
-                            <div key={i} className="flex justify-between text-xs">
-                              <span className="text-muted-foreground">{cam.qty}x {cam.mp} {cam.form}</span>
+                            <div key={cam.productId || i} className="flex justify-between text-xs">
+                              <span className="text-muted-foreground">{cam.qty}x {cam.brand} {cam.modelName} ({cam.mp})</span>
                               <span className="font-medium">{(totalGB / 1024).toFixed(1)} TB</span>
                             </div>
                           );
@@ -1274,6 +1412,23 @@ export function CctvBuilder() {
               <div className="flex justify-between"><span className="text-muted-foreground">Area:</span><span className="font-medium">{store.areaSqft} sq ft</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">System:</span><span className="font-medium uppercase">{store.cameraSystem}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">Technologies:</span><span className="font-medium">{store.cameraTechs.map(t => cameraTechs.find(ct => ct.value === t)?.label).join(", ")}</span></div>
+            </div>
+            <Separator />
+            {/* Camera Line Items */}
+            <div className="space-y-1.5">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Cameras</p>
+              {store.cameraSelections.map((cam) => {
+                const unitPrice = cam.salePrice && cam.salePrice < cam.price ? cam.salePrice : cam.price;
+                return (
+                  <div key={cam.productId} className="flex justify-between text-xs">
+                    <span className="text-muted-foreground">{cam.qty}x {cam.brand} {cam.modelName} ({cam.mp})</span>
+                    <span className="font-medium">{fmt(unitPrice * cam.qty)}</span>
+                  </div>
+                );
+              })}
+              <div className="flex justify-between text-sm font-bold text-emerald-700 pt-1 border-t">
+                <span>Camera Subtotal</span><span>{fmt(totalPrice)}</span>
+              </div>
             </div>
             <Separator />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">

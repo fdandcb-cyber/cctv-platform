@@ -6,15 +6,22 @@ export type CameraTech = "night_vision" | "night_vision_audio" | "color_audio" |
 export type CameraForm = "dome" | "bullet" | "ptz";
 
 export interface CameraSelection {
-  mp: string;       // "2MP", "3MP", "4MP", "5MP", "8MP", "12MP"
-  form: CameraForm;
+  productId: string;
+  brand: string;
+  modelName: string;
+  mp: string;         // normalized resolution: "1MP", "2MP", "3MP", "4MP", "5MP", "8MP", "12MP"
+  form: CameraForm;   // dome / bullet / ptz
   qty: number;
   tech: CameraTech;
+  price: number;
+  salePrice: number | null;
+  imageUrl: string;
+  cameraType: string;  // original cameraType from product (Dome, Bullet, WiFi, PTZ, 4G)
 }
 
 export interface RecorderUnit {
   type: string;      // "DVR" or "NVR"
-  channels: number;  // 4, 8, 16, 32, 64
+  channels: number;  // 4, 8, 16, 32, 64, 128, 256
   usedPorts: number; // how many cameras will connect
 }
 
@@ -39,9 +46,9 @@ export interface BuilderState {
   suggestedCameras: number;
   // Step 4
   cameraSystem: CameraSystem | "";
-  // Step 5 — MULTI-SELECT now
+  // Step 5 — MULTI-SELECT
   cameraTechs: CameraTech[];
-  // Step 6
+  // Step 6 — product-based selections
   cameraSelections: CameraSelection[];
   // Step 7 (auto-suggested) — ARRAY of units
   recorderUnits: RecorderUnit[];
@@ -170,3 +177,29 @@ export const useBuilderStore = create<BuilderState>((set) => ({
   setUps: (v) => set({ ups: v }),
   resetBuilder: () => set(initialState),
 }));
+
+// ═══ HELPERS ═══
+// Normalize product resolution string to our bitrate map key
+export function normalizeResolution(res: string): string {
+  if (!res) return "2MP";
+  const r = res.toUpperCase().trim();
+  if (r.includes("4K") || r === "8MP") return "8MP";
+  if (r === "12MP") return "12MP";
+  if (r === "5MP") return "5MP";
+  if (r === "4MP" || r === "1440P") return "4MP";
+  if (r === "3MP") return "3MP";
+  if (r === "2MP" || r === "1080P") return "2MP";
+  if (r === "1MP" || r === "720P") return "1MP";
+  // Fallback: try to extract number
+  const match = r.match(/(\d+)MP/);
+  if (match) return match[1] + "MP";
+  return "2MP";
+}
+
+// Map product cameraType to form factor
+export function cameraTypeToForm(cameraType: string): CameraForm {
+  const ct = cameraType.toLowerCase();
+  if (ct === "bullet") return "bullet";
+  if (ct === "ptz") return "ptz";
+  return "dome"; // Dome, WiFi, 4G all default to dome form
+}
