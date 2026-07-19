@@ -420,6 +420,66 @@ function SettingsTab() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SEED SAMPLE DATA BUTTON
+// ═══════════════════════════════════════════════════════════════
+
+const SEED_PRODUCTS = [
+  // ANALOG - Hikvision HD-TVI
+  { brand: "Hikvision", modelName: "DS-2CE56D0T-IRP", cameraType: "Bullet", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (20m)", weatherRating: "IP67", price: "1499", salePrice: "1299", description: "2MP HD-TVI bullet camera with IR night vision, 20m range, IP67 weatherproof.", features: "2MP, IR 20m, IP67, Smart IR, HD-TVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "20m", fieldOfView: "90 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CE5AD0T-IRP", cameraType: "Dome", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (20m)", weatherRating: "IP67", price: "1399", salePrice: "1199", description: "2MP HD-TVI dome camera with IR night vision, vandal-proof, IP67.", features: "2MP, IR 20m, IP67, Vandal-proof, HD-TVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "20m", fieldOfView: "100 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CE56D5T-IRP", cameraType: "Bullet", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "2199", salePrice: "", description: "4MP HD-TVI bullet camera with 30m IR range, IP67 weatherproof.", features: "4MP, IR 30m, IP67, Smart IR, HD-TVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "87 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CE7AD3T-IRP", cameraType: "Dome", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "2499", salePrice: "", description: "4MP HD-TVI dome camera with 30m IR, vandal-proof housing.", features: "4MP, IR 30m, IP67, Vandal-proof, HD-TVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+  // ANALOG - Dahua HD-CVI
+  { brand: "Dahua", modelName: "HFW-B2421T-ZAS", cameraType: "Bullet", resolution: "2MP", technology: "HD-CVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "1350", salePrice: "1150", description: "2MP HD-CVI bullet with 30m IR, IP67, built-in mic.", features: "2MP, IR 30m, IP67, Built-in Mic, HD-CVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "90 degrees" },
+  { brand: "Dahua", modelName: "HDBW-2421R-ZAS", cameraType: "Dome", resolution: "2MP", technology: "HD-CVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "1450", salePrice: "", description: "2MP HD-CVI dome with 30m IR, vandal-proof, built-in mic.", features: "2MP, IR 30m, IP67, Vandal-proof, HD-CVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+  // IP - Hikvision
+  { brand: "Hikvision", modelName: "DS-2CD2143G2-I", cameraType: "Bullet", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "ColorVu (30m)", weatherRating: "IP67", price: "3999", salePrice: "3499", description: "4MP IP bullet with ColorVu technology, full color night vision, IP67.", features: "4MP, ColorVu, IP67, PoE, AcuSense, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "87 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CD2343G2-I", cameraType: "Dome", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "ColorVu (30m)", weatherRating: "IP67", price: "4299", salePrice: "", description: "4MP IP dome with ColorVu, vandal-proof, built-in mic.", features: "4MP, ColorVu, IP67, Vandal-proof, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CD2T86G2-4", cameraType: "Bullet", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "7999", salePrice: "6999", description: "8MP (4K) IP bullet with 40m IR, AcuSense AI, IP67.", features: "4K 8MP, IR 40m, IP67, AcuSense AI, PoE, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "40m", fieldOfView: "97 degrees" },
+  { brand: "Hikvision", modelName: "DS-2CD2T87G2-4", cameraType: "Dome", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "8499", salePrice: "", description: "8MP (4K) IP dome with 40m IR, AcuSense AI, vandal-proof.", features: "4K 8MP, IR 40m, IP67, AcuSense AI, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "40m", fieldOfView: "105 degrees" },
+  { brand: "Hikvision", modelName: "DS-2DE4A425IW-DE", cameraType: "PTZ", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "IR (150m)", weatherRating: "IP67", price: "35000", salePrice: "", description: "4MP IP PTZ with 25x zoom, 150m IR, auto-tracking, IP67.", features: "4MP, 25x Zoom, IR 150m, Auto-Tracking, PoE, IP67", imageUrl: "/cctv-guide-images/ptz-camera.png", irRange: "150m", fieldOfView: "360 degrees" },
+  // IP - Dahua
+  { brand: "Dahua", modelName: "IPC-HFW2831T-ZAS-S2", cameraType: "Bullet", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (50m)", weatherRating: "IP67", price: "6999", salePrice: "5999", description: "8MP (4K) IP bullet with 50m IR, SMD 4.0 AI, IP67.", features: "4K 8MP, IR 50m, IP67, SMD 4.0 AI, PoE, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "50m", fieldOfView: "100 degrees" },
+  { brand: "Dahua", modelName: "IPC-HDBW2831E-S-S2", cameraType: "Dome", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "7499", salePrice: "", description: "8MP (4K) IP dome with 40m IR, SMD 4.0 AI, vandal-proof.", features: "4K 8MP, IR 40m, IP67, SMD 4.0 AI, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "40m", fieldOfView: "105 degrees" },
+  // WiFi
+  { brand: "TP-Link", modelName: "Tapo C200", cameraType: "WiFi", resolution: "2MP", technology: "WiFi IP", recorderType: "Cloud/SD Card", nightVision: "IR (9m)", weatherRating: "Indoor", price: "2999", salePrice: "2499", description: "2MP WiFi indoor camera with IR night vision, two-way audio, SD card slot.", features: "2MP, WiFi, IR 9m, Two-Way Audio, SD Card, Motion Detection", imageUrl: "/cctv-guide-images/wifi-camera.png", irRange: "9m", fieldOfView: "110 degrees" },
+  { brand: "TP-Link", modelName: "Tapo C320WS", cameraType: "WiFi", resolution: "2MP", technology: "WiFi IP", recorderType: "Cloud/SD Card", nightVision: "Color (30m)", weatherRating: "IP66", price: "4999", salePrice: "", description: "2MP WiFi outdoor camera with color night vision, spotlights, IP66.", features: "2MP, WiFi, Color Night, Spotlights, IP66, SD Card", imageUrl: "/cctv-guide-images/wifi-camera.png", irRange: "30m", fieldOfView: "120 degrees" },
+  // DVR / NVR recorders
+  { brand: "Hikvision", modelName: "DS-7204HGHI-F1", cameraType: "DVR", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "4999", salePrice: "4499", description: "4-channel 4MP HD-TVI DVR with H.265+, 1 SATA, HDMI output.", features: "4CH, 4MP, HD-TVI, H.265+, 1x SATA, HDMI", imageUrl: "", irRange: "", fieldOfView: "" },
+  { brand: "Hikvision", modelName: "DS-7216HGHI-F2", cameraType: "DVR", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "8999", salePrice: "", description: "16-channel 4MP HD-TVI DVR with H.265+, 2 SATA, HDMI.", features: "16CH, 4MP, HD-TVI, H.265+, 2x SATA, HDMI", imageUrl: "", irRange: "", fieldOfView: "" },
+  { brand: "Hikvision", modelName: "DS-7608NI-K2", cameraType: "NVR", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "", weatherRating: "", price: "7999", salePrice: "6999", description: "8-channel 4K NVR with PoE (4 ports), 2 SATA, H.265+.", features: "8CH, 4K, PoE 4-port, H.265+, 2x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+  { brand: "Hikvision", modelName: "DS-7616NI-K2", cameraType: "NVR", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "", weatherRating: "", price: "12999", salePrice: "", description: "16-channel 4K NVR with PoE (8 ports), 2 SATA, H.265+.", features: "16CH, 4K, PoE 8-port, H.265+, 2x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+  { brand: "Dahua", modelName: "XVR5108HS-4KL", cameraType: "DVR", resolution: "4K", technology: "HD-CVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "6999", salePrice: "", description: "8-channel 4K HD-CVI DVR with AI coding, 1 SATA, HDMI.", features: "8CH, 4K, HD-CVI/AHD/TVI/CVI, H.265+, 1x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+];
+
+function SeedDataButton({ onDone }: { onDone: () => void }) {
+  const [seeding, setSeeding] = useState(false);
+  const handleSeed = async () => {
+    if (!confirm("This will add 20 sample CCTV products (cameras, DVRs, NVRs) to the database. Continue?")) return;
+    setSeeding(true);
+    try {
+      for (const p of SEED_PRODUCTS) {
+        await fetch("/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(p),
+        });
+      }
+      toast.success("20 sample products added successfully!");
+      onDone();
+    } catch {
+      toast.error("Failed to seed data");
+    }
+    setSeeding(false);
+  };
+  return (
+    <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={handleSeed} disabled={seeding}>
+      <Package className="h-3.5 w-3.5" /> {seeding ? "Adding..." : "Seed Sample Data"}
+    </Button>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // MAIN ADMIN PANEL
 // ═══════════════════════════════════════════════════════════════
 
@@ -503,11 +563,14 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
 
       {/* Main Tabs */}
       <Tabs defaultValue="products">
-        <TabsList>
-          <TabsTrigger value="products" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" /> Products</TabsTrigger>
-          <TabsTrigger value="quotes" className="gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" /> Quotes</TabsTrigger>
-          <TabsTrigger value="settings" className="gap-1.5 text-xs"><Settings className="h-3.5 w-3.5" /> Settings</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="products" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" /> Products</TabsTrigger>
+            <TabsTrigger value="quotes" className="gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" /> Quotes</TabsTrigger>
+            <TabsTrigger value="settings" className="gap-1.5 text-xs"><Settings className="h-3.5 w-3.5" /> Settings</TabsTrigger>
+          </TabsList>
+          <SeedDataButton onDone={refresh} />
+        </div>
 
         {/* ─── PRODUCTS TAB ─── */}
         <TabsContent value="products" className="space-y-4 mt-4">

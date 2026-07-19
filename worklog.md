@@ -46,3 +46,38 @@ Stage Summary:
 - Algorithm bug fixed: remaining now correctly decrements by `used` not `chosen`
 - Red warning shown when camera count exceeds maximum single DVR/NVR unit
 - All calculations verified with edge case testing
+
+---
+Task ID: 3
+Agent: Main
+Task: PoE max 24, builder uses real products from DB, admin panel seed data
+
+Work Log:
+- Fixed PoE max to 24-port (removed 48). PoE options now [4, 8, 16, 24]
+- Updated CameraSelection interface: added productId, brand, modelName, price, salePrice, imageUrl, cameraType fields
+- Added normalizeResolution() and cameraTypeToForm() helper functions to builder-store.ts
+- Added 1MP to BITRATE_GB_PER_DAY map (7.6 GB/day)
+- Completely rewrote Step 6: now shows product grid fetched from /api/products, filtered by system type
+  - Analog system: filters products with recorderType=DVR or technology=HD-TVI/HD-CVI/AHD
+  - IP system: filters products with recorderType=NVR or technology=IP
+  - WiFi system: filters products with cameraType=WiFi/4G or technology=WiFi IP
+- Product grid shows: image, brand, model, resolution badge, type badge, price (with sale price)
+- Search by brand/model/resolution + filter by camera type (Dome/Bullet/PTZ/WiFi/4G)
+- Empty state with link to Admin Panel when no products found for system type
+- Selected cameras table shows: product image, brand+model, resolution, technology dropdown, +/- qty, line total
+- Camera subtotal shown in table footer and final summary
+- Updated copy quote to include: brand, model, MP, type, technology, unit price, line total, camera subtotal
+- Updated HDD breakdown to show brand+model instead of generic form factor
+- Updated final summary to show per-product line items with prices
+- Added SeedDataButton to admin panel: 20 sample products (6 analog cameras, 6 IP cameras, 2 WiFi cameras, 5 DVR/NVR recorders)
+- Seed data covers: Hikvision (HD-TVI, IP), Dahua (HD-CVI, IP), TP-Link (WiFi), with real model numbers and prices
+- Removed unused mpOptions/formOptions constants from builder
+- Added Search, Package icons, useStore import
+- Build passes with zero errors
+
+Stage Summary:
+- Builder now pulls real products from database (added via Admin Panel)
+- Step 6 shows product catalog with images, brand, model, price
+- Admin Panel has "Seed Sample Data" button to quickly populate 20 products
+- PoE max is 24-port (4/8/16/24 only)
+- All calculations (NVR, DVR, PoE, HDD, cable) use resolution from actual product data
