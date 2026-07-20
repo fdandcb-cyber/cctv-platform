@@ -1,31 +1,29 @@
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Complete connectz e-commerce platform redesign - fix database, dark mode, auth, and polish
+Task: Convert SPA to Next.js file-based routing with SEO metadata
 
 Work Log:
-- Read and analyzed all existing project files (12+ page components, stores, API routes, layout)
-- Switched Prisma from PostgreSQL (Supabase) to SQLite for local sandbox development
-- Generated new Prisma client and pushed schema to SQLite database
-- Created and ran seed script with 12 CCTV products (Hikvision, Dahua, Ezviz, CP Plus)
-- Fixed login API to support both admin credentials and user database authentication
-- Fixed dark mode colors across all pages: products, product detail, cart, checkout, dashboard, about, services, contact, home page
-- Updated typeConfig in products-page and product-detail-page with dark: variants for all camera types
-- Fixed product spec card colors (night vision, weather, IR range, FOV, recorder type) for dark mode
-- Fixed footer grid layout from 5-column (overflow) to 4-column responsive grid
-- Fixed Zustand v5 getter issue: cartCount, cartTotal, isAuthenticated were not reactive when destructured from hook
-- Refactored site-header, cart-page, checkout-page, dashboard-page to compute derived values directly from cart state
-- Fixed ProductCard importing setSelectedProduct from wrong store (app-store vs cctv-store)
-- Fixed React 19 lint errors: replaced setState-in-useEffect with lazy initializers and async callbacks
-- Fixed admin panel QuotesTab and SettingsTab to avoid synchronous setState in effects
-- Replaced setMounted(true) useEffect with useSyncExternalStore for theme hydration
-- Verified with Agent Browser: home page, products page, product detail page, cart page all render correctly
-- Confirmed dark mode toggle works, product data loads from SQLite, cart badge updates properly
+- Audited all 45+ setView() calls across 16 component files
+- Created (site) route group with shared layout (SiteHeader, SiteFooter, FloatingWhatsApp, AppInitializer)
+- Created 14 file-system routes with per-page Metadata exports
+- Created separate /admin route without site header/footer
+- Rewrote SiteHeader to use Link + usePathname() for active state
+- Rewrote SiteFooter to use Link components
+- Created AppInitializer component for session restore + product fetch
+- Created ProductDetailClient for /products/[id] with URL param product lookup
+- Ran Python migration script to bulk-replace setView() → router.push()
+- Manually fixed product-detail special cases (router.push(`/products/${id}`))
+- Fixed cctv-builder.tsx router hook placement
+- Removed view/setView from app-store.ts and cctv-store.ts
+- Deleted old SPA page.tsx
+- Build verified: 23 routes, 0 errors
+- Pushed to GitHub: commit 38f8c14
 
 Stage Summary:
-- Platform is fully functional with SQLite database, 12 seeded products
-- All pages work with proper dark/light theme support
-- User auth (login/signup) works via database
-- Cart, checkout, product detail flows verified in browser
-- Application source code passes ESLint (only seed script errors remain)
-- Screenshots saved to /home/z/my-project/download/
+- All 13 checklist items are now COMPLETE
+- Platform converted from single-page SPA to proper Next.js file-based routing
+- Every page has its own URL, metadata, and is SEO-indexable
+- Browser back/forward now works correctly
+- Google can index all individual pages
+- Committed and pushed to GitHub (main branch)
