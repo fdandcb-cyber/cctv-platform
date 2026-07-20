@@ -3,47 +3,86 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  password      String?
+  role          String   @default("admin")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  authorId  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  orders        Order[]
 }
 
 model CctvProduct {
-  id          String   @id @default(cuid())
-  brand       String
-  modelName   String
-  cameraType  String
-  resolution  String
-  technology  String
-  recorderType String
-  nightVision String
-  weatherRating String
-  price       Float
-  salePrice   Float?
-  description String
-  features    String
-  imageUrl    String
-  videoUrl    String?
+  id            String   @id @default(cuid())
+  brand         String
+  modelName     String
+  cameraType    String
+  resolution    String
+  technology    String
+  recorderType  String
+  nightVision   String   @default("")
+  weatherRating String   @default("")
+  price         Float
+  salePrice     Float?
+  description   String
+  features      String   @default("")
+  imageUrl      String   @default("")
+  videoUrl      String?
   sampleVideoUrl String?
-  irRange     String
-  fieldOfView String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  irRange       String   @default("")
+  fieldOfView   String   @default("")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  userId        String?
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  customerName  String
+  customerEmail String
+  customerPhone String
+  quoteData     String    // JSON string of the full quote/config
+  totalAmount   Float
+  status        String    @default("pending") // pending | paid | failed | completed
+  paymentMethod String    @default("razorpay")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user          User?     @relation(fields: [userId], references: [id])
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id            String   @id @default(cuid())
+  orderId       String
+  productId     String?
+  productName   String
+  brand         String   @default("")
+  model         String   @default("")
+  quantity      Int      @default(1)
+  unitPrice     Float
+  totalPrice    Float
+  category      String   @default("camera") // camera | recorder | poe | hdd | cable | accessory
+
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product       CctvProduct? @relation(fields: [productId], references: [id])
+}
+
+model AdminSettings {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  value         String
+  updatedAt     DateTime @updatedAt
 }
