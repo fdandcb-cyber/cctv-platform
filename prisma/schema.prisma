@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./db/custom.db"
 }
 
 model User {
@@ -12,7 +12,7 @@ model User {
   email         String   @unique
   name          String?
   password      String?
-  role          String   @default("admin")
+  role          String   @default("customer")
   phone         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -53,9 +53,9 @@ model Order {
   customerName  String
   customerEmail String
   customerPhone String
-  quoteData     String    // JSON string of the full quote/config
+  quoteData     String
   totalAmount   Float
-  status        String    @default("pending") // pending | paid | failed | completed
+  status        String    @default("pending")
   paymentMethod String    @default("razorpay")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -74,7 +74,7 @@ model OrderItem {
   quantity      Int      @default(1)
   unitPrice     Float
   totalPrice    Float
-  category      String   @default("camera") // camera | recorder | poe | hdd | cable | accessory
+  category      String   @default("camera")
 
   order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product       CctvProduct? @relation(fields: [productId], references: [id])

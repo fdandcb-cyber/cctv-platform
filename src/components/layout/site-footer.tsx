@@ -44,11 +44,11 @@ export function SiteFooter() {
       >
         <div
           className={cn(
-            "grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5"
+            "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4"
           )}
         >
           {/* Column 1: Brand */}
-          <div className={cn("space-y-4 lg:col-span-2")}>
+          <div className={cn("space-y-4 sm:col-span-2 lg:col-span-2")}>
             <div className={cn("flex items-center gap-2")}>
               <img
                 src="/logo.svg"

@@ -1,0 +1,787 @@
+   100→  viewport: { once: true } as const,
+   101→};
+   102→
+   103→const staggerItem = {
+   104→  initial: { opacity: 0, y: 20 },
+   105→  whileInView: { opacity: 1, y: 0 },
+   106→  transition: { duration: 0.5 },
+   107→};
+   108→
+   109→// ═══════════════════════════════════════════════════════════════
+   110→// SECTION 1 — Hero
+   111→// ═══════════════════════════════════════════════════════════════
+   112→
+   113→function HeroSection() {
+   114→  const { setView } = useAppStore();
+   115→
+   116→  return (
+   117→    <section
+   118→      className={cn(
+   119→        "relative min-h-screen flex flex-col items-center justify-center px-4 py-20 overflow-hidden",
+   120→        "bg-background"
+   121→      )}
+   122→    >
+   123→      {/* Gradient overlay */}
+   124→      <div
+   125→        className={cn(
+   126→          "absolute inset-0 pointer-events-none",
+   127→          "bg-gradient-to-b from-background via-background/95 to-background/80",
+   128→          "before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,oklch(0.6_0.15_160/0.12),transparent_70%)]",
+   129→          "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-32 after:bg-gradient-to-t after:from-background after:to-transparent"
+   130→        )}
+   131→      />
+   132→
+   133→      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+   134→        {/* Animated shield icon */}
+   135→        <motion.div
+   136→          initial={{ scale: 0.8, opacity: 0 }}
+   137→          animate={{ scale: 1, opacity: 1 }}
+   138→          transition={{ duration: 0.6, ease: "easeOut" }}
+   139→          className="flex justify-center"
+   140→        >
+   141→          <div
+   142→            className={cn(
+   143→              "relative p-4 rounded-2xl",
+   144→              "bg-emerald-50 border border-emerald-200/60",
+   145→              "shadow-lg shadow-emerald-200/30"
+   146→            )}
+   147→          >
+   148→            <Shield className="h-14 w-14 text-emerald-600" />
+   149→            <Camera className="h-6 w-6 text-emerald-500 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-emerald-200" />
+   150→          </div>
+   151→        </motion.div>
+   152→
+   153→        {/* Heading */}
+   154→        <motion.h1
+   155→          initial={{ opacity: 0, y: 20 }}
+   156→          animate={{ opacity: 1, y: 0 }}
+   157→          transition={{ duration: 0.5, delay: 0.15 }}
+   158→          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight"
+   159→        >
+   160→          Secure What Matters Most
+   161→        </motion.h1>
+   162→
+   163→        <motion.p
+   164→          initial={{ opacity: 0, y: 20 }}
+   165→          animate={{ opacity: 1, y: 0 }}
+   166→          transition={{ duration: 0.5, delay: 0.3 }}
+   167→          className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto"
+   168→        >
+   169→          Professional CCTV solutions for homes, businesses &amp; industries.
+   170→          Expert installation, competitive pricing.
+   171→        </motion.p>
+   172→
+   173→        {/* CTA Buttons */}
+   174→        <motion.div
+   175→          initial={{ opacity: 0, y: 20 }}
+   176→          animate={{ opacity: 1, y: 0 }}
+   177→          transition={{ duration: 0.5, delay: 0.45 }}
+   178→          className="flex flex-col sm:flex-row gap-4 justify-center"
+   179→        >
+   180→          <Button
+   181→            size="lg"
+   182→            onClick={() => setView("products")}
+   183→            className="gap-2 text-base px-8"
+   184→          >
+   185→            <Eye className="h-5 w-5" />
+   186→            Browse Products
+   187→          </Button>
+   188→          <Button
+   189→            size="lg"
+   190→            variant="outline"
+   191→            onClick={() => setView("builder")}
+   192→            className="gap-2 text-base px-8"
+   193→          >
+   194→            <Wrench className="h-5 w-5" />
+   195→            Build Your Setup
+   196→          </Button>
+   197→        </motion.div>
+   198→
+   199→        {/* Trust badges */}
+   200→        <motion.div
+   201→          initial={{ opacity: 0, y: 20 }}
+   202→          animate={{ opacity: 1, y: 0 }}
+   203→          transition={{ duration: 0.5, delay: 0.6 }}
+   204→          className="flex flex-wrap gap-4 sm:gap-6 justify-center pt-4"
+   205→        >
+   206→          {[
+   207→            "500+ Installations",
+   208→            "10+ Brands",
+   209→            "Free Site Survey",
+   210→            "After-Sales Support",
+   211→          ].map((label) => (
+   212→            <div
+   213→              key={label}
+   214→              className={cn(
+   215→                "flex items-center gap-2 text-sm text-muted-foreground",
+   216→                "bg-muted/50 border border-border/50 rounded-full px-4 py-1.5"
+   217→              )}
+   218→            >
+   219→              <Shield className="h-3.5 w-3.5 text-emerald-600" />
+   220→              {label}
+   221→            </div>
+   222→          ))}
+   223→        </motion.div>
+   224→      </div>
+   225→    </section>
+   226→  );
+   227→}
+   228→
+   229→// ═══════════════════════════════════════════════════════════════
+   230→// SECTION 2 — Featured Products
+   231→// ═══════════════════════════════════════════════════════════════
+   232→
+   233→function ProductCard({ product }: { product: CctvProduct }) {
+   234→  const { setView, setSelectedProduct } = useStore();
+   235→
+   236→  return (
+   237→    <Card
+   238→      className={cn(
+   239→        "overflow-hidden group transition-all duration-300",
+   240→        "hover:scale-[1.02] hover:shadow-lg",
+   241→        "py-0 gap-0"
+   242→      )}
+   243→    >
+   244→      {/* Image */}
+   245→      <div
+   246→        className={cn(
+   247→          "aspect-[4/3] bg-muted relative overflow-hidden cursor-pointer"
+   248→        )}
+   249→        onClick={() => {
+   250→          setSelectedProduct(product);
+   251→          setView("product-detail");
+   252→        }}
+   253→      >
+   254→        {product.imageUrl ? (
+   255→          <img
+   256→            src={product.imageUrl}
+   257→            alt={product.modelName}
+   258→            className={cn(
+   259→              "w-full h-full object-contain p-4",
+   260→              "group-hover:scale-105 transition-transform duration-300"
+   261→            )}
+   262→            onError={(e) => {
+   263→              (e.target as HTMLImageElement).style.display = "none";
+   264→            }}
+   265→          />
+   266→        ) : (
+   267→          <div className="w-full h-full flex items-center justify-center">
+   268→            <Camera className="h-12 w-12 text-muted-foreground/40" />
+   269→          </div>
+   270→        )}
+   271→
+   272→        {product.salePrice && product.salePrice < product.price && (
+   273→          <Badge className="absolute top-2 left-2 bg-red-500 text-white text-[10px]">
+   274→            {Math.round(
+   275→              ((product.price - product.salePrice) / product.price) * 100
+   276→            )}
+   277→            % OFF
+   278→          </Badge>
+   279→        )}
+   280→      </div>
+   281→
+   282→      <CardContent className="p-4 space-y-2.5">
+   283→        <div className="flex items-center gap-1.5">
+   284→          <Badge variant="outline" className="text-[10px]">
+   285→            {product.brand}
+   286→          </Badge>
+   287→          <Badge variant="outline" className="text-[10px]">
+   288→            {product.resolution}
+   289→          </Badge>
+   290→        </div>
+   291→        <p className="font-semibold text-sm leading-tight">
+   292→          {product.modelName}
+   293→        </p>
+   294→
+   295→        <div className="flex items-end justify-between pt-1">
+   296→          <div>
+   297→            {product.salePrice && product.salePrice < product.price ? (
+   298→              <div className="flex items-center gap-2">
+   299→                <span className="text-lg font-bold text-emerald-600">
+   300→                  {fmt(product.salePrice)}
+   301→                </span>
+   302→                <span className="text-xs text-muted-foreground line-through">
+   303→                  {fmt(product.price)}
+   304→                </span>
+   305→              </div>
+   306→            ) : (
+   307→              <span className="text-lg font-bold">{fmt(product.price)}</span>
+   308→            )}
+   309→          </div>
+   310→          <Button
+   311→            size="sm"
+   312→            variant="outline"
+   313→            className="text-xs h-8 gap-1"
+   314→            onClick={() => {
+   315→              setSelectedProduct(product);
+   316→              setView("product-detail");
+   317→            }}
+   318→          >
+   319→            View Details
+   320→            <ChevronRight className="h-3 w-3" />
+   321→          </Button>
+   322→        </div>
+   323→      </CardContent>
+   324→    </Card>
+   325→  );
+   326→}
+   327→
+   328→function FeaturedProducts() {
+   329→  const { products, setView } = useStore();
+   330→  const featured = products.slice(0, 8);
+   331→
+   332→  if (featured.length === 0) return null;
+   333→
+   334→  return (
+   335→    <section className="py-16 sm:py-20 px-4">
+   336→      <div className="max-w-7xl mx-auto">
+   337→        <motion.div {...fadeUp} className="text-center mb-10">
+   338→          <h2 className="text-3xl sm:text-4xl font-bold">Popular Products</h2>
+   339→          <p className="text-muted-foreground mt-2">
+   340→            Top-selling CCTV cameras and security equipment
+   341→          </p>
+   342→        </motion.div>
+   343→
+   344→        {/* Grid: 2 cols mobile, 3 tablet, 4 desktop */}
+   345→        <motion.div
+   346→          {...staggerContainer}
+   347→          className={cn(
+   348→            "grid gap-4 sm:gap-6",
+   349→            "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+   350→          )}
+   351→        >
+   352→          {featured.map((product) => (
+   353→            <motion.div key={product.id} {...staggerItem}>
+   354→              <ProductCard product={product} />
+   355→            </motion.div>
+   356→          ))}
+   357→        </motion.div>
+   358→
+   359→        <motion.div {...fadeUp} className="text-center mt-10">
+   360→          <Button
+   361→            variant="outline"
+   362→            size="lg"
+   363→            className="gap-2"
+   364→            onClick={() => setView("products")}
+   365→          >
+   366→            View All Products
+   367→            <ArrowRight className="h-4 w-4" />
+   368→          </Button>
+   369→        </motion.div>
+   370→      </div>
+   371→    </section>
+   372→  );
+   373→}
+   374→
+   375→// ═══════════════════════════════════════════════════════════════
+   376→// SECTION 3 — Why Choose ConnectZ
+   377→// ═══════════════════════════════════════════════════════════════
+   378→
+   379→function WhyChooseSection() {
+   380→  return (
+   381→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   382→      <div className="max-w-6xl mx-auto">
+   383→        <motion.div {...fadeUp} className="text-center mb-12">
+   384→          <h2 className="text-3xl sm:text-4xl font-bold">
+   385→            Why Choose <span className="text-emerald-600">ConnectZ</span>
+   386→          </h2>
+   387→          <p className="text-muted-foreground mt-2">
+   388→            Trusted by hundreds of customers for reliable security solutions
+   389→          </p>
+   390→        </motion.div>
+   391→
+   392→        <motion.div
+   393→          {...staggerContainer}
+   394→          className={cn(
+   395→            "grid gap-4 sm:gap-6",
+   396→            "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+   397→          )}
+   398→        >
+   399→          {WHY_CHOOSE.map((item) => (
+   400→            <motion.div key={item.title} {...staggerItem}>
+   401→              <Card className="h-full gap-4 py-0">
+   402→                <CardContent className="p-6 space-y-3">
+   403→                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600">
+   404→                    {item.icon}
+   405→                  </div>
+   406→                  <h3 className="font-semibold text-lg">{item.title}</h3>
+   407→                  <p className="text-sm text-muted-foreground leading-relaxed">
+   408→                    {item.desc}
+   409→                  </p>
+   410→                </CardContent>
+   411→              </Card>
+   412→            </motion.div>
+   413→          ))}
+   414→        </motion.div>
+   415→      </div>
+   416→    </section>
+   417→  );
+   418→}
+   419→
+   420→// ═══════════════════════════════════════════════════════════════
+   421→// SECTION 4 — Brands We Offer
+   422→// ═══════════════════════════════════════════════════════════════
+   423→
+   424→function BrandsSection() {
+   425→  return (
+   426→    <section className="py-16 sm:py-20 px-4">
+   427→      <div className="max-w-6xl mx-auto">
+   428→        <motion.div {...fadeUp} className="text-center mb-10">
+   429→          <h2 className="text-3xl sm:text-4xl font-bold">Brands We Offer</h2>
+   430→          <p className="text-muted-foreground mt-2">
+   431→            Authorized dealer for top CCTV brands in India
+   432→          </p>
+   433→        </motion.div>
+   434→
+   435→        <motion.div {...fadeUp}>
+   436→          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide justify-start lg:justify-center">
+   437→            {BRANDS.map((brand) => (
+   438→              <div
+   439→                key={brand.name}
+   440→                className={cn(
+   441→                  "flex-shrink-0 snap-center",
+   442→                  "px-8 py-5 rounded-xl border border-border/50",
+   443→                  "bg-card shadow-sm",
+   444→                  "hover:shadow-md transition-shadow duration-300"
+   445→                )}
+   446→              >
+   447→                <Badge
+   448→                  className={cn(
+   449→                    "text-base font-bold px-6 py-2 rounded-lg border-0",
+   450→                    brand.color
+   451→                  )}
+   452→                >
+   453→                  {brand.name}
+   454→                </Badge>
+   455→              </div>
+   456→            ))}
+   457→          </div>
+   458→        </motion.div>
+   459→      </div>
+   460→    </section>
+   461→  );
+   462→}
+   463→
+   464→// ═══════════════════════════════════════════════════════════════
+   465→// SECTION 5 — CCTV Builder CTA
+   466→// ═══════════════════════════════════════════════════════════════
+   467→
+   468→function BuilderCtaSection() {
+   469→  const { setView } = useAppStore();
+   470→
+   471→  return (
+   472→    <section className="py-16 sm:py-20 px-4">
+   473→      <div className="max-w-4xl mx-auto">
+   474→        <motion.div {...fadeUp}>
+   475→          <Card className="bg-primary text-primary-foreground overflow-hidden py-0 gap-0 border-0">
+   476→            <CardContent className="p-8 sm:p-12 text-center space-y-6">
+   477→              <div className="flex justify-center">
+   478→                <div className="p-3 rounded-xl bg-primary-foreground/10">
+   479→                  <Wrench className="h-10 w-10" />
+   480→                </div>
+   481→              </div>
+   482→              <div className="space-y-2">
+   483→                <h2 className="text-2xl sm:text-3xl font-bold">
+   484→                  Not sure what you need?
+   485→                </h2>
+   486→                <p className="text-primary-foreground/80 text-lg">
+   487→                  Use our intelligent builder to design the perfect CCTV setup
+   488→                  for your property in minutes.
+   489→                </p>
+   490→              </div>
+   491→              <motion.div
+   492→                initial={false}
+   493→                animate={{ scale: [1, 1.04, 1] }}
+   494→                transition={{
+   495→                  duration: 2,
+   496→                  repeat: Infinity,
+   497→                  ease: "easeInOut",
+   498→                }}
+   499→              >
+   500→                <Button
+   501→                  size="lg"
+   502→                  variant="secondary"
+   503→                  className="gap-2 text-base px-8"
+   504→                  onClick={() => setView("builder")}
+   505→                >
+   506→                  <Wrench className="h-5 w-5" />
+   507→                  Build Your Setup
+   508→                  <ArrowRight className="h-4 w-4" />
+   509→                </Button>
+   510→              </motion.div>
+   511→            </CardContent>
+   512→          </Card>
+   513→        </motion.div>
+   514→      </div>
+   515→    </section>
+   516→  );
+   517→}
+   518→
+   519→// ═══════════════════════════════════════════════════════════════
+   520→// SECTION 6 — Contact
+   521→// ═══════════════════════════════════════════════════════════════
+   522→
+   523→function ContactSection() {
+   524→  const { setView } = useAppStore();
+   525→
+   526→  return (
+   527→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   528→      <div className="max-w-4xl mx-auto">
+   529→        <motion.div {...fadeUp} className="text-center space-y-6">
+   530→          <h2 className="text-3xl sm:text-4xl font-bold">Get In Touch</h2>
+   531→          <p className="text-muted-foreground text-lg">
+   532→            Have questions? Reach out to us directly — we&apos;re here to help.
+   533→          </p>
+   534→        </motion.div>
+   535→
+   536→        <motion.div
+   537→          {...fadeUp}
+   538→          className="mt-10 grid gap-4 sm:grid-cols-3"
+   539→        >
+   540→          {/* Phone */}
+   541→          <a
+   542→            href="tel:7809465102"
+   543→            className="block"
+   544→          >
+   545→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   546→              <CardContent className="p-6 text-center space-y-3">
+   547→                <div className="flex justify-center">
+   548→                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+   549→                    <Phone className="h-6 w-6" />
+   550→                  </div>
+   551→                </div>
+   552→                <div>
+   553→                  <p className="text-sm text-muted-foreground">Phone</p>
+   554→                  <p className="font-semibold">7809465102</p>
+   555→                </div>
+   556→              </CardContent>
+   557→            </Card>
+   558→          </a>
+   559→
+   560→          {/* Email */}
+   561→          <a
+   562→            href="mailto:connectzsalesandservices@gmail.com"
+   563→            className="block"
+   564→          >
+   565→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   566→              <CardContent className="p-6 text-center space-y-3">
+   567→                <div className="flex justify-center">
+   568→                  <div className="p-3 rounded-xl bg-sky-50 text-sky-600">
+   569→                    <Mail className="h-6 w-6" />
+   570→                  </div>
+   571→                </div>
+   572→                <div>
+   573→                  <p className="text-sm text-muted-foreground">Email</p>
+   574→                  <p className="font-semibold text-sm break-all">
+   575→                    connectzsalesandservices@gmail.com
+   576→                  </p>
+   577→                </div>
+   578→              </CardContent>
+   579→            </Card>
+   580→          </a>
+   581→
+   582→          {/* WhatsApp */}
+   583→          <a
+   584→            href="https://wa.me/917809465102"
+   585→            target="_blank"
+   586→            rel="noopener noreferrer"
+   587→            className="block"
+   588→          >
+   589→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   590→              <CardContent className="p-6 text-center space-y-3">
+   591→                <div className="flex justify-center">
+   592→                  <div className="p-3 rounded-xl bg-green-50 text-green-600">
+   593→                    <MessageCircle className="h-6 w-6" />
+   594→                  </div>
+   595→                </div>
+   596→                <div>
+   597→                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+   598→                  <p className="font-semibold">Chat with us</p>
+   599→                </div>
+   600→              </CardContent>
+   601→            </Card>
+   602→          </a>
+   603→        </motion.div>
+   604→
+   605→        <motion.div {...fadeUp} className="text-center mt-10">
+   606→          <Button
+   607→            size="lg"
+   608→            onClick={() => setView("builder")}
+   609→            className="gap-2 text-base px-8"
+   610→          >
+   611→            Get a Free Quote
+   612→            <ArrowRight className="h-4 w-4" />
+   613→          </Button>
+   614→        </motion.div>
+   615→      </div>
+   616→    </section>
+   617→  );
+   618→}
+   619→
+   620→// ═══════════════════════════════════════════════════════════════
+   621→// SECTION 6 — How It Works
+   622→// ═══════════════════════════════════════════════════════════════
+   623→
+   624→const HOW_IT_WORKS = [
+   625→  {
+   626→    icon: <PhoneCall className="h-6 w-6" />,
+   627→    step: "01",
+   628→    title: "Contact Us",
+   629→    desc: "Call, WhatsApp, or fill our form to share your requirements",
+   630→  },
+   631→  {
+   632→    icon: <Eye className="h-6 w-6" />,
+   633→    step: "02",
+   634→    title: "Free Site Survey",
+   635→    desc: "Our expert visits your property to assess and plan the setup",
+   636→  },
+   637→  {
+   638→    icon: <ClipboardCheck className="h-6 w-6" />,
+   639→    step: "03",
+   640→    title: "Get a Quote",
+   641→    desc: "Receive a transparent, detailed quotation with no hidden charges",
+   642→  },
+   643→  {
+   644→    icon: <Wrench className="h-6 w-6" />,
+   645→    step: "04",
+   646→    title: "Installation",
+   647→    desc: "Professional installation by certified technicians with demo",
+   648→  },
+   649→];
+   650→
+   651→function HowItWorksSection() {
+   652→  return (
+   653→    <section className="py-16 sm:py-20 px-4">
+   654→      <div className="max-w-6xl mx-auto">
+   655→        <motion.div {...fadeUp} className="text-center mb-12">
+   656→          <h2 className="text-3xl sm:text-4xl font-bold">
+   657→            How It <span className="text-emerald-600">Works</span>
+   658→          </h2>
+   659→          <p className="text-muted-foreground mt-2">
+   660→            From first call to complete installation in 4 simple steps
+   661→          </p>
+   662→        </motion.div>
+   663→
+   664→        <motion.div
+   665→          {...staggerContainer}
+   666→          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   667→        >
+   668→          {HOW_IT_WORKS.map((item, i) => (
+   669→            <motion.div key={item.step} {...staggerItem}>
+   670→              <Card className="h-full gap-4 py-0 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+   671→                <CardContent className="p-6 space-y-3">
+   672→                  <div className="absolute top-3 right-3 text-5xl font-extrabold text-muted-foreground/5 select-none">
+   673→                    {item.step}
+   674→                  </div>
+   675→                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600">
+   676→                    {item.icon}
+   677→                  </div>
+   678→                  <h3 className="font-semibold text-lg">{item.title}</h3>
+   679→                  <p className="text-sm text-muted-foreground leading-relaxed">
+   680→                    {item.desc}
+   681→                  </p>
+   682→                  {i < HOW_IT_WORKS.length - 1 && (
+   683→                    <div className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10">
+   684→                      <ArrowRight className="h-5 w-5 text-muted-foreground/30" />
+   685→                    </div>
+   686→                  )}
+   687→                </CardContent>
+   688→              </Card>
+   689→            </motion.div>
+   690→          ))}
+   691→        </motion.div>
+   692→      </div>
+   693→    </section>
+   694→  );
+   695→}
+   696→
+   697→// ═══════════════════════════════════════════════════════════════
+   698→// SECTION 7 — Testimonials
+   699→// ═══════════════════════════════════════════════════════════════
+   700→
+   701→const TESTIMONIALS = [
+   702→  {
+   703→    name: "Rajesh M.",
+   704→    role: "Homeowner, Bangalore",
+   705→    rating: 5,
+   706→    text: "ConnectZ installed a 4-camera system at my home. The installation was clean, professional, and they even helped me set up remote viewing on my phone. Excellent service at a fair price.",
+   707→  },
+   708→  {
+   709→    name: "Priya S.",
+   710→    role: "Restaurant Owner, Hyderabad",
+   711→    rating: 5,
+   712→    text: "We needed 16 cameras for our restaurant. ConnectZ did a thorough site survey and recommended the perfect setup. The footage quality is crystal clear and the system has been running flawlessly for over a year.",
+   713→  },
+   714→  {
+   715→    name: "Amit K.",
+   716→    role: "Warehouse Manager, Chennai",
+   717→    rating: 5,
+   718→    text: "Got a complete surveillance system with NVR and 32 cameras for our warehouse. The team was efficient, completed the job ahead of schedule, and the AMC support has been outstanding.",
+   719→  },
+   720→  {
+   721→    name: "Sneha R.",
+   722→    role: "Boutique Owner, Mumbai",
+   723→    rating: 4,
+   724→    text: "Very happy with the WiFi cameras ConnectZ recommended for my boutique. Easy to manage through the app, and the motion detection alerts have been incredibly useful. Great after-sales support too.",
+   725→  },
+   726→];
+   727→
+   728→function TestimonialsSection() {
+   729→  return (
+   730→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   731→      <div className="max-w-6xl mx-auto">
+   732→        <motion.div {...fadeUp} className="text-center mb-12">
+   733→          <h2 className="text-3xl sm:text-4xl font-bold">
+   734→            What Our <span className="text-emerald-600">Customers</span> Say
+   735→          </h2>
+   736→          <p className="text-muted-foreground mt-2">
+   737→            Trusted by hundreds of satisfied customers across India
+   738→          </p>
+   739→        </motion.div>
+   740→
+   741→        <motion.div
+   742→          {...staggerContainer}
+   743→          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   744→        >
+   745→          {TESTIMONIALS.map((t) => (
+   746→            <motion.div key={t.name} {...staggerItem}>
+   747→              <Card className="h-full gap-4 py-0">
+   748→                <CardContent className="p-5 space-y-4">
+   749→                  <Quote className="h-6 w-6 text-emerald-600/30" />
+   750→                  <p className="text-sm leading-relaxed text-muted-foreground">
+   751→                    {t.text}
+   752→                  </p>
+   753→                  <div className="flex gap-0.5">
+   754→                    {Array.from({ length: 5 }).map((_, i) => (
+   755→                      <Star
+   756→                        key={i}
+   757→                        className={cn(
+   758→                          "h-3.5 w-3.5",
+   759→                          i < t.rating
+   760→                            ? "text-amber-400 fill-amber-400"
+   761→                            : "text-muted-foreground/30"
+   762→                        )}
+   763→                      />
+   764→                    ))}
+   765→                  </div>
+   766→                  <div className="pt-1">
+   767→                    <p className="font-semibold text-sm">{t.name}</p>
+   768→                    <p className="text-xs text-muted-foreground">{t.role}</p>
+   769→                  </div>
+   770→                </CardContent>
+   771→              </Card>
+   772→            </motion.div>
+   773→          ))}
+   774→        </motion.div>
+   775→      </div>
+   776→    </section>
+   777→  );
+   778→}
+   779→
+   780→// ═══════════════════════════════════════════════════════════════
+   781→// SECTION 8 — FAQ
+   782→// ═══════════════════════════════════════════════════════════════
+   783→
+   784→const FAQS = [
+   785→  {
+   786→    q: "How much does CCTV installation cost?",
+   787→    a: "Installation costs vary based on the number of cameras, type (wired/wireless), and complexity of the site. A basic 4-camera home setup starts from approximately ₹8,000 including installation. We provide free site surveys and detailed quotations with no hidden charges.",
+   788→  },
+   789→  {
+   790→    q: "Which CCTV brand is best for home use?",
+   791→    a: "For home use, we recommend Hikvision or Dahua for wired systems and Ezviz or Imou for WiFi cameras. The best choice depends on your specific requirements like indoor/outdoor usage, night vision needs, and budget. Our experts will guide you during the free consultation.",
+   792→  },
+   793→  {
+   794→    q: "Can I view my cameras remotely on my phone?",
+   795→    a: "Yes, absolutely! We set up the mobile app (available for both Android and iOS) during installation so you can view live footage, playback recordings, and receive motion detection alerts from anywhere in the world.",
+   796→  },
+   797→  {
+   798→    q: "Do you provide warranty on products and installation?",
+   799→    a: "Yes, all products come with manufacturer warranty (typically 1-2 years depending on the brand). Our installation work is guaranteed for 1 year. We also offer Annual Maintenance Contracts (AMC) for extended coverage and priority support.",
+   800→  },
+   801→  {
+   802→    q: "How long does installation take?",
+   803→    a: "A standard 4-8 camera residential installation is typically completed within a single day. Larger commercial installations with 16+ cameras may take 2-3 days. We will provide an accurate timeline during the quotation phase.",
+   804→  },
+   805→  {
+   806→    q: "Do I need internet for CCTV to work?",
+   807→    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. We recommend a stable broadband connection for the best experience.",
+   808→  },
+   809→];
+   810→
+   811→function FaqSection() {
+   812→  const [openIndex, setOpenIndex] = useState<number | null>(null);
+   813→
+   814→  return (
+   815→    <section className="py-16 sm:py-20 px-4">
+   816→      <div className="max-w-3xl mx-auto">
+   817→        <motion.div {...fadeUp} className="text-center mb-12">
+   818→          <h2 className="text-3xl sm:text-4xl font-bold">
+   819→            Frequently Asked <span className="text-emerald-600">Questions</span>
+   820→          </h2>
+   821→          <p className="text-muted-foreground mt-2">
+   822→            Quick answers to common questions about CCTV systems
+   823→          </p>
+   824→        </motion.div>
+   825→
+   826→        <motion.div {...staggerContainer} className="space-y-3">
+   827→          {FAQS.map((faq, i) => (
+   828→            <motion.div key={i} {...staggerItem}>
+   829→              <Card
+   830→                className="py-0 gap-0 cursor-pointer hover:shadow-md transition-shadow"
+   831→                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+   832→              >
+   833→                <CardContent className="p-5">
+   834→                  <div className="flex items-start justify-between gap-4">
+   835→                    <h3 className="font-semibold text-sm leading-relaxed">
+   836→                      {faq.q}
+   837→                    </h3>
+   838→                    <span
+   839→                      className={cn(
+   840→                        "text-lg text-muted-foreground transition-transform duration-200 shrink-0",
+   841→                        openIndex === i && "rotate-45"
+   842→                      )}
+   843→                    >
+   844→                      +
+   845→                    </span>
+   846→                  </div>
+   847→                  {openIndex === i && (
+   848→                    <motion.div
+   849→                      initial={{ opacity: 0, height: 0 }}
+   850→                      animate={{ opacity: 1, height: "auto" }}
+   851→                      className="pt-3 mt-3 border-t"
+   852→                    >
+   853→                      <p className="text-sm text-muted-foreground leading-relaxed">
+   854→                        {faq.a}
+   855→                      </p>
+   856→                    </motion.div>
+   857→                  )}
+   858→                </CardContent>
+   859→              </Card>
+   860→            </motion.div>
+   861→          ))}
+   862→        </motion.div>
+   863→      </div>
+   864→    </section>
+   865→  );
+   866→}
+   867→
+   868→// ═══════════════════════════════════════════════════════════════
+   869→// MAIN — HomePage
+   870→// ═══════════════════════════════════════════════════════════════
+   871→
+   872→export function HomePage() {
+   873→  return (
+   874→    <div className="min-h-screen bg-background">
+   875→      <HeroSection />
+   876→      <FeaturedProducts />
+   877→      <HowItWorksSection />
+   878→      <WhyChooseSection />
+   879→      <TestimonialsSection />
+   880→      <BrandsSection />
+   881→      <FaqSection />
+   882→      <BuilderCtaSection />
+   883→      <ContactSection />
+   884→    </div>
+   885→  );
+   886→}

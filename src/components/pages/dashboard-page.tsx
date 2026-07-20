@@ -44,8 +44,12 @@ const cardVariants = {
 };
 
 export function DashboardPage() {
-  const { user, isAuthenticated, cart, cartCount, cartTotal, setView, logout } =
+  const { user, cart, setView, logout } =
     useAppStore();
+  const userToken = useAppStore((s) => s.userToken);
+  const isAuthenticated = !!userToken && !!user;
+  const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const [editing, setEditing] = useState(false);
   const [editForm, setEditForm] = useState({
@@ -117,7 +121,7 @@ export function DashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-50")}>
+                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-emerald-50 dark:bg-emerald-950/40")}>
                   <ShoppingCart className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
@@ -133,8 +137,8 @@ export function DashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-blue-50")}>
-                  <IndianRupee className="h-5 w-5 text-blue-600" />
+                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-sky-50 dark:bg-sky-950/40")}>
+                  <IndianRupee className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Cart Value</p>
@@ -149,8 +153,8 @@ export function DashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-amber-50")}>
-                  <Clock className="h-5 w-5 text-amber-600" />
+                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-amber-50 dark:bg-amber-950/40")}>
+                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Orders</p>
@@ -165,8 +169,8 @@ export function DashboardPage() {
           <Card>
             <CardContent className="p-5">
               <div className="flex items-center gap-3">
-                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-purple-50")}>
-                  <Package className="h-5 w-5 text-purple-600" />
+                <div className={cn("flex items-center justify-center h-10 w-10 rounded-lg bg-rose-50 dark:bg-rose-950/40")}>
+                  <Package className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Products</p>
@@ -257,8 +261,8 @@ export function DashboardPage() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className={cn("flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100")}>
-                      <User className="h-5 w-5 text-emerald-700" />
+                    <div className={cn("flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/60")}>
+                      <User className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="font-semibold">{user.name}</p>

@@ -143,15 +143,14 @@ interface SavedQuote {
 }
 
 function QuotesTab() {
-  const [quotes, setQuotes] = useState<SavedQuote[]>([]);
-  const [loadedQuote, setLoadedQuote] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [quotes, setQuotes] = useState<SavedQuote[]>(() => {
+    if (typeof window === "undefined") return [];
     try {
       const stored = localStorage.getItem("cctv_saved_quotes");
-      if (stored) setQuotes(JSON.parse(stored));
-    } catch { /* empty */ }
-  }, []);
+      return stored ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+  const [loadedQuote, setLoadedQuote] = useState<string | null>(null);
 
   const saveQuote = () => {
     const state = useBuilderStore.getState();
@@ -338,30 +337,35 @@ function QuotesTab() {
 // SETTINGS TAB
 // ═══════════════════════════════════════════════════════════════
 
-function SettingsTab() {
-  const [companyName, setCompanyName] = useState("");
-  const [companyPhone, setCompanyPhone] = useState("");
-  const [companyAddress, setCompanyAddress] = useState("");
-  const [defaultRetention, setDefaultRetention] = useState("15");
-  const [defaultCableLength, setDefaultCableLength] = useState("25");
+function loadSettings() {
+  if (typeof window === "undefined") return { companyName: "", companyPhone: "", companyAddress: "", defaultRetention: "15", defaultCableLength: "25" };
+  try {
+    const s = localStorage.getItem("cctv_admin_settings");
+    if (s) {
+      const d = JSON.parse(s);
+      return {
+        companyName: d.companyName || "",
+        companyPhone: d.companyPhone || "",
+        companyAddress: d.companyAddress || "",
+        defaultRetention: d.defaultRetention || "15",
+        defaultCableLength: d.defaultCableLength || "25",
+      };
+    }
+  } catch { /* empty */ }
+  return { companyName: "", companyPhone: "", companyAddress: "", defaultRetention: "15", defaultCableLength: "25" };
+}
 
-  useEffect(() => {
-    try {
-      const s = localStorage.getItem("cctv_admin_settings");
-      if (s) {
-        const d = JSON.parse(s);
-        setCompanyName(d.companyName || "");
-        setCompanyPhone(d.companyPhone || "");
-        setCompanyAddress(d.companyAddress || "");
-        setDefaultRetention(d.defaultRetention || "15");
-        setDefaultCableLength(d.defaultCableLength || "25");
-      }
-    } catch { /* empty */ }
-  }, []);
+function SettingsTab() {
+  const [settings, setSettings] = useState(loadSettings);
+  const companyName = settings.companyName;
+  const companyPhone = settings.companyPhone;
+  const companyAddress = settings.companyAddress;
+  const defaultRetention = settings.defaultRetention;
+  const defaultCableLength = settings.defaultCableLength;
 
   const saveSettings = () => {
-    const settings = { companyName, companyPhone, companyAddress, defaultRetention, defaultCableLength };
-    localStorage.setItem("cctv_admin_settings", JSON.stringify(settings));
+    const data = { companyName, companyPhone, companyAddress, defaultRetention, defaultCableLength };
+    localStorage.setItem("cctv_admin_settings", JSON.stringify(data));
     toast.success("Settings saved!");
   };
 
@@ -373,15 +377,15 @@ function SettingsTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Company Name</Label>
-            <Input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Your Company Name" />
+            <Input value={companyName} onChange={(e) => setSettings(s => ({ ...s, companyName: e.target.value }))} placeholder="Your Company Name" />
           </div>
           <div className="space-y-2">
             <Label>Phone Number</Label>
-            <Input value={companyPhone} onChange={(e) => setCompanyPhone(e.target.value)} placeholder="+91 98765 43210" />
+            <Input value={companyPhone} onChange={(e) => setSettings(s => ({ ...s, companyPhone: e.target.value }))} placeholder="+91 98765 43210" />
           </div>
           <div className="space-y-2 sm:col-span-2">
             <Label>Address</Label>
-            <Textarea value={companyAddress} onChange={(e) => setCompanyAddress(e.target.value)} rows={2} placeholder="Shop No. X, Area, City, State - PIN" />
+            <Textarea value={companyAddress} onChange={(e) => setSettings(s => ({ ...s, companyAddress: e.target.value }))} rows={2} placeholder="Shop No. X, Area, City, State - PIN" />
           </div>
         </div>
       </div>
@@ -394,7 +398,7 @@ function SettingsTab() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>Default Retention (days)</Label>
-            <Select value={defaultRetention} onValueChange={setDefaultRetention}>
+            <Select value={defaultRetention} onValueChange={(v) => setSettings(s => ({ ...s, defaultRetention: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="7">7 days</SelectItem>
@@ -409,7 +413,7 @@ function SettingsTab() {
           </div>
           <div className="space-y-2">
             <Label>Default Cable Length (meters/camera)</Label>
-            <Input type="number" value={defaultCableLength} onChange={(e) => setDefaultCableLength(e.target.value)} placeholder="25" min="1" max="300" />
+            <Input type="number" value={defaultCableLength} onChange={(e) => setSettings(s => ({ ...s, defaultCableLength: e.target.value }))} placeholder="25" min="1" max="300" />
           </div>
         </div>
       </div>
