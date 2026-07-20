@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -14,25 +15,38 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CCTV Product Catalog — Security Camera Platform",
-  description: "Browse, compare, and manage CCTV security cameras. Hikvision, Dahua, and more with pricing, images, and sample videos.",
-  keywords: ["Z.ai", "Next.js", "TypeScript", "Tailwind CSS", "shadcn/ui", "AI development", "React"],
-  authors: [{ name: "Z.ai Team" }],
-  icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+  title: {
+    default: "ConnectZ Sales & Services — Professional CCTV Security Solutions",
+    template: "%s | ConnectZ CCTV",
   },
+  description:
+    "ConnectZ Sales & Services offers professional CCTV security camera systems for homes, businesses & industries. Browse Hikvision, Dahua, Ezviz products. Free site survey, expert installation, competitive pricing.",
+  keywords: [
+    "CCTV", "security cameras", "Hikvision", "Dahua", "Ezviz", "IP camera",
+    "DVR", "NVR", "CCTV installation", "security systems", "surveillance",
+    "ConnectZ", "CCTV India", "bullet camera", "dome camera", "PTZ camera",
+    "WiFi camera", "4G camera", "CCTV builder", "security solutions",
+  ],
+  authors: [{ name: "ConnectZ Sales & Services", url: "https://cctv-platform-ten.vercel.app" }],
+  creator: "ConnectZ Sales & Services",
+  publisher: "ConnectZ Sales & Services",
+  icons: { icon: "/logo.svg", apple: "/logo.svg" },
   openGraph: {
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
-    url: "https://chat.z.ai",
-    siteName: "Z.ai",
+    title: "ConnectZ Sales & Services — Professional CCTV Security Solutions",
+    description: "Browse, compare & buy CCTV security cameras. Expert installation across India.",
+    url: "https://cctv-platform-ten.vercel.app",
+    siteName: "ConnectZ CCTV",
     type: "website",
+    locale: "en_IN",
+    countryName: "India",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Z.ai Code Scaffold",
-    description: "AI-powered development with modern React stack",
+    title: "ConnectZ Sales & Services — CCTV Security Solutions",
+    description: "Professional CCTV cameras, installation & support. Hikvision, Dahua & more.",
   },
+  robots: { index: true, follow: true },
+  verification: { google: "your-google-verification-code" },
 };
 
 export default function RootLayout({
@@ -40,14 +54,54 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Store",
+    name: "ConnectZ Sales & Services",
+    description: "Professional CCTV security camera systems for homes, businesses & industries",
+    url: "https://cctv-platform-ten.vercel.app",
+    telephone: "+917809465102",
+    email: "connectzsalesandservices@gmail.com",
+    address: { "@type": "PostalAddress", addressCountry: "IN" },
+    priceRange: "₹₹",
+    image: "/logo.svg",
+    sameAs: [],
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://cctv-platform-ten.vercel.app/?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={cn(
+          geistSans.variable,
+          geistMono.variable,
+          "antialiased bg-background text-foreground"
+        )}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>
   );
+}
+
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(" ");
 }
