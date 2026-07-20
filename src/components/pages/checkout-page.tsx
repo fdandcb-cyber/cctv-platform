@@ -17,19 +17,21 @@ import {
   ShoppingBag,
   ShieldCheck,
   CheckCircle2,
-  Package,
+  Package
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 export function CheckoutPage() {
-  const { cart, setView, clearCart } = useAppStore();
+  const { cart, clearCart } = useAppStore();
+  const router = useRouter();
   const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const [orderPlaced, setOrderPlaced] = useState(false);
@@ -41,7 +43,7 @@ export function CheckoutPage() {
     address: "",
     city: "",
     state: "",
-    pincode: "",
+    pincode: ""
   });
 
   const updateField = (field: string, value: string) => {
@@ -88,7 +90,7 @@ export function CheckoutPage() {
         <p className="text-muted-foreground mb-6">
           Add some products before proceeding to checkout.
         </p>
-        <Button className="gap-2" onClick={() => setView("products")}>
+        <Button className="gap-2" onClick={() => router.push("/products")}>
           <ArrowLeft className="h-4 w-4" />
           Browse Products
         </Button>
@@ -116,7 +118,7 @@ export function CheckoutPage() {
           <span className="font-bold text-foreground">{orderNumber}</span>
         </p>
         <div className="flex items-center justify-center gap-3">
-          <Button className="gap-2" onClick={() => setView("home")}>
+          <Button className="gap-2" onClick={() => router.push("/")}>
             <Package className="h-4 w-4" />
             Continue Shopping
           </Button>
@@ -137,7 +139,7 @@ export function CheckoutPage() {
           variant="ghost"
           size="sm"
           className="gap-1.5"
-          onClick={() => setView("cart")}
+          onClick={() => router.push("/cart")}
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Cart
@@ -311,7 +313,7 @@ export function CheckoutPage() {
                   amount={cartTotal}
                   quoteData={{
                     items: cart,
-                    shipping: form,
+                    shipping: form
                   }}
                   label={cn("w-full h-12 text-base")}
                   size="lg"

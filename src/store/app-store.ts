@@ -1,11 +1,4 @@
 import { create } from "zustand";
-import type { CctvProduct } from "./cctv-store";
-
-export type AppView =
-  | "home" | "products" | "product-detail" | "cart" | "checkout"
-  | "login" | "signup" | "dashboard" | "about" | "contact"
-  | "builder" | "learn" | "compare" | "admin" | "detail"
-  | "services" | "privacy" | "terms";
 
 export interface CartItem {
   productId: string;
@@ -31,14 +24,11 @@ export interface UserProfile {
 }
 
 interface AppState {
-  view: AppView;
   cart: CartItem[];
   user: UserProfile | null;
   userToken: string | null;
   mobileMenuOpen: boolean;
   searchQuery: string;
-
-  setView: (v: AppView) => void;
 
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
   removeFromCart: (productId: string) => void;
@@ -60,14 +50,11 @@ interface AppState {
 const isBrowser = typeof window !== "undefined";
 
 export const useAppStore = create<AppState>((set, get) => ({
-  view: "home",
   cart: isBrowser ? JSON.parse(localStorage.getItem("connectz_cart") || "[]") : [],
   user: isBrowser ? JSON.parse(localStorage.getItem("connectz_user") || "null") : null,
   userToken: isBrowser ? localStorage.getItem("connectz_token") : null,
   mobileMenuOpen: false,
   searchQuery: "",
-
-  setView: (v) => set({ view: v }),
 
   addToCart: (item) => {
     const qty = item.quantity || 1;
@@ -172,7 +159,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       localStorage.removeItem("connectz_token");
       localStorage.removeItem("connectz_user");
     }
-    set({ userToken: null, user: null, view: "home" });
+    set({ userToken: null, user: null });
   },
 
   restoreSession: async () => {

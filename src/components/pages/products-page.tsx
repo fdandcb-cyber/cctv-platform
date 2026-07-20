@@ -13,7 +13,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useAppStore } from "@/store/app-store";
@@ -30,15 +30,16 @@ import {
   ChevronLeft,
   ChevronRight,
   SlidersHorizontal,
-  PackageX,
+  PackageX
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 const typeConfig: Record<
@@ -48,46 +49,46 @@ const typeConfig: Record<
   Dome: {
     icon: <Camera className="h-4 w-4" />,
     color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
   },
   Bullet: {
     icon: <Camera className="h-4 w-4" />,
     color: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800",
+    bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800"
   },
   WiFi: {
     icon: <Wifi className="h-4 w-4" />,
     color: "text-violet-600 dark:text-violet-400",
-    bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800",
+    bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800"
   },
   PTZ: {
     icon: <Radio className="h-4 w-4" />,
     color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
+    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800"
   },
   "4G": {
     icon: <Signal className="h-4 w-4" />,
     color: "text-red-600 dark:text-red-400",
-    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800",
+    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800"
   },
   DVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
     color: "text-slate-600 dark:text-slate-400",
-    bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700",
+    bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
   },
   NVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
     color: "text-teal-600 dark:text-teal-400",
-    bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800",
-  },
+    bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800"
+  }
 };
 
 const quickTypes = ["all", "Dome", "Bullet", "WiFi", "PTZ", "4G", "DVR", "NVR"];
 const ITEMS_PER_PAGE = 12;
 
 function ProductCard({ p, index }: { p: CctvProduct; index: number }) {
-  const { addToCart, setView } = useAppStore();
-  const { setSelectedProduct } = useStore();
+  const { addToCart } = useAppStore();
+  const router = useRouter();
   const cfg = typeConfig[p.cameraType] || typeConfig.Bullet;
 
   const handleAddToCart = () => {
@@ -100,14 +101,13 @@ function ProductCard({ p, index }: { p: CctvProduct; index: number }) {
       price: p.price,
       salePrice: p.salePrice,
       imageUrl: p.imageUrl,
-      quantity: 1,
+      quantity: 1
     });
     toast.success("Added to cart!");
   };
 
   const handleViewDetails = () => {
-    setSelectedProduct(p);
-    setView("product-detail");
+    router.push(`/products/${p.id}`);
   };
 
   const discountPercent = useMemo(() => {

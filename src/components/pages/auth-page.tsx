@@ -11,13 +11,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useAppStore } from "@/store/app-store";
 import { Shield, Loader2, ArrowLeft, Mail, Lock, User, Phone } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 function validateEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 export function AuthPage() {
-  const { login, signup, setView } = useAppStore();
+  const { login, signup } = useAppStore();
+  const router = useRouter();
 
   const [loginLoading, setLoginLoading] = useState(false);
   const [signupLoading, setSignupLoading] = useState(false);
@@ -28,7 +30,7 @@ export function AuthPage() {
     email: "",
     phone: "",
     password: "",
-    confirmPassword: "",
+    confirmPassword: ""
   });
 
   const handleLogin = async () => {
@@ -50,7 +52,7 @@ export function AuthPage() {
       const success = await login(loginForm.email, loginForm.password);
       if (success) {
         toast.success("Logged in successfully!");
-        setView("home");
+        router.push("/");
       } else {
         toast.error("Invalid email or password. Please try again.");
       }
@@ -91,11 +93,11 @@ export function AuthPage() {
         name: signupForm.name,
         email: signupForm.email,
         password: signupForm.password,
-        phone: signupForm.phone,
+        phone: signupForm.phone
       });
       if (success) {
         toast.success("Account created successfully!");
-        setView("home");
+        router.push("/");
       } else {
         toast.error("Signup failed. This email may already be registered.");
       }
@@ -259,7 +261,7 @@ export function AuthPage() {
                       onChange={(e) =>
                         setSignupForm({
                           ...signupForm,
-                          password: e.target.value,
+                          password: e.target.value
                         })
                       }
                     />
@@ -278,7 +280,7 @@ export function AuthPage() {
                       onChange={(e) =>
                         setSignupForm({
                           ...signupForm,
-                          confirmPassword: e.target.value,
+                          confirmPassword: e.target.value
                         })
                       }
                       onKeyDown={(e) => {
@@ -311,7 +313,7 @@ export function AuthPage() {
                 className={cn(
                   "text-sm text-muted-foreground hover:text-foreground flex items-center gap-1.5 mx-auto"
                 )}
-                onClick={() => setView("home")}
+                onClick={() => router.push("/")}
               >
                 <ArrowLeft className="h-3.5 w-3.5" />
                 Back to Home

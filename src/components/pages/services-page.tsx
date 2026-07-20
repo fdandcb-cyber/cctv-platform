@@ -19,26 +19,27 @@ import {
   Camera,
   Cable,
   HardDrive,
-  Network,
+  Network
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true } as const,
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.08 } },
-  viewport: { once: true } as const,
+  viewport: { once: true } as const
 };
 
 const staggerItem = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 const SERVICES = [
@@ -56,7 +57,7 @@ const SERVICES = [
       "Quality testing and handover demo",
     ],
     color: "bg-emerald-50 text-emerald-600",
-    darkColor: "dark:bg-emerald-950/50 dark:text-emerald-400",
+    darkColor: "dark:bg-emerald-950/50 dark:text-emerald-400"
   },
   {
     icon: <MonitorSmartphone className="h-7 w-7" />,
@@ -72,7 +73,7 @@ const SERVICES = [
       "Secure encrypted connections",
     ],
     color: "bg-sky-50 text-sky-600",
-    darkColor: "dark:bg-sky-950/50 dark:text-sky-400",
+    darkColor: "dark:bg-sky-950/50 dark:text-sky-400"
   },
   {
     icon: <ShieldCheck className="h-7 w-7" />,
@@ -88,7 +89,7 @@ const SERVICES = [
       "Discounted spare parts and upgrades",
     ],
     color: "bg-amber-50 text-amber-600",
-    darkColor: "dark:bg-amber-950/50 dark:text-amber-400",
+    darkColor: "dark:bg-amber-950/50 dark:text-amber-400"
   },
   {
     icon: <Eye className="h-7 w-7" />,
@@ -104,7 +105,7 @@ const SERVICES = [
       "Compliance and regulation advice",
     ],
     color: "bg-violet-50 text-violet-600",
-    darkColor: "dark:bg-violet-950/50 dark:text-violet-400",
+    darkColor: "dark:bg-violet-950/50 dark:text-violet-400"
   },
   {
     icon: <HardHat className="h-7 w-7" />,
@@ -120,7 +121,7 @@ const SERVICES = [
       "Multi-door and multi-zone control",
     ],
     color: "bg-rose-50 text-rose-600",
-    darkColor: "dark:bg-rose-950/50 dark:text-rose-400",
+    darkColor: "dark:bg-rose-950/50 dark:text-rose-400"
   },
   {
     icon: <Network className="h-7 w-7" />,
@@ -136,7 +137,7 @@ const SERVICES = [
       "UPS backup for uninterrupted recording",
     ],
     color: "bg-teal-50 text-teal-600",
-    darkColor: "dark:bg-teal-950/50 dark:text-teal-400",
+    darkColor: "dark:bg-teal-950/50 dark:text-teal-400"
   },
 ];
 
@@ -146,47 +147,48 @@ const PROCESS_STEPS = [
     step: "01",
     title: "Contact Us",
     description:
-      "Reach out via phone, WhatsApp, email, or our contact form. Share your requirements, property type, and any specific security concerns you have.",
+      "Reach out via phone, WhatsApp, email, or our contact form. Share your requirements, property type, and any specific security concerns you have."
   },
   {
     icon: <Eye className="h-6 w-6" />,
     step: "02",
     title: "Free Site Survey",
     description:
-      "Our expert visits your property to assess the layout, identify vulnerable entry points, and determine optimal camera positions for maximum coverage.",
+      "Our expert visits your property to assess the layout, identify vulnerable entry points, and determine optimal camera positions for maximum coverage."
   },
   {
     icon: <Camera className="h-6 w-6" />,
     step: "03",
     title: "Custom Proposal",
     description:
-      "We provide a detailed quotation with camera specifications, system design diagram, pricing breakdown, and timeline. No hidden charges, fully transparent.",
+      "We provide a detailed quotation with camera specifications, system design diagram, pricing breakdown, and timeline. No hidden charges, fully transparent."
   },
   {
     icon: <HardDrive className="h-6 w-6" />,
     step: "04",
     title: "Installation",
     description:
-      "Our certified technicians install the complete system including cameras, cables, DVR/NVR, and network setup. Clean, professional workmanship guaranteed.",
+      "Our certified technicians install the complete system including cameras, cables, DVR/NVR, and network setup. Clean, professional workmanship guaranteed."
   },
   {
     icon: <Cable className="h-6 w-6" />,
     step: "05",
     title: "Configuration & Testing",
     description:
-      "Full system configuration including recording settings, motion detection, remote access, and mobile app. Every camera is tested and demonstrated to you.",
+      "Full system configuration including recording settings, motion detection, remote access, and mobile app. Every camera is tested and demonstrated to you."
   },
   {
     icon: <CheckCircle2 className="h-6 w-6" />,
     step: "06",
     title: "Handover & Support",
     description:
-      "Complete handover with user training, documentation, and warranty details. Ongoing support and maintenance available through our AMC plans.",
+      "Complete handover with user training, documentation, and warranty details. Ongoing support and maintenance available through our AMC plans."
   },
 ];
 
 export function ServicesPage() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
+  const router = useRouter();
 
   return (
     <div className={cn("min-h-screen bg-background")}>
@@ -380,7 +382,7 @@ export function ServicesPage() {
                     size="lg"
                     variant="secondary"
                     className={cn("gap-2 text-base px-8")}
-                    onClick={() => setView("contact")}
+                    onClick={() => router.push("/contact")}
                   >
                     Get a Free Quote
                     <ArrowRight className={cn("h-4 w-4")} />

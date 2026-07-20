@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  Accordion, AccordionContent, AccordionItem, AccordionTrigger,
+  Accordion, AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
 import {
   Camera, Wifi, Radio, Signal, MonitorPlay, ChevronRight,
@@ -17,8 +17,9 @@ import {
   Sun, Moon, Droplets, Cable, HardDrive, Cloud, Settings,
   Eye, ScanLine, RotateCcw, Move, Battery, Router,
   HelpCircle, Lightbulb, Wrench, Users, Building2, Home,
-  TreePine, Video, MonitorSpeaker, Cpu, Tag,
+  TreePine, Video, MonitorSpeaker, Cpu, Tag
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // ═══════════════════════════════════════════════════════════════
 // LEARNING DATA
@@ -39,7 +40,7 @@ const cameraTypesData = [
     bestFor: ["Indoor home security", "Office & retail shops", "Reception areas & lobbies", "Restaurants & hotels", "Schools & hospitals"],
     pros: ["Vandal-resistant dome cover", "Direction of lens is hidden", "Clean professional look", "Easy ceiling mount", "Wide field of view (80-110°)"],
     cons: ["Limited outdoor use (non-weatherproof models)", "Shorter IR range than bullet cameras", "Harder to aim precisely after installation"],
-    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 20-30m or ColorVu", weatherRating: "IP66 (outdoor) / Indoor", fieldOfView: "80° - 110°", price: "₹1,200 - ₹6,000" },
+    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 20-30m or ColorVu", weatherRating: "IP66 (outdoor) / Indoor", fieldOfView: "80° - 110°", price: "₹1,200 - ₹6,000" }
   },
   {
     id: "bullet",
@@ -55,7 +56,7 @@ const cameraTypesData = [
     bestFor: ["Outdoor perimeter monitoring", "Driveways & gate entry", "Parking lots & garages", "Long corridors & hallways", "Warehouses & factories"],
     pros: ["Long IR night vision range (40-80m)", "Visible deterrent effect", "Weatherproof (IP66/IP67)", "Easy to install and aim", "Longer detection distance"],
     cons: ["More noticeable / less discreet", "Can be tampered with (vandalism risk)", "Not ideal for tight indoor spaces", "Larger physical size"],
-    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 40-80m or ColorVu", weatherRating: "IP66 / IP67", fieldOfView: "60° - 90°", price: "₹1,000 - ₹8,000" },
+    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 40-80m or ColorVu", weatherRating: "IP66 / IP67", fieldOfView: "60° - 90°", price: "₹1,000 - ₹8,000" }
   },
   {
     id: "wifi",
@@ -71,7 +72,7 @@ const cameraTypesData = [
     bestFor: ["Apartments & rental homes", "Quick DIY installation", "Baby monitoring & pet watching", "Small shops & offices", "Indoor spaces where cabling is hard"],
     pros: ["No cable running needed (only power)", "Easy DIY installation", "Works with MicroSD + Cloud storage", "Mobile app with instant alerts", "Two-way audio communication"],
     cons: ["Depends on WiFi signal strength", "Limited range from router", "May have lag/delay on live view", "Higher bandwidth consumption", "Less reliable than wired systems"],
-    specs: { resolution: "2MP / 3MP / 4MP", nightVision: "IR 10-15m or ColorVu", weatherRating: "IP65 (outdoor) / Indoor", fieldOfView: "90° - 130°", price: "₹1,500 - ₹7,000" },
+    specs: { resolution: "2MP / 3MP / 4MP", nightVision: "IR 10-15m or ColorVu", weatherRating: "IP65 (outdoor) / Indoor", fieldOfView: "90° - 130°", price: "₹1,500 - ₹7,000" }
   },
   {
     id: "ptz",
@@ -87,7 +88,7 @@ const cameraTypesData = [
     bestFor: ["Large open areas", "Parking lots & malls", "Warehouses & factories", "Traffic monitoring", "Any area needing 360° coverage"],
     pros: ["360° pan + vertical tilt + optical zoom", "One camera covers a huge area", "Auto-tracking moving objects", "Remote controlled via app/Joystick", "Auto-tour / patrol mode"],
     cons: ["More expensive (₹8,000 - ₹50,000+)", "Complex installation and setup", "Only records where it's pointing", "Moving parts can wear out", "Requires skilled operator for best use"],
-    specs: { resolution: "2MP / 4MP / 8MP", nightVision: "IR 100-200m", weatherRating: "IP66 / IP67", fieldOfView: "360° pan, 90° tilt, 20-40x zoom", price: "₹8,000 - ₹50,000+" },
+    specs: { resolution: "2MP / 4MP / 8MP", nightVision: "IR 100-200m", weatherRating: "IP66 / IP67", fieldOfView: "360° pan, 90° tilt, 20-40x zoom", price: "₹8,000 - ₹50,000+" }
   },
   {
     id: "4g",
@@ -103,7 +104,7 @@ const cameraTypesData = [
     bestFor: ["Farm fields & agriculture", "Construction sites", "Remote gates & entry points", "Highway & road projects", "Any place without WiFi/electricity"],
     pros: ["Works without WiFi or electricity", "Solar powered (no electricity bill)", "Install anywhere with 4G signal", "Instant mobile alerts via 4G", "Truly wireless installation"],
     cons: ["Requires 4G SIM + monthly data plan", "Higher initial cost", "Depends on 4G network coverage", "Limited bandwidth may reduce video quality", "Battery degrades over 2-3 years"],
-    specs: { resolution: "2MP / 4MP", nightVision: "IR 15-30m + Color", weatherRating: "IP66 / IP67", fieldOfView: "100° - 130°", price: "₹5,000 - ₹20,000" },
+    specs: { resolution: "2MP / 4MP", nightVision: "IR 15-30m + Color", weatherRating: "IP66 / IP67", fieldOfView: "100° - 130°", price: "₹5,000 - ₹20,000" }
   },
 ];
 
@@ -118,7 +119,7 @@ const dvrNvrData = {
     channels: "4 / 8 / 16 channels",
     brands: "Hikvision (HD-TVI), Dahua (HD-CVI), CP Plus",
     priceRange: "₹2,500 - ₹15,000",
-    compatibility: "CRITICAL: Hikvision HD-TVI cameras work with Hikvision DVRs. Dahua HD-CVI cameras work with Dahua DVRs. They are NOT cross-compatible in most cases. Always match the camera technology with the DVR brand.",
+    compatibility: "CRITICAL: Hikvision HD-TVI cameras work with Hikvision DVRs. Dahua HD-CVI cameras work with Dahua DVRs. They are NOT cross-compatible in most cases. Always match the camera technology with the DVR brand."
   },
   nvr: {
     name: "NVR (Network Video Recorder)",
@@ -130,8 +131,8 @@ const dvrNvrData = {
     channels: "4 / 8 / 16 / 32 channels",
     brands: "Hikvision, Dahua, Reolink, Uniview",
     priceRange: "₹4,000 - ₹25,000",
-    compatibility: "NVRs are generally universal — most IP cameras work with most NVRs via ONVIF protocol. However, some advanced smart features (like face detection) may only work with same-brand camera+NVR combos.",
-  },
+    compatibility: "NVRs are generally universal — most IP cameras work with most NVRs via ONVIF protocol. However, some advanced smart features (like face detection) may only work with same-brand camera+NVR combos."
+  }
 };
 
 const mobileAppsData = [
@@ -149,7 +150,7 @@ const mobileAppsData = [
       "Scan the QR code displayed on your DVR/NVR monitor using the app",
       "The camera will appear in your app — tap to view live video",
       "Enable Push Notifications in app settings to get motion alerts on your phone",
-    ],
+    ]
   },
   {
     brand: "Dahua",
@@ -165,7 +166,7 @@ const mobileAppsData = [
       "In the app, tap '+' → 'Scan QR Code' or enter serial number manually",
       "Enter the verification code when prompted — your device will appear",
       "Tap the device to view live streams from all connected cameras",
-    ],
+    ]
   },
 ];
 
@@ -186,7 +187,7 @@ const budgetGuides = [
       "Cables & power supply — ₹500 - ₹800",
     ],
     totalCost: "₹5,200 - ₹7,300",
-    alternative: "1x WiFi camera with MicroSD card (no DVR needed) — ₹1,500 - ₹3,500",
+    alternative: "1x WiFi camera with MicroSD card (no DVR needed) — ₹1,500 - ₹3,500"
   },
   {
     range: "₹5,000 - ₹10,000",
@@ -204,7 +205,7 @@ const budgetGuides = [
       "Cables, connectors & power supply — ₹1,000 - ₹1,500",
     ],
     totalCost: "₹8,000 - ₹14,000",
-    alternative: "2x WiFi cameras + 1x PTZ for large room — ₹6,000 - ₹12,000",
+    alternative: "2x WiFi cameras + 1x PTZ for large room — ₹6,000 - ₹12,000"
   },
   {
     range: "₹10,000 - ₹25,000",
@@ -222,7 +223,7 @@ const budgetGuides = [
       "Cat6 cables, PoE injectors, accessories — ₹2,000 - ₹3,000",
     ],
     totalCost: "₹16,500 - ₹30,500",
-    alternative: "Mix of 4x IP cameras + 1x PTZ + NVR — ₹18,000 - ₹28,000",
+    alternative: "Mix of 4x IP cameras + 1x PTZ + NVR — ₹18,000 - ₹28,000"
   },
   {
     range: "₹25,000+",
@@ -241,7 +242,7 @@ const budgetGuides = [
       "Structured cabling, UPS backup, installation — ₹10,000 - ₹20,000",
     ],
     totalCost: "₹48,000 - ₹1,15,000",
-    alternative: "Complete with remote monitoring service — ₹50,000 - ₹2,00,000",
+    alternative: "Complete with remote monitoring service — ₹50,000 - ₹2,00,000"
   },
 ];
 
@@ -293,6 +294,7 @@ const learnSections = [
 
 function OverviewSection() {
   const { setLearnSection } = useStore();
+  const router = useRouter();
   return (
     <div className="space-y-8">
       {/* Hero */}
@@ -956,7 +958,7 @@ function FaqSection() {
 // ═══════════════════════════════════════════════════════════════
 
 export function LearningSystem() {
-  const { learnSection, setLearnSection, setView } = useStore();
+  const { learnSection, setLearnSection } = useStore();
 
   const renderSection = () => {
     switch (learnSection) {
@@ -975,7 +977,7 @@ export function LearningSystem() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <button onClick={() => setView("catalog")} className="hover:text-foreground transition-colors">Catalog</button>
+        <button onClick={() => router.push("/products")} className="hover:text-foreground transition-colors">Catalog</button>
         <ChevronRight className="h-3.5 w-3.5" />
         <span className="font-medium text-foreground">Learning Center</span>
         {learnSection !== "overview" && (
@@ -1004,7 +1006,7 @@ export function LearningSystem() {
             ))}
             <Separator className="my-3" />
             <button
-              onClick={() => setView("catalog")}
+              onClick={() => router.push("/products")}
               className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
             >
               <Camera className="h-4 w-4" /> Back to Product Catalog

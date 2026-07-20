@@ -24,7 +24,6 @@ export interface CctvProduct {
 }
 
 interface StoreState {
-  view: "catalog" | "detail" | "admin" | "compare" | "learn" | "builder";
   learnSection: string;
   products: CctvProduct[];
   selectedProduct: CctvProduct | null;
@@ -38,7 +37,6 @@ interface StoreState {
     maxPrice: string;
   };
   loading: boolean;
-  setView: (v: StoreState["view"]) => void;
   setLearnSection: (s: string) => void;
   setProducts: (p: CctvProduct[]) => void;
   setSelectedProduct: (p: CctvProduct | null) => void;
@@ -49,17 +47,15 @@ interface StoreState {
 }
 
 export const useStore = create<StoreState>((set) => ({
-  view: "catalog",
   learnSection: "overview",
   products: [],
   selectedProduct: null,
   compareList: [],
   filters: { brand: "all", cameraType: "all", recorderType: "all", search: "", sortBy: "price", maxPrice: "" },
   loading: false,
-  setView: (v) => set({ view: v }),
   setLearnSection: (s) => set({ learnSection: s }),
   setProducts: (p) => set({ products: p }),
-  setSelectedProduct: (p) => set({ selectedProduct: p, view: p ? "detail" : "catalog" }),
+  setSelectedProduct: (p) => set({ selectedProduct: p }),
   toggleCompare: (p) =>
     set((s) => {
       const exists = s.compareList.find((c) => c.id === p.id);

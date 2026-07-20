@@ -27,15 +27,16 @@ import {
   ScanLine,
   Expand,
   Monitor,
-  Play,
+  Play
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 const typeConfig: Record<
@@ -45,43 +46,44 @@ const typeConfig: Record<
   Dome: {
     icon: <Camera className="h-4 w-4" />,
     color: "text-emerald-600 dark:text-emerald-400",
-    bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800"
   },
   Bullet: {
     icon: <Camera className="h-4 w-4" />,
     color: "text-sky-600 dark:text-sky-400",
-    bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800",
+    bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800"
   },
   WiFi: {
     icon: <Wifi className="h-4 w-4" />,
     color: "text-violet-600 dark:text-violet-400",
-    bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800",
+    bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800"
   },
   PTZ: {
     icon: <Radio className="h-4 w-4" />,
     color: "text-amber-600 dark:text-amber-400",
-    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
+    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800"
   },
   "4G": {
     icon: <Signal className="h-4 w-4" />,
     color: "text-red-600 dark:text-red-400",
-    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800",
+    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800"
   },
   DVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
     color: "text-slate-600 dark:text-slate-400",
-    bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700",
+    bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700"
   },
   NVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
     color: "text-teal-600 dark:text-teal-400",
-    bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800",
-  },
+    bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800"
+  }
 };
 
 export function ProductDetailPage() {
   const { selectedProduct, products, compareList, toggleCompare } = useStore();
-  const { addToCart, setView } = useAppStore();
+  const router = useRouter();
+  const { addToCart } = useAppStore();
   const [quantity, setQuantity] = useState(1);
   const [imgError, setImgError] = useState(false);
 
@@ -120,7 +122,7 @@ export function ProductDetailPage() {
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => setView("products")}
+          onClick={() => router.push("/products")}
         >
           Back to Products
         </Button>
@@ -143,7 +145,7 @@ export function ProductDetailPage() {
       price: product.price,
       salePrice: product.salePrice,
       imageUrl: product.imageUrl,
-      quantity,
+      quantity
     });
     toast.success("Added to cart!");
   };
@@ -168,7 +170,7 @@ export function ProductDetailPage() {
         variant="ghost"
         size="sm"
         className="gap-1.5 -ml-2"
-        onClick={() => setView("products")}
+        onClick={() => router.push("/products")}
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Products
@@ -277,7 +279,7 @@ export function ProductDetailPage() {
             <Button
               variant="outline"
               className="w-full gap-2"
-              onClick={() => setView("builder")}
+              onClick={() => router.push("/builder")}
             >
               <Wrench className="h-4 w-4" />
               Build With This Camera
@@ -428,13 +430,7 @@ export function ProductDetailPage() {
                 >
                   <Card
                     className="overflow-hidden cursor-pointer hover:shadow-lg transition-all hover:-translate-y-1"
-                    onClick={() => {
-                      useStore.getState().setSelectedProduct(rp);
-                      setView("product-detail");
-                      setQuantity(1);
-                      setImgError(false);
-                      window.scrollTo({ top: 0, behavior: "smooth" });
-                    }}
+                    onClick={() => router.push(`/products/${rp.id}`)}
                   >
                     <div
                       className={cn(

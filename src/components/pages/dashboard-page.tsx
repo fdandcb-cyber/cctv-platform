@@ -23,15 +23,16 @@ import {
   ShoppingBag,
   ArrowRight,
   IndianRupee,
-  Clock,
+  Clock
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 const cardVariants = {
@@ -39,14 +40,15 @@ const cardVariants = {
   visible: (i: number) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.4, delay: i * 0.1 },
-  }),
+    transition: { duration: 0.4, delay: i * 0.1 }
+  })
 };
 
 export function DashboardPage() {
-  const { user, cart, setView, logout } =
+  const { user, cart, logout } =
     useAppStore();
   const userToken = useAppStore((s) => s.userToken);
+  const router = useRouter();
   const isAuthenticated = !!userToken && !!user;
   const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -55,7 +57,7 @@ export function DashboardPage() {
   const [editForm, setEditForm] = useState({
     name: user?.name ?? "",
     email: user?.email ?? "",
-    phone: user?.phone ?? "",
+    phone: user?.phone ?? ""
   });
 
   if (!isAuthenticated || !user) {
@@ -74,7 +76,7 @@ export function DashboardPage() {
           <p className="text-muted-foreground">
             You need to be logged in to view your dashboard.
           </p>
-          <Button className="gap-2" onClick={() => setView("login")}>
+          <Button className="gap-2" onClick={() => router.push("/auth")}>
             <User className="h-4 w-4" />
             Login
           </Button>
@@ -96,7 +98,7 @@ export function DashboardPage() {
     setEditForm({
       name: user.name,
       email: user.email,
-      phone: user.phone,
+      phone: user.phone
     });
     setEditing(false);
   };
@@ -317,7 +319,7 @@ export function DashboardPage() {
                 <p className="text-sm text-muted-foreground mb-6">
                   When you place an order, it will appear here.
                 </p>
-                <Button className="gap-2" onClick={() => setView("products")}>
+                <Button className="gap-2" onClick={() => router.push("/products")}>
                   Browse Products
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -333,7 +335,7 @@ export function DashboardPage() {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => setView("cart")}
+            onClick={() => router.push("/cart")}
           >
             <ShoppingCart className="h-4 w-4" />
             My Cart
@@ -346,7 +348,7 @@ export function DashboardPage() {
           <Button
             variant="outline"
             className="gap-2"
-            onClick={() => setView("products")}
+            onClick={() => router.push("/products")}
           >
             <Package className="h-4 w-4" />
             Browse Products

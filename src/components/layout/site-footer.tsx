@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useAppStore, type AppView } from "@/store/app-store";
+import Link from "next/link";
 import {
   Phone,
   Mail,
@@ -10,18 +10,18 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const QUICK_LINKS: { label: string; view: AppView }[] = [
-  { label: "Home", view: "home" },
-  { label: "Products", view: "products" },
-  { label: "Services", view: "services" },
-  { label: "Builder", view: "builder" },
-  { label: "About", view: "about" },
-  { label: "Contact", view: "contact" },
+const QUICK_LINKS: { label: string; href: string }[] = [
+  { label: "Home", href: "/" },
+  { label: "Products", href: "/products" },
+  { label: "Services", href: "/services" },
+  { label: "Builder", href: "/builder" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
-const LEGAL_LINKS: { label: string; view: AppView }[] = [
-  { label: "Privacy Policy", view: "privacy" },
-  { label: "Terms of Service", view: "terms" },
+const LEGAL_LINKS: { label: string; href: string }[] = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
 ];
 
 const SERVICES = [
@@ -33,20 +33,10 @@ const SERVICES = [
 ];
 
 export function SiteFooter() {
-  const { setView } = useAppStore();
-
   return (
     <footer className={cn("bg-primary text-primary-foreground")}>
-      <div
-        className={cn(
-          "mx-auto max-w-7xl px-4 py-12 sm:py-16"
-        )}
-      >
-        <div
-          className={cn(
-            "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4"
-          )}
-        >
+      <div className={cn("mx-auto max-w-7xl px-4 py-12 sm:py-16")}>
+        <div className={cn("grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4")}>
           {/* Column 1: Brand */}
           <div className={cn("space-y-4 sm:col-span-2 lg:col-span-2")}>
             <div className={cn("flex items-center gap-2")}>
@@ -69,15 +59,15 @@ export function SiteFooter() {
             </h3>
             <ul className={cn("space-y-2.5")}>
               {QUICK_LINKS.map((link) => (
-                <li key={link.view}>
-                  <button
-                    onClick={() => setView(link.view)}
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
                     className={cn(
                       "text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground hover:underline"
                     )}
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -91,9 +81,7 @@ export function SiteFooter() {
             <ul className={cn("space-y-2.5")}>
               {SERVICES.map((service) => (
                 <li key={service}>
-                  <span
-                    className={cn("text-sm text-primary-foreground/80")}
-                  >
+                  <span className={cn("text-sm text-primary-foreground/80")}>
                     {service}
                   </span>
                 </li>
@@ -108,15 +96,15 @@ export function SiteFooter() {
             </h3>
             <ul className={cn("space-y-2.5")}>
               {LEGAL_LINKS.map((link) => (
-                <li key={link.view}>
-                  <button
-                    onClick={() => setView(link.view)}
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
                     className={cn(
                       "text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground hover:underline"
                     )}
                   >
                     {link.label}
-                  </button>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -153,11 +141,7 @@ export function SiteFooter() {
                 </a>
               </li>
               <li>
-                <div
-                  className={cn(
-                    "flex items-center gap-2.5 text-sm text-primary-foreground/80"
-                  )}
-                >
+                <div className={cn("flex items-center gap-2.5 text-sm text-primary-foreground/80")}>
                   <MapPin className={cn("h-4 w-4 shrink-0")} />
                   India
                 </div>
@@ -182,16 +166,10 @@ export function SiteFooter() {
       </div>
 
       {/* Bottom Bar */}
-      <div
-        className={cn(
-          "border-t border-primary-foreground/10"
-        )}
-      >
-        <div
-          className={cn(
-            "mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 sm:flex-row"
-          )}
-        >
+      <div className={cn("border-t border-primary-foreground/10")}>
+        <div className={cn(
+          "mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 sm:flex-row"
+        )}>
           <p className={cn("text-xs text-primary-foreground/60")}>
             © 2025 ConnectZ Sales &amp; Services. All rights reserved.
           </p>
