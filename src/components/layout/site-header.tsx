@@ -37,6 +37,7 @@ import {
 const NAV_LINKS: { label: string; view: AppView }[] = [
   { label: "Home", view: "home" },
   { label: "Products", view: "products" },
+  { label: "Services", view: "services" },
   { label: "Builder", view: "builder" },
   { label: "About", view: "about" },
   { label: "Contact", view: "contact" },

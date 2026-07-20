@@ -4,7 +4,8 @@ import type { CctvProduct } from "./cctv-store";
 export type AppView =
   | "home" | "products" | "product-detail" | "cart" | "checkout"
   | "login" | "signup" | "dashboard" | "about" | "contact"
-  | "builder" | "learn" | "compare" | "admin" | "detail";
+  | "builder" | "learn" | "compare" | "admin" | "detail"
+  | "services" | "privacy" | "terms";
 
 export interface CartItem {
   productId: string;

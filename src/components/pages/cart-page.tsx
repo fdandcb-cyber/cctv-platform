@@ -144,7 +144,7 @@ export function CartPage() {
   }, [cart, cartTotal]);
 
   const handleWhatsApp = () => {
-    const url = "https://wa.me/?text=" + whatsappText;
+    const url = "https://wa.me/917809465102?text=" + whatsappText;
     window.open(url, "_blank");
   };
 

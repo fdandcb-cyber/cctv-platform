@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useAppStore } from "@/store/app-store";
 import { useStore, type CctvProduct } from "@/store/cctv-store";
 import { useBuilderStore } from "@/store/builder-store";
@@ -23,6 +24,12 @@ import {
   ShieldCheck,
   ChevronRight,
   ArrowRight,
+  PhoneCall,
+  CheckCircle2,
+  Star,
+  HardDrive,
+  Cable,
+  Quote,
 } from "lucide-react";
 
 // ─── Price formatter ───
@@ -611,6 +618,254 @@ function ContactSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// SECTION 6 — How It Works
+// ═══════════════════════════════════════════════════════════════
+
+const HOW_IT_WORKS = [
+  {
+    icon: <PhoneCall className="h-6 w-6" />,
+    step: "01",
+    title: "Contact Us",
+    desc: "Call, WhatsApp, or fill our form to share your requirements",
+  },
+  {
+    icon: <Eye className="h-6 w-6" />,
+    step: "02",
+    title: "Free Site Survey",
+    desc: "Our expert visits your property to assess and plan the setup",
+  },
+  {
+    icon: <ClipboardCheck className="h-6 w-6" />,
+    step: "03",
+    title: "Get a Quote",
+    desc: "Receive a transparent, detailed quotation with no hidden charges",
+  },
+  {
+    icon: <Wrench className="h-6 w-6" />,
+    step: "04",
+    title: "Installation",
+    desc: "Professional installation by certified technicians with demo",
+  },
+];
+
+function HowItWorksSection() {
+  return (
+    <section className="py-16 sm:py-20 px-4">
+      <div className="max-w-6xl mx-auto">
+        <motion.div {...fadeUp} className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold">
+            How It <span className="text-emerald-600">Works</span>
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            From first call to complete installation in 4 simple steps
+          </p>
+        </motion.div>
+
+        <motion.div
+          {...staggerContainer}
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {HOW_IT_WORKS.map((item, i) => (
+            <motion.div key={item.step} {...staggerItem}>
+              <Card className="h-full gap-4 py-0 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                <CardContent className="p-6 space-y-3">
+                  <div className="absolute top-3 right-3 text-5xl font-extrabold text-muted-foreground/5 select-none">
+                    {item.step}
+                  </div>
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600">
+                    {item.icon}
+                  </div>
+                  <h3 className="font-semibold text-lg">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
+                  {i < HOW_IT_WORKS.length - 1 && (
+                    <div className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10">
+                      <ArrowRight className="h-5 w-5 text-muted-foreground/30" />
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 7 — Testimonials
+// ═══════════════════════════════════════════════════════════════
+
+const TESTIMONIALS = [
+  {
+    name: "Rajesh M.",
+    role: "Homeowner, Bangalore",
+    rating: 5,
+    text: "ConnectZ installed a 4-camera system at my home. The installation was clean, professional, and they even helped me set up remote viewing on my phone. Excellent service at a fair price.",
+  },
+  {
+    name: "Priya S.",
+    role: "Restaurant Owner, Hyderabad",
+    rating: 5,
+    text: "We needed 16 cameras for our restaurant. ConnectZ did a thorough site survey and recommended the perfect setup. The footage quality is crystal clear and the system has been running flawlessly for over a year.",
+  },
+  {
+    name: "Amit K.",
+    role: "Warehouse Manager, Chennai",
+    rating: 5,
+    text: "Got a complete surveillance system with NVR and 32 cameras for our warehouse. The team was efficient, completed the job ahead of schedule, and the AMC support has been outstanding.",
+  },
+  {
+    name: "Sneha R.",
+    role: "Boutique Owner, Mumbai",
+    rating: 4,
+    text: "Very happy with the WiFi cameras ConnectZ recommended for my boutique. Easy to manage through the app, and the motion detection alerts have been incredibly useful. Great after-sales support too.",
+  },
+];
+
+function TestimonialsSection() {
+  return (
+    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+      <div className="max-w-6xl mx-auto">
+        <motion.div {...fadeUp} className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold">
+            What Our <span className="text-emerald-600">Customers</span> Say
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            Trusted by hundreds of satisfied customers across India
+          </p>
+        </motion.div>
+
+        <motion.div
+          {...staggerContainer}
+          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {TESTIMONIALS.map((t) => (
+            <motion.div key={t.name} {...staggerItem}>
+              <Card className="h-full gap-4 py-0">
+                <CardContent className="p-5 space-y-4">
+                  <Quote className="h-6 w-6 text-emerald-600/30" />
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {t.text}
+                  </p>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "h-3.5 w-3.5",
+                          i < t.rating
+                            ? "text-amber-400 fill-amber-400"
+                            : "text-muted-foreground/30"
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <div className="pt-1">
+                    <p className="font-semibold text-sm">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.role}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION 8 — FAQ
+// ═══════════════════════════════════════════════════════════════
+
+const FAQS = [
+  {
+    q: "How much does CCTV installation cost?",
+    a: "Installation costs vary based on the number of cameras, type (wired/wireless), and complexity of the site. A basic 4-camera home setup starts from approximately ₹8,000 including installation. We provide free site surveys and detailed quotations with no hidden charges.",
+  },
+  {
+    q: "Which CCTV brand is best for home use?",
+    a: "For home use, we recommend Hikvision or Dahua for wired systems and Ezviz or Imou for WiFi cameras. The best choice depends on your specific requirements like indoor/outdoor usage, night vision needs, and budget. Our experts will guide you during the free consultation.",
+  },
+  {
+    q: "Can I view my cameras remotely on my phone?",
+    a: "Yes, absolutely! We set up the mobile app (available for both Android and iOS) during installation so you can view live footage, playback recordings, and receive motion detection alerts from anywhere in the world.",
+  },
+  {
+    q: "Do you provide warranty on products and installation?",
+    a: "Yes, all products come with manufacturer warranty (typically 1-2 years depending on the brand). Our installation work is guaranteed for 1 year. We also offer Annual Maintenance Contracts (AMC) for extended coverage and priority support.",
+  },
+  {
+    q: "How long does installation take?",
+    a: "A standard 4-8 camera residential installation is typically completed within a single day. Larger commercial installations with 16+ cameras may take 2-3 days. We will provide an accurate timeline during the quotation phase.",
+  },
+  {
+    q: "Do I need internet for CCTV to work?",
+    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. We recommend a stable broadband connection for the best experience.",
+  },
+];
+
+function FaqSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
+  return (
+    <section className="py-16 sm:py-20 px-4">
+      <div className="max-w-3xl mx-auto">
+        <motion.div {...fadeUp} className="text-center mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold">
+            Frequently Asked <span className="text-emerald-600">Questions</span>
+          </h2>
+          <p className="text-muted-foreground mt-2">
+            Quick answers to common questions about CCTV systems
+          </p>
+        </motion.div>
+
+        <motion.div {...staggerContainer} className="space-y-3">
+          {FAQS.map((faq, i) => (
+            <motion.div key={i} {...staggerItem}>
+              <Card
+                className="py-0 gap-0 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+              >
+                <CardContent className="p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <h3 className="font-semibold text-sm leading-relaxed">
+                      {faq.q}
+                    </h3>
+                    <span
+                      className={cn(
+                        "text-lg text-muted-foreground transition-transform duration-200 shrink-0",
+                        openIndex === i && "rotate-45"
+                      )}
+                    >
+                      +
+                    </span>
+                  </div>
+                  {openIndex === i && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="pt-3 mt-3 border-t"
+                    >
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {faq.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // MAIN — HomePage
 // ═══════════════════════════════════════════════════════════════
 
@@ -619,8 +874,11 @@ export function HomePage() {
     <div className="min-h-screen bg-background">
       <HeroSection />
       <FeaturedProducts />
+      <HowItWorksSection />
       <WhyChooseSection />
+      <TestimonialsSection />
       <BrandsSection />
+      <FaqSection />
       <BuilderCtaSection />
       <ContactSection />
     </div>
