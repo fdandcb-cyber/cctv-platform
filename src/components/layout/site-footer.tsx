@@ -1,0 +1,178 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { useAppStore, type AppView } from "@/store/app-store";
+import {
+  Phone,
+  Mail,
+  MapPin,
+  MessageCircle,
+  ExternalLink,
+} from "lucide-react";
+
+const QUICK_LINKS: { label: string; view: AppView }[] = [
+  { label: "Home", view: "home" },
+  { label: "Products", view: "products" },
+  { label: "Builder", view: "builder" },
+  { label: "About", view: "about" },
+  { label: "Contact", view: "contact" },
+];
+
+const SERVICES = [
+  "Site Survey",
+  "Installation",
+  "AMC Support",
+  "Remote Monitoring",
+  "Access Control",
+];
+
+export function SiteFooter() {
+  const { setView } = useAppStore();
+
+  return (
+    <footer className={cn("bg-primary text-primary-foreground")}>
+      <div
+        className={cn(
+          "mx-auto max-w-7xl px-4 py-12 sm:py-16"
+        )}
+      >
+        <div
+          className={cn(
+            "grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4"
+          )}
+        >
+          {/* Column 1: Brand */}
+          <div className={cn("space-y-4")}>
+            <div className={cn("flex items-center gap-2")}>
+              <img
+                src="/logo.svg"
+                alt="ConnectZ"
+                className={cn("h-8 w-8 brightness-0 invert")}
+              />
+              <span className={cn("text-lg font-bold")}>ConnectZ</span>
+            </div>
+            <p className={cn("text-sm leading-relaxed text-primary-foreground/80")}>
+              Your trusted partner for professional CCTV security solutions
+            </p>
+          </div>
+
+          {/* Column 2: Quick Links */}
+          <div className={cn("space-y-4")}>
+            <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
+              Quick Links
+            </h3>
+            <ul className={cn("space-y-2.5")}>
+              {QUICK_LINKS.map((link) => (
+                <li key={link.view}>
+                  <button
+                    onClick={() => setView(link.view)}
+                    className={cn(
+                      "text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground hover:underline"
+                    )}
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Services */}
+          <div className={cn("space-y-4")}>
+            <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
+              Services
+            </h3>
+            <ul className={cn("space-y-2.5")}>
+              {SERVICES.map((service) => (
+                <li key={service}>
+                  <span
+                    className={cn("text-sm text-primary-foreground/80")}
+                  >
+                    {service}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Contact Us */}
+          <div className={cn("space-y-4")}>
+            <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
+              Contact Us
+            </h3>
+            <ul className={cn("space-y-3")}>
+              <li>
+                <a
+                  href="tel:7809465102"
+                  className={cn(
+                    "flex items-center gap-2.5 text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  )}
+                >
+                  <Phone className={cn("h-4 w-4 shrink-0")} />
+                  7809465102
+                </a>
+              </li>
+              <li>
+                <a
+                  href="mailto:connectzsalesandservices@gmail.com"
+                  className={cn(
+                    "flex items-center gap-2.5 text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  )}
+                >
+                  <Mail className={cn("h-4 w-4 shrink-0")} />
+                  <span className={cn("break-all")}>
+                    connectzsalesandservices@gmail.com
+                  </span>
+                </a>
+              </li>
+              <li>
+                <div
+                  className={cn(
+                    "flex items-center gap-2.5 text-sm text-primary-foreground/80"
+                  )}
+                >
+                  <MapPin className={cn("h-4 w-4 shrink-0")} />
+                  India
+                </div>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/917809465102"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "inline-flex items-center gap-2 text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground"
+                  )}
+                >
+                  <MessageCircle className={cn("h-4 w-4 shrink-0")} />
+                  WhatsApp
+                  <ExternalLink className={cn("h-3 w-3")} />
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div
+        className={cn(
+          "border-t border-primary-foreground/10"
+        )}
+      >
+        <div
+          className={cn(
+            "mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-5 sm:flex-row"
+          )}
+        >
+          <p className={cn("text-xs text-primary-foreground/60")}>
+            © 2024 ConnectZ Sales &amp; Services. All rights reserved.
+          </p>
+          <p className={cn("text-xs text-primary-foreground/60")}>
+            Built with Next.js
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
