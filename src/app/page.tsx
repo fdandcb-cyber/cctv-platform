@@ -14,8 +14,12 @@ import { AuthPage } from "@/components/pages/auth-page";
 import { DashboardPage } from "@/components/pages/dashboard-page";
 import { AboutPage } from "@/components/pages/about-page";
 import { ContactPage } from "@/components/pages/contact-page";
+import { ServicesPage } from "@/components/pages/services-page";
+import { PrivacyPolicyPage } from "@/components/pages/privacy-page";
+import { TermsPage } from "@/components/pages/terms-page";
 import { LearningSystem } from "@/components/learning-system";
 import { CctvBuilder } from "@/components/cctv-builder";
+import { FloatingWhatsApp } from "@/components/floating-whatsapp";
 import { AdminPanel } from "@/components/admin-panel";
 import { AdminLogin } from "@/components/admin-login";
 import { cn } from "@/lib/utils";
@@ -168,7 +172,9 @@ export default function Home() {
   };
 
   function renderView() {
-    switch (view) {
+    const innerViews = ["products", "product-detail", "cart", "checkout", "login", "signup", "dashboard", "detail", "compare"];
+    const pageContent = (() => {
+      switch (view) {
       case "home": return <HomePage />;
       case "products": return <ProductsPage />;
       case "product-detail": return <ProductDetailPage />;
@@ -179,6 +185,9 @@ export default function Home() {
       case "dashboard": return <DashboardPage />;
       case "about": return <AboutPage />;
       case "contact": return <ContactPage />;
+      case "services": return <ServicesPage />;
+      case "privacy": return <PrivacyPolicyPage />;
+      case "terms": return <TermsPage />;
       case "builder": return <CctvBuilder />;
       case "learn": return <LearningSystem />;
       case "admin":
@@ -201,6 +210,12 @@ export default function Home() {
         return <LegacyCompareView onBack={() => setView("products")} />;
       default: return <HomePage />;
     }
+    })();
+
+    if (innerViews.includes(view)) {
+      return <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">{pageContent}</div>;
+    }
+    return pageContent;
   }
 
   return (
@@ -221,6 +236,7 @@ export default function Home() {
         </AnimatePresence>
       </main>
       <SiteFooter />
+      <FloatingWhatsApp />
     </div>
   );
 }

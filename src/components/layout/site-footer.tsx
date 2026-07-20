@@ -13,9 +13,15 @@ import {
 const QUICK_LINKS: { label: string; view: AppView }[] = [
   { label: "Home", view: "home" },
   { label: "Products", view: "products" },
+  { label: "Services", view: "services" },
   { label: "Builder", view: "builder" },
   { label: "About", view: "about" },
   { label: "Contact", view: "contact" },
+];
+
+const LEGAL_LINKS: { label: string; view: AppView }[] = [
+  { label: "Privacy Policy", view: "privacy" },
+  { label: "Terms of Service", view: "terms" },
 ];
 
 const SERVICES = [
@@ -38,11 +44,11 @@ export function SiteFooter() {
       >
         <div
           className={cn(
-            "grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-4"
+            "grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5"
           )}
         >
           {/* Column 1: Brand */}
-          <div className={cn("space-y-4")}>
+          <div className={cn("space-y-4 lg:col-span-2")}>
             <div className={cn("flex items-center gap-2")}>
               <img
                 src="/logo.svg"
@@ -95,7 +101,28 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Column 4: Contact Us */}
+          {/* Column 4: Legal */}
+          <div className={cn("space-y-4")}>
+            <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
+              Legal
+            </h3>
+            <ul className={cn("space-y-2.5")}>
+              {LEGAL_LINKS.map((link) => (
+                <li key={link.view}>
+                  <button
+                    onClick={() => setView(link.view)}
+                    className={cn(
+                      "text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground hover:underline"
+                    )}
+                  >
+                    {link.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 5: Contact Us */}
           <div className={cn("space-y-4")}>
             <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
               Contact Us
@@ -166,7 +193,7 @@ export function SiteFooter() {
           )}
         >
           <p className={cn("text-xs text-primary-foreground/60")}>
-            © 2024 ConnectZ Sales &amp; Services. All rights reserved.
+            © 2025 ConnectZ Sales &amp; Services. All rights reserved.
           </p>
           <p className={cn("text-xs text-primary-foreground/60")}>
             Built with Next.js
