@@ -129,7 +129,7 @@ export function ContactPage() {
                 <CardContent className={cn("p-5 flex items-start gap-4")}>
                   <div
                     className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
                     )}
                   >
                     <Phone className={cn("h-5 w-5")} />
@@ -153,7 +153,7 @@ export function ContactPage() {
                 <CardContent className={cn("p-5 flex items-start gap-4")}>
                   <div
                     className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600"
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400"
                     )}
                   >
                     <Mail className={cn("h-5 w-5")} />
@@ -179,7 +179,7 @@ export function ContactPage() {
                 <CardContent className={cn("p-5 flex items-start gap-4")}>
                   <div
                     className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-50 text-green-600"
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"
                     )}
                   >
                     <MessageCircle className={cn("h-5 w-5")} />
@@ -199,7 +199,7 @@ export function ContactPage() {
               <CardContent className={cn("p-5 flex items-start gap-4")}>
                 <div
                   className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600"
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400"
                   )}
                 >
                   <Clock className={cn("h-5 w-5")} />
@@ -221,7 +221,7 @@ export function ContactPage() {
               <CardContent className={cn("p-5 flex items-start gap-4")}>
                 <div
                   className={cn(
-                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 text-rose-600"
+                    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400"
                   )}
                 >
                   <MapPin className={cn("h-5 w-5")} />

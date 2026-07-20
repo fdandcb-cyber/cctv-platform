@@ -119,8 +119,10 @@ function CartItemRow({ item, index }: { item: CartItem; index: number }) {
   );
 }
 
-export function CartPage() {
-  const { cart, cartTotal, cartCount, clearCart, setView } = useAppStore();
+export function CartPage() {                                            
+  const { cart, clearCart, setView } = useAppStore();   
+  const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   const whatsappText = useMemo(() => {
     if (cart.length === 0) return "";

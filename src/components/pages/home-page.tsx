@@ -141,7 +141,7 @@ function HeroSection() {
           <div
             className={cn(
               "relative p-4 rounded-2xl",
-              "bg-emerald-50 border border-emerald-200/60",
+              "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60",
               "shadow-lg shadow-emerald-200/30"
             )}
           >
@@ -400,7 +400,7 @@ function WhyChooseSection() {
             <motion.div key={item.title} {...staggerItem}>
               <Card className="h-full gap-4 py-0">
                 <CardContent className="p-6 space-y-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                     {item.icon}
                   </div>
                   <h3 className="font-semibold text-lg">{item.title}</h3>
@@ -545,7 +545,7 @@ function ContactSection() {
             <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="flex justify-center">
-                  <div className="p-3 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                     <Phone className="h-6 w-6" />
                   </div>
                 </div>
@@ -565,7 +565,7 @@ function ContactSection() {
             <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-6 text-center space-y-3">
                 <div className="flex justify-center">
-                  <div className="p-3 rounded-xl bg-sky-50 text-sky-600">
+                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
                     <Mail className="h-6 w-6" />
                   </div>
                 </div>
@@ -672,7 +672,7 @@ function HowItWorksSection() {
                   <div className="absolute top-3 right-3 text-5xl font-extrabold text-muted-foreground/5 select-none">
                     {item.step}
                   </div>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                     {item.icon}
                   </div>
                   <h3 className="font-semibold text-lg">{item.title}</h3>

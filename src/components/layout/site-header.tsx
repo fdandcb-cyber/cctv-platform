@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { useAppStore, type AppView } from "@/store/app-store";
 import { useTheme } from "next-themes";
@@ -44,14 +44,16 @@ const NAV_LINKS: { label: string; view: AppView }[] = [
 ];
 
 export function SiteHeader() {
+  const cart = useAppStore((s) => s.cart);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const user = useAppStore((s) => s.user);
+  const userToken = useAppStore((s) => s.userToken);
+  const isAuthenticated = !!userToken && !!user;
   const {
     view,
     setView,
-    cartCount,
     mobileMenuOpen,
     toggleMobileMenu,
-    isAuthenticated,
-    user,
     logout,
     searchQuery,
     setSearchQuery,
@@ -59,11 +61,11 @@ export function SiteHeader() {
 
   const { theme, setTheme } = useTheme();
   const [searchOpen, setSearchOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   function handleNavClick(targetView: AppView) {
     setView(targetView);

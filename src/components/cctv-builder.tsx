@@ -398,8 +398,7 @@ export function CctvBuilder() {
 
   // Fetch camera products when system type changes
   useEffect(() => {
-    if (!store.cameraSystem) { setAvailableProducts([]); return; }
-    setProductsLoading(true);
+    if (!store.cameraSystem) return;
     fetch("/api/products?sortBy=price&order=asc")
       .then(r => r.json())
       .then(data => {

@@ -154,7 +154,7 @@ export function AboutPage() {
                   <CardContent className={cn("p-6 space-y-4")}>
                     <div
                       className={cn(
-                        "flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600"
+                        "flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
                       )}
                     >
                       {item.icon}

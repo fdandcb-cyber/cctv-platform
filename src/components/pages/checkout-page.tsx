@@ -29,7 +29,9 @@ const fmt = (n: number) =>
   }).format(n);
 
 export function CheckoutPage() {
-  const { cart, cartTotal, cartCount, setView, clearCart } = useAppStore();
+  const { cart, setView, clearCart } = useAppStore();
+  const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [form, setForm] = useState({
@@ -102,7 +104,7 @@ export function CheckoutPage() {
         transition={{ duration: 0.4 }}
         className="text-center py-20"
       >
-        <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-50 mb-6">
+        <div className={cn("inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-50 dark:bg-emerald-950/40 mb-6")}>
           <CheckCircle2 className="h-14 w-14 text-emerald-500" />
         </div>
         <h2 className="text-3xl font-bold mb-2">Order Placed!</h2>

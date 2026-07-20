@@ -44,38 +44,38 @@ const typeConfig: Record<
 > = {
   Dome: {
     icon: <Camera className="h-4 w-4" />,
-    color: "text-emerald-700",
-    bg: "bg-emerald-50 border-emerald-200",
+    color: "text-emerald-600 dark:text-emerald-400",
+    bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800",
   },
   Bullet: {
     icon: <Camera className="h-4 w-4" />,
-    color: "text-sky-700",
-    bg: "bg-sky-50 border-sky-200",
+    color: "text-sky-600 dark:text-sky-400",
+    bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800",
   },
   WiFi: {
     icon: <Wifi className="h-4 w-4" />,
-    color: "text-violet-700",
-    bg: "bg-violet-50 border-violet-200",
+    color: "text-violet-600 dark:text-violet-400",
+    bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800",
   },
   PTZ: {
     icon: <Radio className="h-4 w-4" />,
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200",
+    color: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800",
   },
   "4G": {
     icon: <Signal className="h-4 w-4" />,
-    color: "text-red-700",
-    bg: "bg-red-50 border-red-200",
+    color: "text-red-600 dark:text-red-400",
+    bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800",
   },
   DVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
-    color: "text-slate-700",
-    bg: "bg-slate-50 border-slate-200",
+    color: "text-slate-600 dark:text-slate-400",
+    bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700",
   },
   NVR: {
     icon: <MonitorPlay className="h-4 w-4" />,
-    color: "text-indigo-700",
-    bg: "bg-indigo-50 border-indigo-200",
+    color: "text-teal-600 dark:text-teal-400",
+    bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800",
   },
 };
 
@@ -306,8 +306,8 @@ export function ProductDetailPage() {
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-4">
             <CardContent className="p-0 flex items-center gap-3">
-              <div className="rounded-lg bg-amber-50 p-2">
-                <Moon className="h-5 w-5 text-amber-600" />
+              <div className="rounded-lg bg-amber-50 dark:bg-amber-950/40 p-2">
+                <Moon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Night Vision</p>
@@ -317,8 +317,8 @@ export function ProductDetailPage() {
           </Card>
           <Card className="p-4">
             <CardContent className="p-0 flex items-center gap-3">
-              <div className="rounded-lg bg-sky-50 p-2">
-                <CloudRain className="h-5 w-5 text-sky-600" />
+              <div className="rounded-lg bg-sky-50 dark:bg-sky-950/40 p-2">
+                <CloudRain className="h-5 w-5 text-sky-600 dark:text-sky-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Weather Rating</p>
@@ -328,8 +328,8 @@ export function ProductDetailPage() {
           </Card>
           <Card className="p-4">
             <CardContent className="p-0 flex items-center gap-3">
-              <div className="rounded-lg bg-red-50 p-2">
-                <ScanLine className="h-5 w-5 text-red-600" />
+              <div className="rounded-lg bg-red-50 dark:bg-red-950/40 p-2">
+                <ScanLine className="h-5 w-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">IR Range</p>
@@ -339,8 +339,8 @@ export function ProductDetailPage() {
           </Card>
           <Card className="p-4">
             <CardContent className="p-0 flex items-center gap-3">
-              <div className="rounded-lg bg-violet-50 p-2">
-                <Expand className="h-5 w-5 text-violet-600" />
+              <div className="rounded-lg bg-violet-50 dark:bg-violet-950/40 p-2">
+                <Expand className="h-5 w-5 text-violet-600 dark:text-violet-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Field of View</p>
@@ -350,8 +350,8 @@ export function ProductDetailPage() {
           </Card>
           <Card className="p-4 col-span-2 sm:col-span-1">
             <CardContent className="p-0 flex items-center gap-3">
-              <div className="rounded-lg bg-indigo-50 p-2">
-                <Monitor className="h-5 w-5 text-indigo-600" />
+              <div className="rounded-lg bg-teal-50 dark:bg-teal-950/40 p-2">
+                <Monitor className="h-5 w-5 text-teal-600 dark:text-teal-400" />
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Recorder Type</p>
