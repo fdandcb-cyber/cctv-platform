@@ -22,9 +22,10 @@ import {
   AlertTriangle, Lightbulb, Router, Zap, Box, Link,
   Calculator, RotateCcw, Info, Eye, Volume2, MessageSquare,
   Sun, Moon, Palette, Server, ChevronsDown, Copy, Printer,
-  Mouse, Keyboard, Search, Package,
+  Mouse, Keyboard, Search, Package
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) => "₹" + n.toLocaleString("en-IN");
 
@@ -70,7 +71,7 @@ function getCameraSuggestion(area: number, propType: PropertyType): { min: numbe
   const camerasPer1000sqft: Record<PropertyType, number> = {
     home: 1.2, apartment: 1.5, office: 1.8, shop: 2.0,
     warehouse: 0.8, factory: 1.0, restaurant: 2.5, hospital: 2.0,
-    school: 1.5, villa: 1.0, other: 1.2,
+    school: 1.5, villa: 1.0, other: 1.2
   };
   const rate = camerasPer1000sqft[propType] || 1.2;
   const suggested = Math.max(2, Math.ceil((area / 1000) * rate));
@@ -121,7 +122,7 @@ function getRecorderConfig(totalCameras: number, system: CameraSystem): { type: 
     type,
     units,
     summary: `${units.length}x ${type} units: ${unitDescs} = ${totalChannels} total channels for ${totalCameras} cameras`,
-    exceedsMax,
+    exceedsMax
   };
 }
 
@@ -200,7 +201,7 @@ const BITRATE_GB_PER_DAY: Record<string, number> = {
   "4MP": 30.2,
   "5MP": 45.4,
   "8MP": 60.5,
-  "12MP": 120.9,
+  "12MP": 120.9
 };
 
 const HDD_SIZES_GB = [500, 1000, 2000, 3000, 4000, 6000, 8000, 10000, 12000, 16000];
@@ -288,6 +289,7 @@ function QtyControl({ value, onChange, min = 0, max = 256 }: { value: number; on
 
 export function CctvBuilder() {
   const store = useBuilderStore();
+  const router = useRouter();
 
   // ─── Derived State ───
   const area = parseFloat(store.areaSqft) || 0;
@@ -451,7 +453,7 @@ export function CctvBuilder() {
         price: product.price,
         salePrice: product.salePrice,
         imageUrl: product.imageUrl || "",
-        cameraType: product.cameraType,
+        cameraType: product.cameraType
       });
     }
     store.setCameraSelections(current);
@@ -823,7 +825,7 @@ export function CctvBuilder() {
                 <Package className="h-10 w-10 mx-auto text-amber-400 mb-2" />
                 <p className="text-sm font-medium text-amber-700">No cameras found for {store.cameraSystem.toUpperCase()} system</p>
                 <p className="text-xs text-amber-600 mt-1">Add {store.cameraSystem === "analog" ? "analog (DVR)" : store.cameraSystem === "ip" ? "IP (NVR)" : "WiFi"} cameras via the Admin panel first.</p>
-                <Button variant="outline" size="sm" className="mt-3 gap-1.5" onClick={() => useStore.getState().setView("admin")}>
+                <Button variant="outline" size="sm" className="mt-3 gap-1.5" onClick={() => router.push("/admin")}>
                   <Shield className="h-3.5 w-3.5" /> Go to Admin Panel
                 </Button>
               </div>

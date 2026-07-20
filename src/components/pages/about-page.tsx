@@ -14,27 +14,28 @@ import {
   Users,
   Building2,
   Clock,
-  ThumbsUp,
+  ThumbsUp
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // ─── Animation helpers ───
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true } as const,
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.1 } },
-  viewport: { once: true } as const,
+  viewport: { once: true } as const
 };
 
 const staggerItem = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 // ─── Data ───
@@ -43,19 +44,19 @@ const PILLARS = [
     icon: <Target className={cn("h-7 w-7")} />,
     title: "Our Mission",
     description:
-      "To provide reliable, affordable, and cutting-edge CCTV security solutions that protect homes, businesses, and communities across India.",
+      "To provide reliable, affordable, and cutting-edge CCTV security solutions that protect homes, businesses, and communities across India."
   },
   {
     icon: <Eye className={cn("h-7 w-7")} />,
     title: "Our Vision",
     description:
-      "To become India's most trusted name in electronic security — known for quality products, expert installation, and unwavering customer support.",
+      "To become India's most trusted name in electronic security — known for quality products, expert installation, and unwavering customer support."
   },
   {
     icon: <Heart className={cn("h-7 w-7")} />,
     title: "Our Values",
     description:
-      "Integrity, transparency, and customer-first approach drive everything we do. We believe in delivering real value, not just products.",
+      "Integrity, transparency, and customer-first approach drive everything we do. We believe in delivering real value, not just products."
   },
 ];
 
@@ -63,22 +64,22 @@ const STATS = [
   {
     icon: <ShieldCheck className={cn("h-6 w-6")} />,
     value: "500+",
-    label: "Installations",
+    label: "Installations"
   },
   {
     icon: <Building2 className={cn("h-6 w-6")} />,
     value: "10+",
-    label: "Brand Partners",
+    label: "Brand Partners"
   },
   {
     icon: <Clock className={cn("h-6 w-6")} />,
     value: "5+",
-    label: "Years Experience",
+    label: "Years Experience"
   },
   {
     icon: <ThumbsUp className={cn("h-6 w-6")} />,
     value: "98%",
-    label: "Customer Satisfaction",
+    label: "Customer Satisfaction"
   },
 ];
 
@@ -90,7 +91,8 @@ const TEAM = [
 ];
 
 export function AboutPage() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
+  const router = useRouter();
 
   return (
     <div className={cn("min-h-screen bg-background")}>
@@ -325,7 +327,7 @@ export function AboutPage() {
                   size="lg"
                   variant="secondary"
                   className={cn("gap-2 text-base px-8")}
-                  onClick={() => setView("contact")}
+                  onClick={() => router.push("/contact")}
                 >
                   Get a Free Quote
                   <ArrowRight className={cn("h-4 w-4")} />

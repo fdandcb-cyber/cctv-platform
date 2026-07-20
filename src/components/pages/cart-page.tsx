@@ -16,19 +16,21 @@ import {
   ArrowRight,
   ArrowLeft,
   MessageCircle,
-  ShieldCheck,
+  ShieldCheck
 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 function CartItemRow({ item, index }: { item: CartItem; index: number }) {
   const { updateQuantity, removeFromCart } = useAppStore();
+  const router = useRouter();
   const unitPrice = item.salePrice ?? item.price;
   const lineTotal = unitPrice * item.quantity;
 
@@ -120,7 +122,7 @@ function CartItemRow({ item, index }: { item: CartItem; index: number }) {
 }
 
 export function CartPage() {                                            
-  const { cart, clearCart, setView } = useAppStore();   
+  const { cart, clearCart } = useAppStore();   
   const cartTotal = cart.reduce((sum, item) => sum + (item.salePrice || item.price) * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -172,7 +174,7 @@ export function CartPage() {
         </p>
         <Button
           className="gap-2"
-          onClick={() => setView("products")}
+          onClick={() => router.push("/products")}
         >
           <ArrowLeft className="h-4 w-4" />
           Browse Products
@@ -246,7 +248,7 @@ export function CartPage() {
 
               <Button
                 className="w-full h-12 text-base gap-2"
-                onClick={() => setView("checkout")}
+                onClick={() => router.push("/checkout")}
               >
                 Proceed to Checkout
                 <ArrowRight className="h-4 w-4" />
@@ -255,7 +257,7 @@ export function CartPage() {
               <Button
                 variant="ghost"
                 className="w-full gap-2"
-                onClick={() => setView("products")}
+                onClick={() => router.push("/products")}
               >
                 <ArrowLeft className="h-4 w-4" />
                 Continue Shopping

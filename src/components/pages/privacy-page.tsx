@@ -7,9 +7,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useAppStore } from "@/store/app-store";
 import { ArrowLeft, Shield } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function PrivacyPolicyPage() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
+  const router = useRouter();
 
   return (
     <div className={cn("min-h-screen bg-background")}>
@@ -19,7 +21,7 @@ export function PrivacyPolicyPage() {
             variant="ghost"
             size="sm"
             className={cn("gap-1.5 -ml-2 mb-8")}
-            onClick={() => setView("home")}
+            onClick={() => router.push("/")}
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Home

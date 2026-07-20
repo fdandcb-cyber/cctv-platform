@@ -29,15 +29,16 @@ import {
   Star,
   HardDrive,
   Cable,
-  Quote,
+  Quote
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // ─── Price formatter ───
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 0
   }).format(n);
 
 // ─── Constants ───
@@ -57,32 +58,32 @@ const WHY_CHOOSE = [
   {
     icon: <Wrench className="h-6 w-6" />,
     title: "Expert Installation",
-    desc: "Professional setup by certified technicians for optimal camera placement and performance.",
+    desc: "Professional setup by certified technicians for optimal camera placement and performance."
   },
   {
     icon: <Award className="h-6 w-6" />,
     title: "Quality Brands",
-    desc: "Only trusted, industry-leading brands like Hikvision, Dahua, and CP Plus.",
+    desc: "Only trusted, industry-leading brands like Hikvision, Dahua, and CP Plus."
   },
   {
     icon: <IndianRupee className="h-6 w-6" />,
     title: "Competitive Pricing",
-    desc: "Best-in-market prices with transparent quotations and no hidden charges.",
+    desc: "Best-in-market prices with transparent quotations and no hidden charges."
   },
   {
     icon: <ClipboardCheck className="h-6 w-6" />,
     title: "Free Site Survey",
-    desc: "Complimentary on-site assessment to determine the perfect security solution.",
+    desc: "Complimentary on-site assessment to determine the perfect security solution."
   },
   {
     icon: <Headphones className="h-6 w-6" />,
     title: "24/7 Support",
-    desc: "Round-the-clock technical support and troubleshooting whenever you need it.",
+    desc: "Round-the-clock technical support and troubleshooting whenever you need it."
   },
   {
     icon: <ShieldCheck className="h-6 w-6" />,
     title: "Warranty Coverage",
-    desc: "Full manufacturer warranty on all products plus our own installation guarantee.",
+    desc: "Full manufacturer warranty on all products plus our own installation guarantee."
   },
 ];
 
@@ -91,19 +92,19 @@ const fadeUp = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true } as const,
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 const staggerContainer = {
   initial: {},
   whileInView: { transition: { staggerChildren: 0.1 } },
-  viewport: { once: true } as const,
+  viewport: { once: true } as const
 };
 
 const staggerItem = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -111,7 +112,8 @@ const staggerItem = {
 // ═══════════════════════════════════════════════════════════════
 
 function HeroSection() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
+  const router = useRouter();
 
   return (
     <section
@@ -179,7 +181,7 @@ function HeroSection() {
         >
           <Button
             size="lg"
-            onClick={() => setView("products")}
+            onClick={() => router.push("/products")}
             className="gap-2 text-base px-8"
           >
             <Eye className="h-5 w-5" />
@@ -188,7 +190,7 @@ function HeroSection() {
           <Button
             size="lg"
             variant="outline"
-            onClick={() => setView("builder")}
+            onClick={() => router.push("/builder")}
             className="gap-2 text-base px-8"
           >
             <Wrench className="h-5 w-5" />
@@ -231,7 +233,7 @@ function HeroSection() {
 // ═══════════════════════════════════════════════════════════════
 
 function ProductCard({ product }: { product: CctvProduct }) {
-  const { setView, setSelectedProduct } = useStore();
+  const router = useRouter();
 
   return (
     <Card
@@ -246,10 +248,7 @@ function ProductCard({ product }: { product: CctvProduct }) {
         className={cn(
           "aspect-[4/3] bg-muted relative overflow-hidden cursor-pointer"
         )}
-        onClick={() => {
-          setSelectedProduct(product);
-          setView("product-detail");
-        }}
+        onClick={() => router.push(`/products/${product.id}`)}
       >
         {product.imageUrl ? (
           <img
@@ -311,10 +310,7 @@ function ProductCard({ product }: { product: CctvProduct }) {
             size="sm"
             variant="outline"
             className="text-xs h-8 gap-1"
-            onClick={() => {
-              setSelectedProduct(product);
-              setView("product-detail");
-            }}
+            onClick={() => router.push(`/products/${product.id}`)}
           >
             View Details
             <ChevronRight className="h-3 w-3" />
@@ -326,7 +322,7 @@ function ProductCard({ product }: { product: CctvProduct }) {
 }
 
 function FeaturedProducts() {
-  const { products, setView } = useStore();
+  const { products } = useStore();
   const featured = products.slice(0, 8);
 
   if (featured.length === 0) return null;
@@ -361,7 +357,7 @@ function FeaturedProducts() {
             variant="outline"
             size="lg"
             className="gap-2"
-            onClick={() => setView("products")}
+            onClick={() => router.push("/products")}
           >
             View All Products
             <ArrowRight className="h-4 w-4" />
@@ -466,7 +462,7 @@ function BrandsSection() {
 // ═══════════════════════════════════════════════════════════════
 
 function BuilderCtaSection() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
 
   return (
     <section className="py-16 sm:py-20 px-4">
@@ -494,14 +490,14 @@ function BuilderCtaSection() {
                 transition={{
                   duration: 2,
                   repeat: Infinity,
-                  ease: "easeInOut",
+                  ease: "easeInOut"
                 }}
               >
                 <Button
                   size="lg"
                   variant="secondary"
                   className="gap-2 text-base px-8"
-                  onClick={() => setView("builder")}
+                  onClick={() => router.push("/builder")}
                 >
                   <Wrench className="h-5 w-5" />
                   Build Your Setup
@@ -521,7 +517,7 @@ function BuilderCtaSection() {
 // ═══════════════════════════════════════════════════════════════
 
 function ContactSection() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
 
   return (
     <section className="py-16 sm:py-20 px-4 bg-muted/30">
@@ -605,7 +601,7 @@ function ContactSection() {
         <motion.div {...fadeUp} className="text-center mt-10">
           <Button
             size="lg"
-            onClick={() => setView("builder")}
+            onClick={() => router.push("/builder")}
             className="gap-2 text-base px-8"
           >
             Get a Free Quote
@@ -626,25 +622,25 @@ const HOW_IT_WORKS = [
     icon: <PhoneCall className="h-6 w-6" />,
     step: "01",
     title: "Contact Us",
-    desc: "Call, WhatsApp, or fill our form to share your requirements",
+    desc: "Call, WhatsApp, or fill our form to share your requirements"
   },
   {
     icon: <Eye className="h-6 w-6" />,
     step: "02",
     title: "Free Site Survey",
-    desc: "Our expert visits your property to assess and plan the setup",
+    desc: "Our expert visits your property to assess and plan the setup"
   },
   {
     icon: <ClipboardCheck className="h-6 w-6" />,
     step: "03",
     title: "Get a Quote",
-    desc: "Receive a transparent, detailed quotation with no hidden charges",
+    desc: "Receive a transparent, detailed quotation with no hidden charges"
   },
   {
     icon: <Wrench className="h-6 w-6" />,
     step: "04",
     title: "Installation",
-    desc: "Professional installation by certified technicians with demo",
+    desc: "Professional installation by certified technicians with demo"
   },
 ];
 
@@ -703,25 +699,25 @@ const TESTIMONIALS = [
     name: "Rajesh M.",
     role: "Homeowner, Bangalore",
     rating: 5,
-    text: "ConnectZ installed a 4-camera system at my home. The installation was clean, professional, and they even helped me set up remote viewing on my phone. Excellent service at a fair price.",
+    text: "ConnectZ installed a 4-camera system at my home. The installation was clean, professional, and they even helped me set up remote viewing on my phone. Excellent service at a fair price."
   },
   {
     name: "Priya S.",
     role: "Restaurant Owner, Hyderabad",
     rating: 5,
-    text: "We needed 16 cameras for our restaurant. ConnectZ did a thorough site survey and recommended the perfect setup. The footage quality is crystal clear and the system has been running flawlessly for over a year.",
+    text: "We needed 16 cameras for our restaurant. ConnectZ did a thorough site survey and recommended the perfect setup. The footage quality is crystal clear and the system has been running flawlessly for over a year."
   },
   {
     name: "Amit K.",
     role: "Warehouse Manager, Chennai",
     rating: 5,
-    text: "Got a complete surveillance system with NVR and 32 cameras for our warehouse. The team was efficient, completed the job ahead of schedule, and the AMC support has been outstanding.",
+    text: "Got a complete surveillance system with NVR and 32 cameras for our warehouse. The team was efficient, completed the job ahead of schedule, and the AMC support has been outstanding."
   },
   {
     name: "Sneha R.",
     role: "Boutique Owner, Mumbai",
     rating: 4,
-    text: "Very happy with the WiFi cameras ConnectZ recommended for my boutique. Easy to manage through the app, and the motion detection alerts have been incredibly useful. Great after-sales support too.",
+    text: "Very happy with the WiFi cameras ConnectZ recommended for my boutique. Easy to manage through the app, and the motion detection alerts have been incredibly useful. Great after-sales support too."
   },
 ];
 
@@ -784,27 +780,27 @@ function TestimonialsSection() {
 const FAQS = [
   {
     q: "How much does CCTV installation cost?",
-    a: "Installation costs vary based on the number of cameras, type (wired/wireless), and complexity of the site. A basic 4-camera home setup starts from approximately ₹8,000 including installation. We provide free site surveys and detailed quotations with no hidden charges.",
+    a: "Installation costs vary based on the number of cameras, type (wired/wireless), and complexity of the site. A basic 4-camera home setup starts from approximately ₹8,000 including installation. We provide free site surveys and detailed quotations with no hidden charges."
   },
   {
     q: "Which CCTV brand is best for home use?",
-    a: "For home use, we recommend Hikvision or Dahua for wired systems and Ezviz or Imou for WiFi cameras. The best choice depends on your specific requirements like indoor/outdoor usage, night vision needs, and budget. Our experts will guide you during the free consultation.",
+    a: "For home use, we recommend Hikvision or Dahua for wired systems and Ezviz or Imou for WiFi cameras. The best choice depends on your specific requirements like indoor/outdoor usage, night vision needs, and budget. Our experts will guide you during the free consultation."
   },
   {
     q: "Can I view my cameras remotely on my phone?",
-    a: "Yes, absolutely! We set up the mobile app (available for both Android and iOS) during installation so you can view live footage, playback recordings, and receive motion detection alerts from anywhere in the world.",
+    a: "Yes, absolutely! We set up the mobile app (available for both Android and iOS) during installation so you can view live footage, playback recordings, and receive motion detection alerts from anywhere in the world."
   },
   {
     q: "Do you provide warranty on products and installation?",
-    a: "Yes, all products come with manufacturer warranty (typically 1-2 years depending on the brand). Our installation work is guaranteed for 1 year. We also offer Annual Maintenance Contracts (AMC) for extended coverage and priority support.",
+    a: "Yes, all products come with manufacturer warranty (typically 1-2 years depending on the brand). Our installation work is guaranteed for 1 year. We also offer Annual Maintenance Contracts (AMC) for extended coverage and priority support."
   },
   {
     q: "How long does installation take?",
-    a: "A standard 4-8 camera residential installation is typically completed within a single day. Larger commercial installations with 16+ cameras may take 2-3 days. We will provide an accurate timeline during the quotation phase.",
+    a: "A standard 4-8 camera residential installation is typically completed within a single day. Larger commercial installations with 16+ cameras may take 2-3 days. We will provide an accurate timeline during the quotation phase."
   },
   {
     q: "Do I need internet for CCTV to work?",
-    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. We recommend a stable broadband connection for the best experience.",
+    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. We recommend a stable broadband connection for the best experience."
   },
 ];
 

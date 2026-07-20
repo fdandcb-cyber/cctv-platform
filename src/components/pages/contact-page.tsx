@@ -11,7 +11,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
+  CardDescription
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +21,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
+  SelectValue
 } from "@/components/ui/select";
 import {
   Phone,
@@ -31,15 +31,16 @@ import {
   Clock,
   Wrench,
   ArrowRight,
-  Loader2,
+  Loader2
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 // ─── Animation helpers ───
 const fadeUp = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true } as const,
-  transition: { duration: 0.5 },
+  transition: { duration: 0.5 }
 };
 
 const SUBJECT_OPTIONS = [
@@ -51,7 +52,8 @@ const SUBJECT_OPTIONS = [
 ];
 
 export function ContactPage() {
-  const { setView } = useAppStore();
+  const { } = useAppStore();
+  const router = useRouter();
 
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -59,7 +61,7 @@ export function ContactPage() {
     email: "",
     phone: "",
     subject: "",
-    message: "",
+    message: ""
   });
 
   function updateField(field: string, value: string) {
@@ -368,7 +370,7 @@ export function ContactPage() {
                 <Button
                   variant="default"
                   className={cn("gap-2 shrink-0")}
-                  onClick={() => setView("builder")}
+                  onClick={() => router.push("/builder")}
                 >
                   Open Builder
                   <ArrowRight className={cn("h-4 w-4")} />

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { useAppStore, type AppView } from "@/store/app-store";
+import { useAppStore } from "@/store/app-store";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,24 +36,23 @@ import {
   User,
 } from "lucide-react";
 
-const NAV_LINKS: { label: string; view: AppView }[] = [
-  { label: "Home", view: "home" },
-  { label: "Products", view: "products" },
-  { label: "Services", view: "services" },
-  { label: "Builder", view: "builder" },
-  { label: "About", view: "about" },
-  { label: "Contact", view: "contact" },
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Home", href: "/" },
+  { label: "Products", href: "/products" },
+  { label: "Services", href: "/services" },
+  { label: "Builder", href: "/builder" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ];
 
 export function SiteHeader() {
+  const pathname = usePathname();
   const cart = useAppStore((s) => s.cart);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
   const user = useAppStore((s) => s.user);
   const userToken = useAppStore((s) => s.userToken);
   const isAuthenticated = !!userToken && !!user;
   const {
-    view,
-    setView,
     mobileMenuOpen,
     toggleMobileMenu,
     logout,
@@ -67,8 +68,7 @@ export function SiteHeader() {
     () => false
   );
 
-  function handleNavClick(targetView: AppView) {
-    setView(targetView);
+  function handleNavClick() {
     if (mobileMenuOpen) {
       toggleMobileMenu();
     }
@@ -87,30 +87,37 @@ export function SiteHeader() {
         )}
       >
         {/* Left: Logo */}
-        <button
-          onClick={() => setView("home")}
+        <Link
+          href="/"
           className={cn("flex items-center gap-2")}
+          onClick={handleNavClick}
         >
           <img src="/logo.svg" alt="ConnectZ" className={cn("h-8 w-8")} />
           <span className={cn("text-lg font-bold")}>ConnectZ</span>
-        </button>
+        </Link>
 
         {/* Center: Desktop Nav */}
         <nav className={cn("hidden md:flex items-center gap-6")}>
-          {NAV_LINKS.map((link) => (
-            <button
-              key={link.view}
-              onClick={() => handleNavClick(link.view)}
-              className={cn(
-                "text-sm font-medium transition-opacity hover:opacity-80",
-                view === link.view
-                  ? "text-primary font-semibold"
-                  : "text-muted-foreground"
-              )}
-            >
-              {link.label}
-            </button>
-          ))}
+          {NAV_LINKS.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "text-sm font-medium transition-opacity hover:opacity-80",
+                  isActive
+                    ? "text-primary font-semibold"
+                    : "text-muted-foreground"
+                )}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Right: Actions */}
@@ -150,24 +157,25 @@ export function SiteHeader() {
           )}
 
           {/* Cart */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("relative")}
-            onClick={() => setView("cart")}
-            aria-label="Cart"
-          >
-            <ShoppingCart className={cn("h-4 w-4")} />
-            {cartCount > 0 && (
-              <Badge
-                className={cn(
-                  "absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
-                )}
-              >
-                {cartCount}
-              </Badge>
-            )}
-          </Button>
+          <Link href="/cart">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn("relative")}
+              aria-label="Cart"
+            >
+              <ShoppingCart className={cn("h-4 w-4")} />
+              {cartCount > 0 && (
+                <Badge
+                  className={cn(
+                    "absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px]"
+                  )}
+                >
+                  {cartCount}
+                </Badge>
+              )}
+            </Button>
+          </Link>
 
           {/* Theme Toggle */}
           {mounted && (
@@ -186,17 +194,18 @@ export function SiteHeader() {
           )}
 
           {/* Admin link */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "hidden sm:flex items-center gap-1 text-xs text-muted-foreground"
-            )}
-            onClick={() => setView("admin")}
-          >
-            <Settings className={cn("h-3.5 w-3.5")} />
-            <span>Admin</span>
-          </Button>
+          <Link href="/admin">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "hidden sm:flex items-center gap-1 text-xs text-muted-foreground"
+              )}
+            >
+              <Settings className={cn("h-3.5 w-3.5")} />
+              <span>Admin</span>
+            </Button>
+          </Link>
 
           {/* Auth */}
           {isAuthenticated && user ? (
@@ -226,13 +235,17 @@ export function SiteHeader() {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setView("dashboard")}>
-                  <LayoutDashboard className={cn("mr-2 h-4 w-4")} />
-                  Dashboard
+                <DropdownMenuItem asChild>
+                  <Link href="/dashboard">
+                    <LayoutDashboard className={cn("mr-2 h-4 w-4")} />
+                    Dashboard
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={logout}
+                  onClick={() => {
+                    logout();
+                  }}
                   className={cn("text-destructive")}
                 >
                   <LogOut className={cn("mr-2 h-4 w-4")} />
@@ -241,15 +254,16 @@ export function SiteHeader() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn("hidden sm:flex")}
-              onClick={() => setView("login")}
-            >
-              <User className={cn("mr-1.5 h-4 w-4")} />
-              Login
-            </Button>
+            <Link href="/auth">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn("hidden sm:flex")}
+              >
+                <User className={cn("mr-1.5 h-4 w-4")} />
+                Login
+              </Button>
+            </Link>
           )}
 
           {/* Mobile Hamburger */}
@@ -280,34 +294,42 @@ export function SiteHeader() {
           </SheetHeader>
 
           <nav className={cn("flex flex-col gap-1 px-4 pt-4")}>
-            {NAV_LINKS.map((link) => (
-              <button
-                key={link.view}
-                onClick={() => handleNavClick(link.view)}
-                className={cn(
-                  "flex items-center justify-between rounded-lg px-4 py-4 text-base font-medium transition-colors",
-                  view === link.view
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                )}
-              >
-                {link.label}
-              </button>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive =
+                link.href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={handleNavClick}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg px-4 py-4 text-base font-medium transition-colors",
+                    isActive
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
 
             <div className={cn("my-3 h-px bg-border")} />
 
             {isAuthenticated && user ? (
               <>
-                <button
-                  onClick={() => handleNavClick("dashboard")}
+                <Link
+                  href="/dashboard"
+                  onClick={handleNavClick}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-4 py-4 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                   )}
                 >
                   <LayoutDashboard className={cn("h-5 w-5")} />
                   Dashboard
-                </button>
+                </Link>
                 <button
                   onClick={() => {
                     logout();
@@ -322,26 +344,28 @@ export function SiteHeader() {
                 </button>
               </>
             ) : (
-              <button
-                onClick={() => handleNavClick("login")}
+              <Link
+                href="/auth"
+                onClick={handleNavClick}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-4 py-4 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <User className={cn("h-5 w-5")} />
                 Login
-              </button>
+              </Link>
             )}
 
-            <button
-              onClick={() => handleNavClick("admin")}
+            <Link
+              href="/admin"
+              onClick={handleNavClick}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-4 py-4 text-base font-medium text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
               <Settings className={cn("h-5 w-5")} />
               Admin
-            </button>
+            </Link>
           </nav>
         </SheetContent>
       </Sheet>
