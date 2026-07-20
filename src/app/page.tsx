@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useStore, type CctvProduct } from "@/store/cctv-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LearningSystem } from "@/components/learning-system";
 import { CctvBuilder } from "@/components/cctv-builder";
 import { AdminPanel } from "@/components/admin-panel";
+import { AdminLogin } from "@/components/admin-login";
+import { WhatsAppContact } from "@/components/whatsapp-button";
 import { cn } from "@/lib/utils";
 import {
   Search, Shield, Eye, GitCompareArrows, X,
   Camera, Wifi, Radio, Signal, MonitorPlay,
-  Tag, DollarSign, Star,
+  Tag, DollarSign, Star, LogOut,
   GraduationCap, Wrench, Play,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -275,6 +277,33 @@ function FilterSidebar() {
 
 export default function Home() {
   const { view, products, filters, setFilter, setProducts, loading, setLoading, setView, setLearnSection, setSelectedProduct } = useStore();
+  const [adminAuth, setAdminAuth] = useState<{ token: string; user: { email: string; role: string } } | null>(null);
+
+  // Check localStorage for existing auth on mount
+  useEffect(() => {
+    const token = localStorage.getItem("admin_token");
+    const userStr = localStorage.getItem("admin_user");
+    if (token && userStr) {
+      fetch("/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((r) => r.json()).then((d) => {
+        if (d.valid) setAdminAuth({ token, user: JSON.parse(userStr) });
+        else { localStorage.removeItem("admin_token"); localStorage.removeItem("admin_user"); }
+      }).catch(() => {});
+    }
+  }, []);
+
+  function handleAdminLogin(token: string, user: { email: string; role: string }) {
+    setAdminAuth({ token, user });
+  }
+
+  function handleAdminLogout() {
+    localStorage.removeItem("admin_token");
+    localStorage.removeItem("admin_user");
+    setAdminAuth(null);
+    setView("catalog");
+    toast.success("Logged out");
+  }
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -313,7 +342,7 @@ export default function Home() {
                   <TabsTrigger value="catalog" className="text-xs px-3 gap-1"><Camera className="h-3.5 w-3.5 hidden sm:inline" />Catalog</TabsTrigger>
                   <TabsTrigger value="learn" className="text-xs px-3 gap-1"><GraduationCap className="h-3.5 w-3.5 hidden sm:inline" />Learn</TabsTrigger>
                   <TabsTrigger value="compare" className="text-xs px-3 gap-1"><GitCompareArrows className="h-3.5 w-3.5 hidden sm:inline" />Compare</TabsTrigger>
-                  <TabsTrigger value="admin" className="text-xs px-3 gap-1"><Star className="h-3.5 w-3.5 hidden sm:inline" />Admin</TabsTrigger>
+                  <TabsTrigger value="admin" className={cn("text-xs px-3 gap-1", adminAuth && "text-emerald-600")}><Star className="h-3.5 w-3.5 hidden sm:inline" />{adminAuth ? "Admin" : "Admin"}</TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
@@ -336,9 +365,26 @@ export default function Home() {
             <CompareView />
           </div>
         ) : view === "admin" ? (
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <AdminPanel onBack={() => setView("catalog")} />
-          </div>
+          adminAuth ? (
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200">
+                    <Shield className="h-3 w-3 mr-1" /> {adminAuth.user.email}
+                  </Badge>
+                </div>
+                <Button variant="ghost" size="sm" className="gap-1 text-red-500" onClick={handleAdminLogout}>
+                  <LogOut className="h-3.5 w-3.5" /> Logout
+                </Button>
+              </div>
+              <AdminPanel onBack={() => setView("catalog")} />
+            </div>
+          ) : (
+            <AdminLogin
+              onLogin={handleAdminLogin}
+              onBack={() => setView("catalog")}
+            />
+          )
         ) : (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             {/* Hero Stats */}
@@ -405,8 +451,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>CCTV Product Catalog Platform — Manage and compare security camera systems</p>
-          <p>Supports Hikvision, Dahua, and more</p>
+          <p>ConnectZ Sales & Services — CCTV Solutions</p>
+          <div className="flex items-center gap-3">
+            <WhatsAppContact label="Chat with us" size="sm" variant="ghost" />
+            <p>Supabase + Razorpay</p>
+          </div>
         </div>
       </footer>
     </div>

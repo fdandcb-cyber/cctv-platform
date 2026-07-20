@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { WhatsAppShare } from "@/components/whatsapp-button";
+import { RazorpayCheckout } from "@/components/razorpay-checkout";
 import {
   Home, Building2, Store, Warehouse, Factory, UtensilsCrossed,
   GraduationCap, Hospital, Castle, HelpCircle,
@@ -522,10 +524,10 @@ export function CctvBuilder() {
     }
   };
 
-  // ─── Copy/Print quote ───
-  const handleCopyQuote = () => {
+  // ─── Quote text (reusable for copy, WhatsApp, Razorpay) ───
+  const quoteText = (() => {
     const lines: string[] = [];
-    lines.push("=== CCTV SETUP QUOTE ===");
+    lines.push("=== CCTV SETUP QUOTE - ConnectZ Sales & Services ===");
     lines.push("");
     lines.push("Property: " + (propertyTypes.find(p => p.value === store.propertyType)?.label || "-"));
     lines.push("Area: " + (store.areaSqft || "-") + " sq ft");
@@ -579,8 +581,12 @@ export function CctvBuilder() {
     if (store.wirelessMouse > 0) lines.push("Wireless Mouse: " + store.wirelessMouse);
     if (store.wirelessKeyboard > 0) lines.push("Wireless Keyboard: " + store.wirelessKeyboard);
     if (store.ups > 0) lines.push("UPS: " + store.ups);
+    return lines.join("\n");
+  })();
 
-    navigator.clipboard.writeText(lines.join("\n")).then(() => {
+  const handleCopyQuote = () => {
+    if (!quoteText || totalCameras === 0) return;
+    navigator.clipboard.writeText(quoteText).then(() => {
       toast.success("Quote copied to clipboard!");
     }).catch(() => {
       toast.error("Failed to copy");
@@ -608,6 +614,8 @@ export function CctvBuilder() {
           <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()} disabled={totalCameras === 0}>
             <Printer className="h-3.5 w-3.5" /> Print
           </Button>
+          <WhatsAppShare text={quoteText} label="WhatsApp" variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50" />
+          <RazorpayCheckout amount={totalPrice} quoteData={{ quote: quoteText, selections: store.cameraSelections }} label="Pay Now" variant="outline" size="sm" className="text-purple-700 border-purple-300 hover:bg-purple-50" />
           <Button variant="outline" size="sm" className="gap-1.5 text-red-600 hover:text-red-700" onClick={() => { store.resetBuilder(); toast.success("Configuration reset"); }}>
             <RotateCcw className="h-3.5 w-3.5" /> Reset
           </Button>
@@ -1447,13 +1455,15 @@ export function CctvBuilder() {
                 <div className="flex justify-between"><span className="text-muted-foreground">Cable ({totalCableMeters}m):</span><span className="font-medium">{store.cableSelection.qty}x {store.cableSelection.type} roll{store.cableSelection.qty > 1 ? "s" : ""}</span></div>
               )}
             </div>
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-wrap gap-2 pt-2">
               <Button size="sm" className="gap-1.5" onClick={handleCopyQuote}>
                 <Copy className="h-3.5 w-3.5" /> Copy Full Quote
               </Button>
               <Button size="sm" variant="outline" className="gap-1.5" onClick={() => window.print()}>
                 <Printer className="h-3.5 w-3.5" /> Print Quote
               </Button>
+              <WhatsAppShare text={quoteText} label="WhatsApp Quote" variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50" />
+              <RazorpayCheckout amount={totalPrice} quoteData={{ quote: quoteText, selections: store.cameraSelections }} label="Pay Now" variant="default" size="sm" className="bg-purple-600 hover:bg-purple-700" />
             </div>
           </CardContent>
         </Card>
