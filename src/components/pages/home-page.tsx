@@ -492,6 +492,7 @@ function ProductCard({ product }: { product: CctvProduct }) {
 }
 
 function FeaturedProducts() {
+  const router = useRouter();
   const { products } = useStore();
   const featured = products.slice(0, 8);
 
@@ -531,7 +532,7 @@ function FeaturedProducts() {
               "gap-2 rounded-xl px-8",
               "transition-all duration-300 hover:scale-[1.02]"
             )}
-            onClick={() => useRouter().push("/products")}
+            onClick={() => router.push("/products")}
           >
             View All Products
             <ArrowRight className="h-4 w-4" />
@@ -862,6 +863,7 @@ function BrandsSection() {
 // ═══════════════════════════════════════════════════════════════
 
 function FaqSection() {
+  const router = useRouter();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const [search, setSearch] = useState("");
 
@@ -967,7 +969,7 @@ function FaqSection() {
               "gap-2 rounded-xl",
               "transition-all duration-300 hover:scale-[1.02]"
             )}
-            onClick={() => useRouter().push("/contact")}
+            onClick={() => router.push("/contact")}
           >
             Contact our experts
             <ArrowRight className="h-4 w-4" />
