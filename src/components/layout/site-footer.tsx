@@ -183,13 +183,13 @@ export function SiteFooter() {
           {/* ── Column 1: Brand ──────────────────────────────── */}
           <div className={cn("sm:col-span-2 lg:col-span-4")}>
             {/* Logo + name */}
-            <Link href="/" className={cn("inline-flex items-center gap-2.5")}>
+            <Link href="/" className={cn("inline-flex items-center gap-3")}>
               <img
                 src="/logo.svg"
                 alt="ConnectZ logo"
-                className={cn("h-9 w-9 brightness-0 invert")}
+                className={cn("h-10 w-10 brightness-0 invert")}
               />
-              <span className={cn("text-xl font-bold text-white tracking-tight")}>
+              <span className={cn("text-2xl font-bold text-white tracking-tight")}>
                 ConnectZ
               </span>
             </Link>
@@ -256,7 +256,7 @@ export function SiteFooter() {
           </nav>
 
           {/* ── Column 3: Resources ──────────────────────────── */}
-          <nav aria-label="Resources" className={cn("sm:col-span-1 lg:col-span-3")}>
+          <nav aria-label="Resources" className={cn("sm:col-span-1 lg:col-span-2")}>
             <h3
               className={cn(
                 "text-sm font-semibold uppercase tracking-wider text-white mb-5"
@@ -281,8 +281,34 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          {/* ── Column 4: Contact ────────────────────────────── */}
-          <address className={cn("sm:col-span-2 lg:col-span-3 not-italic")}>
+          {/* ── Column 4: Support ──────────────────────────── */}
+          <nav aria-label="Support" className={cn("sm:col-span-1 lg:col-span-2")}>
+            <h3
+              className={cn(
+                "text-sm font-semibold uppercase tracking-wider text-white mb-5"
+              )}
+            >
+              Support
+            </h3>
+            <ul className={cn("space-y-3")}>
+              {["FAQs", "Warranty Information", "Return Policy", "Shipping Info", "Track Order"].map((label) => (
+                <li key={label}>
+                  <Link
+                    href="/learn"
+                    className={cn(
+                      "text-sm text-gray-400 transition-colors duration-200",
+                      "hover:text-[#60A5FA] hover:underline underline-offset-4"
+                    )}
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* ── Column 5: Contact ────────────────────────────── */}
+          <address className={cn("sm:col-span-2 lg:col-span-2 not-italic")}>
             <h3
               className={cn(
                 "text-sm font-semibold uppercase tracking-wider text-white mb-5"
