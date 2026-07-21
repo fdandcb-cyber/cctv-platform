@@ -1,0 +1,885 @@
+     1→"use client";
+     2→
+     3→import { useState } from "react";
+     4→import { useAppStore } from "@/store/app-store";
+     5→import { useStore, type CctvProduct } from "@/store/cctv-store";
+     6→import { useBuilderStore } from "@/store/builder-store";
+     7→import { motion } from "framer-motion";
+     8→import { cn } from "@/lib/utils";
+     9→import { Button } from "@/components/ui/button";
+    10→import { Card, CardContent } from "@/components/ui/card";
+    11→import { Badge } from "@/components/ui/badge";
+    12→import {
+    13→  Shield,
+    14→  Camera,
+    15→  Wrench,
+    16→  Phone,
+    17→  Mail,
+    18→  MessageCircle,
+    19→  Eye,
+    20→  Award,
+    21→  IndianRupee,
+    22→  ClipboardCheck,
+    23→  Headphones,
+    24→  ShieldCheck,
+    25→  ChevronRight,
+    26→  ArrowRight,
+    27→  PhoneCall,
+    28→  CheckCircle2,
+    29→  Star,
+    30→  HardDrive,
+    31→  Cable,
+    32→  Quote,
+    33→  GitCompareArrows,
+    34→  BookOpen,
+    35→  ShoppingCart
+    36→} from "lucide-react";
+    37→import { useRouter } from "next/navigation";
+    38→
+    39→// ─── Price formatter ───
+    40→const fmt = (n: number) =>
+    41→  new Intl.NumberFormat("en-IN", {
+    42→    style: "currency",
+    43→    currency: "INR",
+    44→    maximumFractionDigits: 0
+    45→  }).format(n);
+    46→
+    47→// ─── Constants ───
+    48→const COMPANY_NAME =
+    49→  process.env.NEXT_PUBLIC_COMPANY_NAME || "ConnectZ Sales & Services";
+    50→
+    51→const BRANDS = [
+    52→  { name: "Hikvision", color: "bg-red-600 text-white" },
+    53→  { name: "Dahua", color: "bg-blue-600 text-white" },
+    54→  { name: "Ezviz", color: "bg-sky-500 text-white" },
+    55→  { name: "Imou", color: "bg-emerald-600 text-white" },
+    56→  { name: "CP Plus", color: "bg-orange-500 text-white" },
+    57→  { name: "Godrej", color: "bg-amber-700 text-white" },
+    58→];
+    59→
+    60→const WHY_CHOOSE = [
+    61→  {
+    62→    icon: <Award className="h-6 w-6" />,
+    63→    title: "Genuine Products",
+    64→    desc: "Authorized dealer for Hikvision, Dahua, CP Plus, Ezviz, Imou, and more. Every product is 100% genuine with full manufacturer warranty."
+    65→  },
+    66→  {
+    67→    icon: <IndianRupee className="h-6 w-6" />,
+    68→    title: "Competitive Pricing",
+    69→    desc: "Best-in-market prices with transparent quotations and no hidden charges."
+    70→  },
+    71→  {
+    72→    icon: <GitCompareArrows className="h-6 w-6" />,
+    73→    title: "Compare &amp; Decide",
+    74→    desc: "Use our built-in comparison tool to compare cameras side-by-side and pick the right one for your needs."
+    75→  },
+    76→  {
+    77→    icon: <Wrench className="h-6 w-6" />,
+    78→    title: "CCTV Builder",
+    79→    desc: "Design your complete CCTV setup with our interactive builder — pick cameras, recorder, cables, and get an instant quote."
+    80→  },
+    81→  {
+    82→    icon: <BookOpen className="h-6 w-6" />,
+    83→    title: "Learning Center",
+    84→    desc: "Detailed guides on camera types, resolutions, buying tips, and installation help so you can make informed decisions."
+    85→  },
+    86→  {
+    87→    icon: <ShieldCheck className="h-6 w-6" />,
+    88→    title: "Warranty Coverage",
+    89→    desc: "Full manufacturer warranty on all products. We only stock genuine items from authorized channels."
+    90→  },
+    91→];
+    92→
+    93→// ─── Animation variants ───
+    94→const fadeUp = {
+    95→  initial: { opacity: 0, y: 20 },
+    96→  whileInView: { opacity: 1, y: 0 },
+    97→  viewport: { once: true } as const,
+    98→  transition: { duration: 0.5 }
+    99→};
+   100→
+   101→const staggerContainer = {
+   102→  initial: {},
+   103→  whileInView: { transition: { staggerChildren: 0.1 } },
+   104→  viewport: { once: true } as const
+   105→};
+   106→
+   107→const staggerItem = {
+   108→  initial: { opacity: 0, y: 20 },
+   109→  whileInView: { opacity: 1, y: 0 },
+   110→  transition: { duration: 0.5 }
+   111→};
+   112→
+   113→// ═══════════════════════════════════════════════════════════════
+   114→// SECTION 1 — Hero
+   115→// ═══════════════════════════════════════════════════════════════
+   116→
+   117→function HeroSection() {
+   118→  const { } = useAppStore();
+   119→  const router = useRouter();
+   120→
+   121→  return (
+   122→    <section
+   123→      className={cn(
+   124→        "relative min-h-screen flex flex-col items-center justify-center px-4 py-20 overflow-hidden",
+   125→        "bg-background"
+   126→      )}
+   127→    >
+   128→      {/* Gradient overlay */}
+   129→      <div
+   130→        className={cn(
+   131→          "absolute inset-0 pointer-events-none",
+   132→          "bg-gradient-to-b from-background via-background/95 to-background/80",
+   133→          "before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,oklch(0.6_0.15_160/0.12),transparent_70%)]",
+   134→          "after:absolute after:bottom-0 after:left-0 after:right-0 after:h-32 after:bg-gradient-to-t after:from-background after:to-transparent"
+   135→        )}
+   136→      />
+   137→
+   138→      <div className="relative z-10 max-w-4xl mx-auto text-center space-y-8">
+   139→        {/* Animated shield icon */}
+   140→        <motion.div
+   141→          initial={{ scale: 0.8, opacity: 0 }}
+   142→          animate={{ scale: 1, opacity: 1 }}
+   143→          transition={{ duration: 0.6, ease: "easeOut" }}
+   144→          className="flex justify-center"
+   145→        >
+   146→          <div
+   147→            className={cn(
+   148→              "relative p-4 rounded-2xl",
+   149→              "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60",
+   150→              "shadow-lg shadow-emerald-200/30"
+   151→            )}
+   152→          >
+   153→            <Shield className="h-14 w-14 text-emerald-600" />
+   154→            <Camera className="h-6 w-6 text-emerald-500 absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-emerald-200" />
+   155→          </div>
+   156→        </motion.div>
+   157→
+   158→        {/* Heading */}
+   159→        <motion.h1
+   160→          initial={{ opacity: 0, y: 20 }}
+   161→          animate={{ opacity: 1, y: 0 }}
+   162→          transition={{ duration: 0.5, delay: 0.15 }}
+   163→          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight"
+   164→        >
+   165→          Secure What Matters Most
+   166→        </motion.h1>
+   167→
+   168→        <motion.p
+   169→          initial={{ opacity: 0, y: 20 }}
+   170→          animate={{ opacity: 1, y: 0 }}
+   171→          transition={{ duration: 0.5, delay: 0.3 }}
+   172→          className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto"
+   173→        >
+   174→          Your one-stop shop for CCTV security cameras &amp; accessories.
+   175→          Compare, learn, and build your perfect setup.
+   176→        </motion.p>
+   177→
+   178→        {/* CTA Buttons */}
+   179→        <motion.div
+   180→          initial={{ opacity: 0, y: 20 }}
+   181→          animate={{ opacity: 1, y: 0 }}
+   182→          transition={{ duration: 0.5, delay: 0.45 }}
+   183→          className="flex flex-col sm:flex-row gap-4 justify-center"
+   184→        >
+   185→          <Button
+   186→            size="lg"
+   187→            onClick={() => router.push("/products")}
+   188→            className="gap-2 text-base px-8"
+   189→          >
+   190→            <Eye className="h-5 w-5" />
+   191→            Browse Products
+   192→          </Button>
+   193→          <Button
+   194→            size="lg"
+   195→            variant="outline"
+   196→            onClick={() => router.push("/builder")}
+   197→            className="gap-2 text-base px-8"
+   198→          >
+   199→            <Wrench className="h-5 w-5" />
+   200→            Build Your Setup
+   201→          </Button>
+   202→        </motion.div>
+   203→
+   204→        {/* Trust badges */}
+   205→        <motion.div
+   206→          initial={{ opacity: 0, y: 20 }}
+   207→          animate={{ opacity: 1, y: 0 }}
+   208→          transition={{ duration: 0.5, delay: 0.6 }}
+   209→          className="flex flex-wrap gap-4 sm:gap-6 justify-center pt-4"
+   210→        >
+   211→          {[
+   212→            "10+ Brands",
+   213→            "Genuine Products",
+   214→            "Builder Tool",
+   215→            "Learning Center",
+   216→          ].map((label) => (
+   217→            <div
+   218→              key={label}
+   219→              className={cn(
+   220→                "flex items-center gap-2 text-sm text-muted-foreground",
+   221→                "bg-muted/50 border border-border/50 rounded-full px-4 py-1.5"
+   222→              )}
+   223→            >
+   224→              <Shield className="h-3.5 w-3.5 text-emerald-600" />
+   225→              {label}
+   226→            </div>
+   227→          ))}
+   228→        </motion.div>
+   229→      </div>
+   230→    </section>
+   231→  );
+   232→}
+   233→
+   234→// ═══════════════════════════════════════════════════════════════
+   235→// SECTION 2 — Featured Products
+   236→// ═══════════════════════════════════════════════════════════════
+   237→
+   238→function ProductCard({ product }: { product: CctvProduct }) {
+   239→  const router = useRouter();
+   240→
+   241→  return (
+   242→    <Card
+   243→      className={cn(
+   244→        "overflow-hidden group transition-all duration-300",
+   245→        "hover:scale-[1.02] hover:shadow-lg",
+   246→        "py-0 gap-0"
+   247→      )}
+   248→    >
+   249→      {/* Image */}
+   250→      <div
+   251→        className={cn(
+   252→          "aspect-[4/3] bg-muted relative overflow-hidden cursor-pointer"
+   253→        )}
+   254→        onClick={() => router.push(`/products/${product.id}`)}
+   255→      >
+   256→        {product.imageUrl ? (
+   257→          <img
+   258→            src={product.imageUrl}
+   259→            alt={product.modelName}
+   260→            className={cn(
+   261→              "w-full h-full object-contain p-4",
+   262→              "group-hover:scale-105 transition-transform duration-300"
+   263→            )}
+   264→            onError={(e) => {
+   265→              (e.target as HTMLImageElement).style.display = "none";
+   266→            }}
+   267→          />
+   268→        ) : (
+   269→          <div className="w-full h-full flex items-center justify-center">
+   270→            <Camera className="h-12 w-12 text-muted-foreground/40" />
+   271→          </div>
+   272→        )}
+   273→
+   274→        {product.salePrice && product.salePrice < product.price && (
+   275→          <Badge className="absolute top-2 left-2 bg-red-500 text-white text-[10px]">
+   276→            {Math.round(
+   277→              ((product.price - product.salePrice) / product.price) * 100
+   278→            )}
+   279→            % OFF
+   280→          </Badge>
+   281→        )}
+   282→      </div>
+   283→
+   284→      <CardContent className="p-4 space-y-2.5">
+   285→        <div className="flex items-center gap-1.5">
+   286→          <Badge variant="outline" className="text-[10px]">
+   287→            {product.brand}
+   288→          </Badge>
+   289→          <Badge variant="outline" className="text-[10px]">
+   290→            {product.resolution}
+   291→          </Badge>
+   292→        </div>
+   293→        <p className="font-semibold text-sm leading-tight">
+   294→          {product.modelName}
+   295→        </p>
+   296→
+   297→        <div className="flex items-end justify-between pt-1">
+   298→          <div>
+   299→            {product.salePrice && product.salePrice < product.price ? (
+   300→              <div className="flex items-center gap-2">
+   301→                <span className="text-lg font-bold text-emerald-600">
+   302→                  {fmt(product.salePrice)}
+   303→                </span>
+   304→                <span className="text-xs text-muted-foreground line-through">
+   305→                  {fmt(product.price)}
+   306→                </span>
+   307→              </div>
+   308→            ) : (
+   309→              <span className="text-lg font-bold">{fmt(product.price)}</span>
+   310→            )}
+   311→          </div>
+   312→          <Button
+   313→            size="sm"
+   314→            variant="outline"
+   315→            className="text-xs h-8 gap-1"
+   316→            onClick={() => router.push(`/products/${product.id}`)}
+   317→          >
+   318→            View Details
+   319→            <ChevronRight className="h-3 w-3" />
+   320→          </Button>
+   321→        </div>
+   322→      </CardContent>
+   323→    </Card>
+   324→  );
+   325→}
+   326→
+   327→function FeaturedProducts() {
+   328→  const { products } = useStore();
+   329→  const featured = products.slice(0, 8);
+   330→
+   331→  if (featured.length === 0) return null;
+   332→
+   333→  return (
+   334→    <section className="py-16 sm:py-20 px-4">
+   335→      <div className="max-w-7xl mx-auto">
+   336→        <motion.div {...fadeUp} className="text-center mb-10">
+   337→          <h2 className="text-3xl sm:text-4xl font-bold">Popular Products</h2>
+   338→          <p className="text-muted-foreground mt-2">
+   339→            Top-selling CCTV cameras and security equipment
+   340→          </p>
+   341→        </motion.div>
+   342→
+   343→        {/* Grid: 2 cols mobile, 3 tablet, 4 desktop */}
+   344→        <motion.div
+   345→          {...staggerContainer}
+   346→          className={cn(
+   347→            "grid gap-4 sm:gap-6",
+   348→            "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+   349→          )}
+   350→        >
+   351→          {featured.map((product) => (
+   352→            <motion.div key={product.id} {...staggerItem}>
+   353→              <ProductCard product={product} />
+   354→            </motion.div>
+   355→          ))}
+   356→        </motion.div>
+   357→
+   358→        <motion.div {...fadeUp} className="text-center mt-10">
+   359→          <Button
+   360→            variant="outline"
+   361→            size="lg"
+   362→            className="gap-2"
+   363→            onClick={() => router.push("/products")}
+   364→          >
+   365→            View All Products
+   366→            <ArrowRight className="h-4 w-4" />
+   367→          </Button>
+   368→        </motion.div>
+   369→      </div>
+   370→    </section>
+   371→  );
+   372→}
+   373→
+   374→// ═══════════════════════════════════════════════════════════════
+   375→// SECTION 3 — Why Choose ConnectZ
+   376→// ═══════════════════════════════════════════════════════════════
+   377→
+   378→function WhyChooseSection() {
+   379→  return (
+   380→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   381→      <div className="max-w-6xl mx-auto">
+   382→        <motion.div {...fadeUp} className="text-center mb-12">
+   383→          <h2 className="text-3xl sm:text-4xl font-bold">
+   384→            Why Choose <span className="text-emerald-600">ConnectZ</span>
+   385→          </h2>
+   386→          <p className="text-muted-foreground mt-2">
+   387→            Trusted by hundreds of customers for reliable security solutions
+   388→          </p>
+   389→        </motion.div>
+   390→
+   391→        <motion.div
+   392→          {...staggerContainer}
+   393→          className={cn(
+   394→            "grid gap-4 sm:gap-6",
+   395→            "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+   396→          )}
+   397→        >
+   398→          {WHY_CHOOSE.map((item) => (
+   399→            <motion.div key={item.title} {...staggerItem}>
+   400→              <Card className="h-full gap-4 py-0">
+   401→                <CardContent className="p-6 space-y-3">
+   402→                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+   403→                    {item.icon}
+   404→                  </div>
+   405→                  <h3 className="font-semibold text-lg">{item.title}</h3>
+   406→                  <p className="text-sm text-muted-foreground leading-relaxed">
+   407→                    {item.desc}
+   408→                  </p>
+   409→                </CardContent>
+   410→              </Card>
+   411→            </motion.div>
+   412→          ))}
+   413→        </motion.div>
+   414→      </div>
+   415→    </section>
+   416→  );
+   417→}
+   418→
+   419→// ═══════════════════════════════════════════════════════════════
+   420→// SECTION 4 — Brands We Offer
+   421→// ═══════════════════════════════════════════════════════════════
+   422→
+   423→function BrandsSection() {
+   424→  return (
+   425→    <section className="py-16 sm:py-20 px-4">
+   426→      <div className="max-w-6xl mx-auto">
+   427→        <motion.div {...fadeUp} className="text-center mb-10">
+   428→          <h2 className="text-3xl sm:text-4xl font-bold">Brands We Offer</h2>
+   429→          <p className="text-muted-foreground mt-2">
+   430→            Authorized dealer for top CCTV brands in India
+   431→          </p>
+   432→        </motion.div>
+   433→
+   434→        <motion.div {...fadeUp}>
+   435→          <div className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide justify-start lg:justify-center">
+   436→            {BRANDS.map((brand) => (
+   437→              <div
+   438→                key={brand.name}
+   439→                className={cn(
+   440→                  "flex-shrink-0 snap-center",
+   441→                  "px-8 py-5 rounded-xl border border-border/50",
+   442→                  "bg-card shadow-sm",
+   443→                  "hover:shadow-md transition-shadow duration-300"
+   444→                )}
+   445→              >
+   446→                <Badge
+   447→                  className={cn(
+   448→                    "text-base font-bold px-6 py-2 rounded-lg border-0",
+   449→                    brand.color
+   450→                  )}
+   451→                >
+   452→                  {brand.name}
+   453→                </Badge>
+   454→              </div>
+   455→            ))}
+   456→          </div>
+   457→        </motion.div>
+   458→      </div>
+   459→    </section>
+   460→  );
+   461→}
+   462→
+   463→// ═══════════════════════════════════════════════════════════════
+   464→// SECTION 5 — CCTV Builder CTA
+   465→// ═══════════════════════════════════════════════════════════════
+   466→
+   467→function BuilderCtaSection() {
+   468→  const { } = useAppStore();
+   469→
+   470→  return (
+   471→    <section className="py-16 sm:py-20 px-4">
+   472→      <div className="max-w-4xl mx-auto">
+   473→        <motion.div {...fadeUp}>
+   474→          <Card className="bg-primary text-primary-foreground overflow-hidden py-0 gap-0 border-0">
+   475→            <CardContent className="p-8 sm:p-12 text-center space-y-6">
+   476→              <div className="flex justify-center">
+   477→                <div className="p-3 rounded-xl bg-primary-foreground/10">
+   478→                  <Wrench className="h-10 w-10" />
+   479→                </div>
+   480→              </div>
+   481→              <div className="space-y-2">
+   482→                <h2 className="text-2xl sm:text-3xl font-bold">
+   483→                  Not sure what you need?
+   484→                </h2>
+   485→                <p className="text-primary-foreground/80 text-lg">
+   486→                  Use our intelligent builder to design the perfect CCTV setup
+   487→                  for your property in minutes.
+   488→                </p>
+   489→              </div>
+   490→              <motion.div
+   491→                initial={false}
+   492→                animate={{ scale: [1, 1.04, 1] }}
+   493→                transition={{
+   494→                  duration: 2,
+   495→                  repeat: Infinity,
+   496→                  ease: "easeInOut"
+   497→                }}
+   498→              >
+   499→                <Button
+   500→                  size="lg"
+   501→                  variant="secondary"
+   502→                  className="gap-2 text-base px-8"
+   503→                  onClick={() => router.push("/builder")}
+   504→                >
+   505→                  <Wrench className="h-5 w-5" />
+   506→                  Build Your Setup
+   507→                  <ArrowRight className="h-4 w-4" />
+   508→                </Button>
+   509→              </motion.div>
+   510→            </CardContent>
+   511→          </Card>
+   512→        </motion.div>
+   513→      </div>
+   514→    </section>
+   515→  );
+   516→}
+   517→
+   518→// ═══════════════════════════════════════════════════════════════
+   519→// SECTION 6 — Contact
+   520→// ═══════════════════════════════════════════════════════════════
+   521→
+   522→function ContactSection() {
+   523→  const { } = useAppStore();
+   524→
+   525→  return (
+   526→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   527→      <div className="max-w-4xl mx-auto">
+   528→        <motion.div {...fadeUp} className="text-center space-y-6">
+   529→          <h2 className="text-3xl sm:text-4xl font-bold">Get In Touch</h2>
+   530→          <p className="text-muted-foreground text-lg">
+   531→            Have questions? Reach out to us directly — we&apos;re here to help.
+   532→          </p>
+   533→        </motion.div>
+   534→
+   535→        <motion.div
+   536→          {...fadeUp}
+   537→          className="mt-10 grid gap-4 sm:grid-cols-3"
+   538→        >
+   539→          {/* Phone */}
+   540→          <a
+   541→            href="tel:7809465102"
+   542→            className="block"
+   543→          >
+   544→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   545→              <CardContent className="p-6 text-center space-y-3">
+   546→                <div className="flex justify-center">
+   547→                  <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+   548→                    <Phone className="h-6 w-6" />
+   549→                  </div>
+   550→                </div>
+   551→                <div>
+   552→                  <p className="text-sm text-muted-foreground">Phone</p>
+   553→                  <p className="font-semibold">7809465102</p>
+   554→                </div>
+   555→              </CardContent>
+   556→            </Card>
+   557→          </a>
+   558→
+   559→          {/* Email */}
+   560→          <a
+   561→            href="mailto:connectzsalesandservices@gmail.com"
+   562→            className="block"
+   563→          >
+   564→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   565→              <CardContent className="p-6 text-center space-y-3">
+   566→                <div className="flex justify-center">
+   567→                  <div className="p-3 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
+   568→                    <Mail className="h-6 w-6" />
+   569→                  </div>
+   570→                </div>
+   571→                <div>
+   572→                  <p className="text-sm text-muted-foreground">Email</p>
+   573→                  <p className="font-semibold text-sm break-all">
+   574→                    connectzsalesandservices@gmail.com
+   575→                  </p>
+   576→                </div>
+   577→              </CardContent>
+   578→            </Card>
+   579→          </a>
+   580→
+   581→          {/* WhatsApp */}
+   582→          <a
+   583→            href="https://wa.me/917809465102"
+   584→            target="_blank"
+   585→            rel="noopener noreferrer"
+   586→            className="block"
+   587→          >
+   588→            <Card className="h-full gap-4 py-0 hover:shadow-md transition-shadow cursor-pointer">
+   589→              <CardContent className="p-6 text-center space-y-3">
+   590→                <div className="flex justify-center">
+   591→                  <div className="p-3 rounded-xl bg-green-50 text-green-600">
+   592→                    <MessageCircle className="h-6 w-6" />
+   593→                  </div>
+   594→                </div>
+   595→                <div>
+   596→                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+   597→                  <p className="font-semibold">Chat with us</p>
+   598→                </div>
+   599→              </CardContent>
+   600→            </Card>
+   601→          </a>
+   602→        </motion.div>
+   603→
+   604→        <motion.div {...fadeUp} className="text-center mt-10">
+   605→          <Button
+   606→            size="lg"
+   607→            onClick={() => router.push("/builder")}
+   608→            className="gap-2 text-base px-8"
+   609→          >
+   610→            Get a Free Quote
+   611→            <ArrowRight className="h-4 w-4" />
+   612→          </Button>
+   613→        </motion.div>
+   614→      </div>
+   615→    </section>
+   616→  );
+   617→}
+   618→
+   619→// ═══════════════════════════════════════════════════════════════
+   620→// SECTION 6 — How It Works
+   621→// ═══════════════════════════════════════════════════════════════
+   622→
+   623→const HOW_IT_WORKS = [
+   624→  {
+   625→    icon: <Eye className="h-6 w-6" />,
+   626→    step: "01",
+   627→    title: "Browse Products",
+   628→    desc: "Explore our catalog of CCTV cameras, DVRs, NVRs, and accessories from top brands"
+   629→  },
+   630→  {
+   631→    icon: <GitCompareArrows className="h-6 w-6" />,
+   632→    step: "02",
+   633→    title: "Compare &amp; Learn",
+   634→    desc: "Use our comparison tool and learning center to pick the right equipment"
+   635→  },
+   636→  {
+   637→    icon: <Wrench className="h-6 w-6" />,
+   638→    step: "03",
+   639→    title: "Build Your Setup",
+   640→    desc: "Use the CCTV Builder to design your complete system and get an instant quote"
+   641→  },
+   642→  {
+   643→    icon: <ShoppingCart className="h-6 w-6" />,
+   644→    step: "04",
+   645→    title: "Order &amp; Receive",
+   646→    desc: "Place your order online and get genuine products delivered to your doorstep"
+   647→  },
+   648→];
+   649→
+   650→function HowItWorksSection() {
+   651→  return (
+   652→    <section className="py-16 sm:py-20 px-4">
+   653→      <div className="max-w-6xl mx-auto">
+   654→        <motion.div {...fadeUp} className="text-center mb-12">
+   655→          <h2 className="text-3xl sm:text-4xl font-bold">
+   656→            How It <span className="text-emerald-600">Works</span>
+   657→          </h2>
+   658→          <p className="text-muted-foreground mt-2">
+   659→            From browsing to ordering in 4 simple steps
+   660→          </p>
+   661→        </motion.div>
+   662→
+   663→        <motion.div
+   664→          {...staggerContainer}
+   665→          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   666→        >
+   667→          {HOW_IT_WORKS.map((item, i) => (
+   668→            <motion.div key={item.step} {...staggerItem}>
+   669→              <Card className="h-full gap-4 py-0 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+   670→                <CardContent className="p-6 space-y-3">
+   671→                  <div className="absolute top-3 right-3 text-5xl font-extrabold text-muted-foreground/5 select-none">
+   672→                    {item.step}
+   673→                  </div>
+   674→                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+   675→                    {item.icon}
+   676→                  </div>
+   677→                  <h3 className="font-semibold text-lg">{item.title}</h3>
+   678→                  <p className="text-sm text-muted-foreground leading-relaxed">
+   679→                    {item.desc}
+   680→                  </p>
+   681→                  {i < HOW_IT_WORKS.length - 1 && (
+   682→                    <div className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10">
+   683→                      <ArrowRight className="h-5 w-5 text-muted-foreground/30" />
+   684→                    </div>
+   685→                  )}
+   686→                </CardContent>
+   687→              </Card>
+   688→            </motion.div>
+   689→          ))}
+   690→        </motion.div>
+   691→      </div>
+   692→    </section>
+   693→  );
+   694→}
+   695→
+   696→// ═══════════════════════════════════════════════════════════════
+   697→// SECTION 7 — Testimonials
+   698→// ═══════════════════════════════════════════════════════════════
+   699→
+   700→const TESTIMONIALS = [
+   701→  {
+   702→    name: "Rajesh M.",
+   703→    role: "Homeowner, Bangalore",
+   704→    rating: 5,
+   705→    text: "Used the ConnectZ builder tool to design a 4-camera setup for my home. The product quality is excellent, everything arrived well-packed, and the learning center helped me set it up myself. Saved a lot compared to getting it done professionally."
+   706→  },
+   707→  {
+   708→    name: "Priya S.",
+   709→    role: "Restaurant Owner, Hyderabad",
+   710→    rating: 5,
+   711→    text: "We ordered 16 cameras for our restaurant through ConnectZ. The comparison tool made it easy to pick the right models, and the prices were genuinely the best we found. The footage quality from the Hikvision cameras is crystal clear."
+   712→  },
+   713→  {
+   714→    name: "Amit K.",
+   715→    role: "Warehouse Manager, Chennai",
+   716→    rating: 5,
+   717→    text: "Got a complete NVR system with 32 cameras for our warehouse. The builder gave us an accurate quote upfront, and all products were genuine with manufacturer warranty. Very smooth ordering experience."
+   718→  },
+   719→  {
+   720→    name: "Sneha R.",
+   721→    role: "Boutique Owner, Mumbai",
+   722→    rating: 4,
+   723→    text: "Love the WiFi cameras I ordered from ConnectZ. The learning center guided me through the setup process, and the motion detection alerts work great through the app. Highly recommend for small businesses."
+   724→  },
+   725→];
+   726→
+   727→function TestimonialsSection() {
+   728→  return (
+   729→    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+   730→      <div className="max-w-6xl mx-auto">
+   731→        <motion.div {...fadeUp} className="text-center mb-12">
+   732→          <h2 className="text-3xl sm:text-4xl font-bold">
+   733→            What Our <span className="text-emerald-600">Customers</span> Say
+   734→          </h2>
+   735→          <p className="text-muted-foreground mt-2">
+   736→            Trusted by hundreds of satisfied customers across India
+   737→          </p>
+   738→        </motion.div>
+   739→
+   740→        <motion.div
+   741→          {...staggerContainer}
+   742→          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+   743→        >
+   744→          {TESTIMONIALS.map((t) => (
+   745→            <motion.div key={t.name} {...staggerItem}>
+   746→              <Card className="h-full gap-4 py-0">
+   747→                <CardContent className="p-5 space-y-4">
+   748→                  <Quote className="h-6 w-6 text-emerald-600/30" />
+   749→                  <p className="text-sm leading-relaxed text-muted-foreground">
+   750→                    {t.text}
+   751→                  </p>
+   752→                  <div className="flex gap-0.5">
+   753→                    {Array.from({ length: 5 }).map((_, i) => (
+   754→                      <Star
+   755→                        key={i}
+   756→                        className={cn(
+   757→                          "h-3.5 w-3.5",
+   758→                          i < t.rating
+   759→                            ? "text-amber-400 fill-amber-400"
+   760→                            : "text-muted-foreground/30"
+   761→                        )}
+   762→                      />
+   763→                    ))}
+   764→                  </div>
+   765→                  <div className="pt-1">
+   766→                    <p className="font-semibold text-sm">{t.name}</p>
+   767→                    <p className="text-xs text-muted-foreground">{t.role}</p>
+   768→                  </div>
+   769→                </CardContent>
+   770→              </Card>
+   771→            </motion.div>
+   772→          ))}
+   773→        </motion.div>
+   774→      </div>
+   775→    </section>
+   776→  );
+   777→}
+   778→
+   779→// ═══════════════════════════════════════════════════════════════
+   780→// SECTION 8 — FAQ
+   781→// ═══════════════════════════════════════════════════════════════
+   782→
+   783→const FAQS = [
+   784→  {
+   785→    q: "Which CCTV brand is best for home use?",
+   786→    a: "For home use, Hikvision or Dahua are great for wired systems, while Ezviz or Imou are ideal for WiFi cameras. The best choice depends on your specific needs like indoor/outdoor usage, night vision range, and budget. Use our Compare tool and Learning Center to decide."
+   787→  },
+   788→  {
+   789→    q: "How do I choose the right camera for my property?",
+   790→    a: "Use our CCTV Builder tool — select your property type, number of cameras, and preferred technology. It will recommend a complete setup with compatible recorder, cables, and accessories along with an instant price quote."
+   791→  },
+   792→  {
+   793→    q: "Can I view my cameras remotely on my phone?",
+   794→    a: "Yes! Most modern CCTV systems support remote viewing via mobile apps (available for both Android and iOS). Our Learning Center has step-by-step guides to set up remote access on Hikvision, Dahua, and other brands."
+   795→  },
+   796→  {
+   797→    q: "Do products come with warranty?",
+   798→    a: "Yes, all products come with full manufacturer warranty (typically 1-2 years depending on the brand). We only stock genuine products from authorized channels, so your warranty is always valid."
+   799→  },
+   800→  {
+   801→    q: "Do I need internet for CCTV to work?",
+   802→    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. A stable broadband connection is recommended for the best experience."
+   803→  },
+   804→  {
+   805→    q: "What is the difference between DVR and NVR?",
+   806→    a: "DVR (Digital Video Recorder) works with analog cameras via coaxial cable, while NVR (Network Video Recorder) works with IP cameras via Ethernet cable. NVR systems generally offer higher resolution, better compression, and smart features. Check our Learning Center for a detailed comparison."
+   807→  },
+   808→];
+   809→
+   810→function FaqSection() {
+   811→  const [openIndex, setOpenIndex] = useState<number | null>(null);
+   812→
+   813→  return (
+   814→    <section className="py-16 sm:py-20 px-4">
+   815→      <div className="max-w-3xl mx-auto">
+   816→        <motion.div {...fadeUp} className="text-center mb-12">
+   817→          <h2 className="text-3xl sm:text-4xl font-bold">
+   818→            Frequently Asked <span className="text-emerald-600">Questions</span>
+   819→          </h2>
+   820→          <p className="text-muted-foreground mt-2">
+   821→            Quick answers to common questions about CCTV systems
+   822→          </p>
+   823→        </motion.div>
+   824→
+   825→        <motion.div {...staggerContainer} className="space-y-3">
+   826→          {FAQS.map((faq, i) => (
+   827→            <motion.div key={i} {...staggerItem}>
+   828→              <Card
+   829→                className="py-0 gap-0 cursor-pointer hover:shadow-md transition-shadow"
+   830→                onClick={() => setOpenIndex(openIndex === i ? null : i)}
+   831→              >
+   832→                <CardContent className="p-5">
+   833→                  <div className="flex items-start justify-between gap-4">
+   834→                    <h3 className="font-semibold text-sm leading-relaxed">
+   835→                      {faq.q}
+   836→                    </h3>
+   837→                    <span
+   838→                      className={cn(
+   839→                        "text-lg text-muted-foreground transition-transform duration-200 shrink-0",
+   840→                        openIndex === i && "rotate-45"
+   841→                      )}
+   842→                    >
+   843→                      +
+   844→                    </span>
+   845→                  </div>
+   846→                  {openIndex === i && (
+   847→                    <motion.div
+   848→                      initial={{ opacity: 0, height: 0 }}
+   849→                      animate={{ opacity: 1, height: "auto" }}
+   850→                      className="pt-3 mt-3 border-t"
+   851→                    >
+   852→                      <p className="text-sm text-muted-foreground leading-relaxed">
+   853→                        {faq.a}
+   854→                      </p>
+   855→                    </motion.div>
+   856→                  )}
+   857→                </CardContent>
+   858→              </Card>
+   859→            </motion.div>
+   860→          ))}
+   861→        </motion.div>
+   862→      </div>
+   863→    </section>
+   864→  );
+   865→}
+   866→
+   867→// ═══════════════════════════════════════════════════════════════
+   868→// MAIN — HomePage
+   869→// ═══════════════════════════════════════════════════════════════
+   870→
+   871→export function HomePage() {
+   872→  return (
+   873→    <div className="min-h-screen bg-background">
+   874→      <HeroSection />
+   875→      <FeaturedProducts />
+   876→      <HowItWorksSection />
+   877→      <WhyChooseSection />
+   878→      <TestimonialsSection />
+   879→      <BrandsSection />
+   880→      <FaqSection />
+   881→      <BuilderCtaSection />
+   882→      <ContactSection />
+   883→    </div>
+   884→  );
+   885→}
