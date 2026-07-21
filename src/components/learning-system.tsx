@@ -959,6 +959,7 @@ function FaqSection() {
 
 export function LearningSystem() {
   const { learnSection, setLearnSection } = useStore();
+  const router = useRouter();
 
   const renderSection = () => {
     switch (learnSection) {
