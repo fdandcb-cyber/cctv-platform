@@ -61,32 +61,32 @@ const WHY_CHOOSE = [
   {
     icon: <Award className="h-6 w-6" />,
     title: "Genuine Products",
-    desc: "Authorized dealer for Hikvision, Dahua, CP Plus, Ezviz, Imou, and more. Every product is 100% genuine with full manufacturer warranty."
+    desc: "Authorized dealer for Hikvision, Dahua, CP Plus, Ezviz, Imou, and more — 100% genuine with full manufacturer warranty."
   },
   {
     icon: <IndianRupee className="h-6 w-6" />,
     title: "Competitive Pricing",
-    desc: "Best-in-market prices with transparent quotations and no hidden charges."
+    desc: "Best-in-market prices with transparent quotations and zero hidden charges."
   },
   {
     icon: <GitCompareArrows className="h-6 w-6" />,
-    title: "Compare &amp; Decide",
-    desc: "Use our built-in comparison tool to compare cameras side-by-side and pick the right one for your needs."
+    title: "Compare & Decide",
+    desc: "Use our built-in comparison tool to evaluate cameras side-by-side and pick the right one."
   },
   {
     icon: <Wrench className="h-6 w-6" />,
     title: "CCTV Builder",
-    desc: "Design your complete CCTV setup with our interactive builder — pick cameras, recorder, cables, and get an instant quote."
+    desc: "Design your complete CCTV setup with our interactive builder and get an instant quote."
   },
   {
     icon: <BookOpen className="h-6 w-6" />,
     title: "Learning Center",
-    desc: "Detailed guides on camera types, resolutions, buying tips, and installation help so you can make informed decisions."
+    desc: "Detailed guides on camera types, resolutions, and buying tips to make informed decisions."
   },
   {
     icon: <ShieldCheck className="h-6 w-6" />,
     title: "Warranty Coverage",
-    desc: "Full manufacturer warranty on all products. We only stock genuine items from authorized channels."
+    desc: "Full manufacturer warranty on all products from authorized distribution channels."
   },
 ];
 
@@ -377,13 +377,13 @@ function FeaturedProducts() {
 
 function WhyChooseSection() {
   return (
-    <section className="py-16 sm:py-20 px-4 bg-muted/30">
+    <section className="py-14 sm:py-16 px-4 bg-muted/30">
       <div className="max-w-6xl mx-auto">
-        <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold">
+        <motion.div {...fadeUp} className="text-center mb-10 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
             Why Choose <span className="text-emerald-600">ConnectZ</span>
           </h2>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-gray-500 text-sm sm:text-base mt-3">
             Trusted by hundreds of customers for reliable security solutions
           </p>
         </motion.div>
@@ -391,21 +391,35 @@ function WhyChooseSection() {
         <motion.div
           {...staggerContainer}
           className={cn(
-            "grid gap-4 sm:gap-6",
-            "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+            "grid gap-5 sm:gap-6",
+            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           )}
         >
           {WHY_CHOOSE.map((item) => (
-            <motion.div key={item.title} {...staggerItem}>
-              <Card className="h-full gap-4 py-0">
-                <CardContent className="p-6 space-y-3">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
-                    {item.icon}
+            <motion.div key={item.title} {...staggerItem} className="h-full">
+              <Card className={cn(
+                "h-full gap-0 py-0 rounded-2xl",
+                "border border-border/60",
+                "shadow-sm hover:shadow-xl",
+                "transition-all duration-300 ease-out",
+                "hover:-translate-y-1.5 hover:border-emerald-500/60",
+                "focus-within:ring-2 focus-within:ring-emerald-500/40 focus-within:ring-offset-2",
+                "outline-none"
+              )}>
+                <CardContent className="p-6 sm:p-7 flex flex-col justify-between h-full gap-4">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/60 transition-colors duration-300 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50">
+                    <span className="transition-transform duration-300 [&>*]:hover:scale-105">
+                      {item.icon}
+                    </span>
                   </div>
-                  <h3 className="font-semibold text-lg">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {item.desc}
-                  </p>
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">
+                      {item.desc}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -625,64 +639,82 @@ const HOW_IT_WORKS = [
     icon: <Eye className="h-6 w-6" />,
     step: "01",
     title: "Browse Products",
-    desc: "Explore our catalog of CCTV cameras, DVRs, NVRs, and accessories from top brands"
+    desc: "Explore our catalog of CCTV cameras, DVRs, NVRs, and accessories from top brands."
   },
   {
     icon: <GitCompareArrows className="h-6 w-6" />,
     step: "02",
-    title: "Compare &amp; Learn",
-    desc: "Use our comparison tool and learning center to pick the right equipment"
+    title: "Compare & Learn",
+    desc: "Use our comparison tool and learning center to pick the right equipment."
   },
   {
     icon: <Wrench className="h-6 w-6" />,
     step: "03",
     title: "Build Your Setup",
-    desc: "Use the CCTV Builder to design your complete system and get an instant quote"
+    desc: "Use the CCTV Builder to design your complete system and get an instant quote."
   },
   {
     icon: <ShoppingCart className="h-6 w-6" />,
     step: "04",
-    title: "Order &amp; Receive",
-    desc: "Place your order online and get genuine products delivered to your doorstep"
+    title: "Order & Receive",
+    desc: "Place your order online and get genuine products delivered to your doorstep."
   },
 ];
 
 function HowItWorksSection() {
   return (
-    <section className="py-16 sm:py-20 px-4">
+    <section className="py-14 sm:py-16 px-4">
       <div className="max-w-6xl mx-auto">
-        <motion.div {...fadeUp} className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold">
+        <motion.div {...fadeUp} className="text-center mb-10 sm:mb-12">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
             How It <span className="text-emerald-600">Works</span>
           </h2>
-          <p className="text-muted-foreground mt-2">
+          <p className="text-gray-500 text-sm sm:text-base mt-3">
             From browsing to ordering in 4 simple steps
           </p>
         </motion.div>
 
         <motion.div
           {...staggerContainer}
-          className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          className={cn(
+            "grid gap-5 sm:gap-6",
+            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+          )}
         >
-          {HOW_IT_WORKS.map((item, i) => (
-            <motion.div key={item.step} {...staggerItem}>
-              <Card className="h-full gap-4 py-0 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-                <CardContent className="p-6 space-y-3">
-                  <div className="absolute top-3 right-3 text-5xl font-extrabold text-muted-foreground/5 select-none">
-                    {item.step}
-                  </div>
-                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+          {HOW_IT_WORKS.map((item) => (
+            <motion.div key={item.step} {...staggerItem} className="h-full">
+              <Card className={cn(
+                "h-full gap-0 py-0 rounded-2xl relative overflow-hidden",
+                "border border-border/60",
+                "shadow-sm hover:shadow-xl",
+                "transition-all duration-300 ease-out",
+                "hover:-translate-y-1.5 hover:border-emerald-500/60",
+                "focus-within:ring-2 focus-within:ring-emerald-500/40 focus-within:ring-offset-2",
+                "outline-none"
+              )}>
+                {/* Step number watermark */}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute -top-2 -right-1 text-7xl font-extrabold",
+                    "text-emerald-500/[0.06] select-none pointer-events-none leading-none"
+                  )}
+                >
+                  {item.step}
+                </span>
+
+                <CardContent className="p-6 sm:p-7 flex flex-col justify-between h-full gap-4 relative z-10">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/60 transition-colors duration-300">
                     {item.icon}
                   </div>
-                  <h3 className="font-semibold text-lg">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {item.desc}
-                  </p>
-                  {i < HOW_IT_WORKS.length - 1 && (
-                    <div className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10">
-                      <ArrowRight className="h-5 w-5 text-muted-foreground/30" />
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-lg leading-snug">
+                      {item.title}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-3">
+                      {item.desc}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
