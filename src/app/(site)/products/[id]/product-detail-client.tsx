@@ -45,7 +45,7 @@ export function ProductDetailClient() {
 
   if (notFound) {
     return (
-      <div className="text-center py-16">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 text-center">
         <Camera className="h-14 w-14 mx-auto text-muted-foreground mb-4" />
         <h3 className="text-lg font-semibold mb-2">Product not found</h3>
         <p className="text-muted-foreground text-sm mb-4">
@@ -63,7 +63,7 @@ export function ProductDetailClient() {
 
   if (loading || !product) {
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 flex items-center justify-center py-20">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );

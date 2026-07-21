@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -302,11 +303,26 @@ export function ProductsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:py-10 space-y-6">
+      {/* Page Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
+      >
+        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+          <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+          <ChevronRight className="h-3.5 w-3.5" />
+          <span className="text-foreground font-medium">Products</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Our Products</h1>
+        <p className="text-muted-foreground mt-1">Browse our complete range of CCTV security cameras and systems</p>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: -5 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.05 }}
       >
         <form onSubmit={handleSearchSubmit} className="relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
