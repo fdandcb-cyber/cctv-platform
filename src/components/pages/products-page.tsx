@@ -258,9 +258,9 @@ function ProductCard({ p, index }: { p: CctvProduct; index: number }) {
           {/* Spec chips */}
           {specs.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
-              {specs.map((spec) => (
+              {specs.map((spec, i) => (
                 <span
-                  key={spec}
+                  key={`${spec}-${i}`}
                   className="text-[10px] text-muted-foreground bg-muted/40 border border-border/30 px-2 py-0.5 rounded-md"
                 >
                   {spec}
