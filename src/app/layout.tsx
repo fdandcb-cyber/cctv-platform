@@ -17,24 +17,25 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "ConnectZ Sales & Services — Professional CCTV Security Solutions",
+    default: "ConnectZ — Buy CCTV Security Cameras, Compare & Build Your Setup",
     template: "%s | ConnectZ CCTV",
   },
   description:
-    "ConnectZ Sales & Services offers professional CCTV security camera systems for homes, businesses & industries. Browse Hikvision, Dahua, Ezviz products. Free site survey, expert installation, competitive pricing.",
+    "ConnectZ is your one-stop shop for genuine CCTV security cameras and accessories. Browse Hikvision, Dahua, Ezviz, Imou products. Compare cameras, use our CCTV Builder, and learn from our guides.",
   keywords: [
     "CCTV", "security cameras", "Hikvision", "Dahua", "Ezviz", "IP camera",
-    "DVR", "NVR", "CCTV installation", "security systems", "surveillance",
+    "DVR", "NVR", "security systems", "surveillance",
     "ConnectZ", "CCTV India", "bullet camera", "dome camera", "PTZ camera",
-    "WiFi camera", "4G camera", "CCTV builder", "security solutions",
+    "WiFi camera", "4G camera", "CCTV builder", "compare CCTV",
+    "CCTV buying guide", "CCTV learning center",
   ],
   authors: [{ name: "ConnectZ Sales & Services", url: "https://cctv-platform-ten.vercel.app" }],
   creator: "ConnectZ Sales & Services",
   publisher: "ConnectZ Sales & Services",
   icons: { icon: "/logo.svg", apple: "/logo.svg" },
   openGraph: {
-    title: "ConnectZ Sales & Services — Professional CCTV Security Solutions",
-    description: "Browse, compare & buy CCTV security cameras. Expert installation across India.",
+    title: "ConnectZ — Buy CCTV Security Cameras & Accessories",
+    description: "Browse, compare & buy genuine CCTV security cameras. Use our Builder tool & Learning Center.",
     url: "https://cctv-platform-ten.vercel.app",
     siteName: "ConnectZ CCTV",
     type: "website",
@@ -43,8 +44,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ConnectZ Sales & Services — CCTV Security Solutions",
-    description: "Professional CCTV cameras, installation & support. Hikvision, Dahua & more.",
+    title: "ConnectZ — CCTV Security Cameras & Accessories",
+    description: "Genuine CCTV cameras, recorders & accessories. Hikvision, Dahua, Ezviz & more.",
   },
   robots: { index: true, follow: true },
   verification: { google: "your-google-verification-code" },
@@ -59,7 +60,7 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Store",
     name: "ConnectZ Sales & Services",
-    description: "Professional CCTV security camera systems for homes, businesses & industries",
+    description: "Genuine CCTV security cameras, recorders, and accessories for homes, businesses & industries",
     url: "https://cctv-platform-ten.vercel.app",
     telephone: "+917809465102",
     email: "connectzsalesandservices@gmail.com",

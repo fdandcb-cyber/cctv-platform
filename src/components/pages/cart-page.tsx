@@ -234,7 +234,7 @@ export function CartPage() {
                   <span className="text-muted-foreground">Shipping</span>
                   <span className="text-emerald-600 font-medium flex items-center gap-1">
                     <ShieldCheck className="h-3.5 w-3.5" />
-                    Free installation included
+                    Calculated at checkout
                   </span>
                 </div>
               </div>

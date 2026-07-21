@@ -75,22 +75,15 @@ export function TermsPage() {
                 <Separator />
 
                 <div className={cn("space-y-3")}>
-                  <h2 className={cn("text-lg font-semibold text-foreground")}>4. Installation Services</h2>
-                  <p>CCTV installation services are quoted separately based on the site survey and system requirements. Installation timelines are estimates and may vary based on project complexity, weather conditions, and material availability. Our technicians are certified professionals, and we guarantee quality workmanship. Any damage caused during installation due to our negligence will be repaired at our cost.</p>
+                  <h2 className={cn("text-lg font-semibold text-foreground")}>4. Warranty and Returns</h2>
+                  <p>All products come with the manufacturer warranty as specified by the brand (typically 1-2 years). Returns are accepted within 7 days of delivery for manufacturing defects only, provided the product is in its original packaging and unused condition. Shipping charges for returns are the responsibility of the customer unless the return is due to our error.</p>
                 </div>
 
                 <Separator />
 
                 <div className={cn("space-y-3")}>
-                  <h2 className={cn("text-lg font-semibold text-foreground")}>5. Warranty and Returns</h2>
-                  <p>All products come with the manufacturer warranty as specified by the brand (typically 1-2 years). Our installation work is guaranteed for 1 year from the date of installation. Returns are accepted within 7 days of delivery for manufacturing defects only, provided the product is in its original packaging and unused condition. Installation charges are non-refundable once the service has been completed.</p>
-                </div>
-
-                <Separator />
-
-                <div className={cn("space-y-3")}>
-                  <h2 className={cn("text-lg font-semibold text-foreground")}>6. Limitation of Liability</h2>
-                  <p>ConnectZ Sales &amp; Services shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of our products or services. Our total liability for any claim shall not exceed the amount you paid for the specific product or service giving rise to the claim. We are not responsible for any loss or damage resulting from unauthorized access to your surveillance system.</p>
+                  <h2 className={cn("text-lg font-semibold text-foreground")}>5. Limitation of Liability</h2>
+                  <p>ConnectZ shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of our products. Our total liability for any claim shall not exceed the amount you paid for the specific product giving rise to the claim. We are not responsible for any loss or damage resulting from unauthorized access to your surveillance system.</p>
                 </div>
 
                 <Separator />

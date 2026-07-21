@@ -3,7 +3,7 @@ import { TermsPage } from "@/components/pages/terms-page";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: "Read ConnectZ Sales & Services terms and conditions for CCTV product purchases and services.",
+  description: "Read ConnectZ terms and conditions for CCTV product purchases.",
 };
 
 export default function TermsRoute() {

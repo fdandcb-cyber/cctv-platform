@@ -50,7 +50,7 @@ const PILLARS = [
     icon: <Eye className={cn("h-7 w-7")} />,
     title: "Our Vision",
     description:
-      "To become India's most trusted name in electronic security — known for quality products, expert installation, and unwavering customer support."
+      "To become India's most trusted CCTV equipment supplier — known for genuine products, competitive pricing, and tools that help customers make informed decisions."
   },
   {
     icon: <Heart className={cn("h-7 w-7")} />,
@@ -64,7 +64,7 @@ const STATS = [
   {
     icon: <ShieldCheck className={cn("h-6 w-6")} />,
     value: "500+",
-    label: "Installations"
+    label: "Products Delivered"
   },
   {
     icon: <Building2 className={cn("h-6 w-6")} />,
@@ -123,11 +123,11 @@ export function AboutPage() {
               "mt-6 text-lg leading-relaxed text-muted-foreground"
             )}
           >
-            ConnectZ Sales &amp; Services is a professional security solutions
-            provider specializing in CCTV camera systems, access control, and
-            remote monitoring. We serve residential, commercial, and industrial
-            clients with customized security setups backed by expert
-            installation and after-sales support.
+            ConnectZ is a trusted CCTV equipment supplier specializing
+            in security cameras, recorders, and accessories. We provide
+            genuine products from top brands along with interactive tools
+            like our CCTV Builder and Learning Center to help you design
+            the perfect security setup.
           </motion.p>
         </div>
       </section>
@@ -189,26 +189,25 @@ export function AboutPage() {
               Who We Are
             </h2>
             <p className={cn("text-muted-foreground leading-relaxed")}>
-              ConnectZ Sales &amp; Services was founded with a single goal: to
-              make professional-grade security accessible to everyone. Based in
-              India, we work with homeowners, business owners, and industrial
-              clients to design and install CCTV systems tailored to their
-              specific needs.
+              ConnectZ was founded with a single goal: to
+              make professional-grade CCTV equipment accessible to everyone. Based in
+              India, we supply homeowners, business owners, and industrial
+              clients with genuine security products from authorized channels.
             </p>
             <p className={cn("text-muted-foreground leading-relaxed")}>
               With over 5 years of experience in the electronic security
-              industry, our team of certified technicians has completed more
-              than 500 successful installations. We are authorized dealers for
-              top brands including Hikvision, Dahua, CP Plus, Ezviz, Imou, and
-              Godrej, ensuring our customers get genuine products with full
-              warranty coverage.
+              industry, we have served more than 500 customers across India.
+              We are authorized dealers for top brands including Hikvision, Dahua,
+              CP Plus, Ezviz, Imou, and Godrej, ensuring every product we sell
+              is 100% genuine with full manufacturer warranty coverage.
             </p>
             <p className={cn("text-muted-foreground leading-relaxed")}>
-              Beyond product sales, we offer end-to-end services — from free
-              site surveys and custom system design to professional
-              installation, remote monitoring setup, and annual maintenance
-              contracts. Our commitment to quality and customer satisfaction
-              has earned us a 98% satisfaction rate among our clients.
+              Beyond just selling products, we provide powerful tools —
+              our CCTV Builder helps you design a complete security system
+              with an instant quote, the Learning Center teaches you everything
+              about camera types and setup, and the Compare tool lets you
+              evaluate cameras side-by-side. Our commitment to quality and
+              transparency has earned us a 98% satisfaction rate.
             </p>
           </motion.div>
         </div>
