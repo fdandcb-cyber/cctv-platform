@@ -29,7 +29,10 @@ import {
   Star,
   HardDrive,
   Cable,
-  Quote
+  Quote,
+  GitCompareArrows,
+  BookOpen,
+  ShoppingCart
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -56,14 +59,9 @@ const BRANDS = [
 
 const WHY_CHOOSE = [
   {
-    icon: <Wrench className="h-6 w-6" />,
-    title: "Expert Installation",
-    desc: "Professional setup by certified technicians for optimal camera placement and performance."
-  },
-  {
     icon: <Award className="h-6 w-6" />,
-    title: "Quality Brands",
-    desc: "Only trusted, industry-leading brands like Hikvision, Dahua, and CP Plus."
+    title: "Genuine Products",
+    desc: "Authorized dealer for Hikvision, Dahua, CP Plus, Ezviz, Imou, and more. Every product is 100% genuine with full manufacturer warranty."
   },
   {
     icon: <IndianRupee className="h-6 w-6" />,
@@ -71,19 +69,24 @@ const WHY_CHOOSE = [
     desc: "Best-in-market prices with transparent quotations and no hidden charges."
   },
   {
-    icon: <ClipboardCheck className="h-6 w-6" />,
-    title: "Free Site Survey",
-    desc: "Complimentary on-site assessment to determine the perfect security solution."
+    icon: <GitCompareArrows className="h-6 w-6" />,
+    title: "Compare &amp; Decide",
+    desc: "Use our built-in comparison tool to compare cameras side-by-side and pick the right one for your needs."
   },
   {
-    icon: <Headphones className="h-6 w-6" />,
-    title: "24/7 Support",
-    desc: "Round-the-clock technical support and troubleshooting whenever you need it."
+    icon: <Wrench className="h-6 w-6" />,
+    title: "CCTV Builder",
+    desc: "Design your complete CCTV setup with our interactive builder — pick cameras, recorder, cables, and get an instant quote."
+  },
+  {
+    icon: <BookOpen className="h-6 w-6" />,
+    title: "Learning Center",
+    desc: "Detailed guides on camera types, resolutions, buying tips, and installation help so you can make informed decisions."
   },
   {
     icon: <ShieldCheck className="h-6 w-6" />,
     title: "Warranty Coverage",
-    desc: "Full manufacturer warranty on all products plus our own installation guarantee."
+    desc: "Full manufacturer warranty on all products. We only stock genuine items from authorized channels."
   },
 ];
 
@@ -168,8 +171,8 @@ function HeroSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto"
         >
-          Professional CCTV solutions for homes, businesses &amp; industries.
-          Expert installation, competitive pricing.
+          Your one-stop shop for CCTV security cameras &amp; accessories.
+          Compare, learn, and build your perfect setup.
         </motion.p>
 
         {/* CTA Buttons */}
@@ -206,10 +209,10 @@ function HeroSection() {
           className="flex flex-wrap gap-4 sm:gap-6 justify-center pt-4"
         >
           {[
-            "500+ Installations",
             "10+ Brands",
-            "Free Site Survey",
-            "After-Sales Support",
+            "Genuine Products",
+            "Builder Tool",
+            "Learning Center",
           ].map((label) => (
             <div
               key={label}
@@ -619,28 +622,28 @@ function ContactSection() {
 
 const HOW_IT_WORKS = [
   {
-    icon: <PhoneCall className="h-6 w-6" />,
-    step: "01",
-    title: "Contact Us",
-    desc: "Call, WhatsApp, or fill our form to share your requirements"
-  },
-  {
     icon: <Eye className="h-6 w-6" />,
-    step: "02",
-    title: "Free Site Survey",
-    desc: "Our expert visits your property to assess and plan the setup"
+    step: "01",
+    title: "Browse Products",
+    desc: "Explore our catalog of CCTV cameras, DVRs, NVRs, and accessories from top brands"
   },
   {
-    icon: <ClipboardCheck className="h-6 w-6" />,
-    step: "03",
-    title: "Get a Quote",
-    desc: "Receive a transparent, detailed quotation with no hidden charges"
+    icon: <GitCompareArrows className="h-6 w-6" />,
+    step: "02",
+    title: "Compare &amp; Learn",
+    desc: "Use our comparison tool and learning center to pick the right equipment"
   },
   {
     icon: <Wrench className="h-6 w-6" />,
+    step: "03",
+    title: "Build Your Setup",
+    desc: "Use the CCTV Builder to design your complete system and get an instant quote"
+  },
+  {
+    icon: <ShoppingCart className="h-6 w-6" />,
     step: "04",
-    title: "Installation",
-    desc: "Professional installation by certified technicians with demo"
+    title: "Order &amp; Receive",
+    desc: "Place your order online and get genuine products delivered to your doorstep"
   },
 ];
 
@@ -653,7 +656,7 @@ function HowItWorksSection() {
             How It <span className="text-emerald-600">Works</span>
           </h2>
           <p className="text-muted-foreground mt-2">
-            From first call to complete installation in 4 simple steps
+            From browsing to ordering in 4 simple steps
           </p>
         </motion.div>
 
@@ -699,25 +702,25 @@ const TESTIMONIALS = [
     name: "Rajesh M.",
     role: "Homeowner, Bangalore",
     rating: 5,
-    text: "ConnectZ installed a 4-camera system at my home. The installation was clean, professional, and they even helped me set up remote viewing on my phone. Excellent service at a fair price."
+    text: "Used the ConnectZ builder tool to design a 4-camera setup for my home. The product quality is excellent, everything arrived well-packed, and the learning center helped me set it up myself. Saved a lot compared to getting it done professionally."
   },
   {
     name: "Priya S.",
     role: "Restaurant Owner, Hyderabad",
     rating: 5,
-    text: "We needed 16 cameras for our restaurant. ConnectZ did a thorough site survey and recommended the perfect setup. The footage quality is crystal clear and the system has been running flawlessly for over a year."
+    text: "We ordered 16 cameras for our restaurant through ConnectZ. The comparison tool made it easy to pick the right models, and the prices were genuinely the best we found. The footage quality from the Hikvision cameras is crystal clear."
   },
   {
     name: "Amit K.",
     role: "Warehouse Manager, Chennai",
     rating: 5,
-    text: "Got a complete surveillance system with NVR and 32 cameras for our warehouse. The team was efficient, completed the job ahead of schedule, and the AMC support has been outstanding."
+    text: "Got a complete NVR system with 32 cameras for our warehouse. The builder gave us an accurate quote upfront, and all products were genuine with manufacturer warranty. Very smooth ordering experience."
   },
   {
     name: "Sneha R.",
     role: "Boutique Owner, Mumbai",
     rating: 4,
-    text: "Very happy with the WiFi cameras ConnectZ recommended for my boutique. Easy to manage through the app, and the motion detection alerts have been incredibly useful. Great after-sales support too."
+    text: "Love the WiFi cameras I ordered from ConnectZ. The learning center guided me through the setup process, and the motion detection alerts work great through the app. Highly recommend for small businesses."
   },
 ];
 
@@ -779,28 +782,28 @@ function TestimonialsSection() {
 
 const FAQS = [
   {
-    q: "How much does CCTV installation cost?",
-    a: "Installation costs vary based on the number of cameras, type (wired/wireless), and complexity of the site. A basic 4-camera home setup starts from approximately ₹8,000 including installation. We provide free site surveys and detailed quotations with no hidden charges."
+    q: "Which CCTV brand is best for home use?",
+    a: "For home use, Hikvision or Dahua are great for wired systems, while Ezviz or Imou are ideal for WiFi cameras. The best choice depends on your specific needs like indoor/outdoor usage, night vision range, and budget. Use our Compare tool and Learning Center to decide."
   },
   {
-    q: "Which CCTV brand is best for home use?",
-    a: "For home use, we recommend Hikvision or Dahua for wired systems and Ezviz or Imou for WiFi cameras. The best choice depends on your specific requirements like indoor/outdoor usage, night vision needs, and budget. Our experts will guide you during the free consultation."
+    q: "How do I choose the right camera for my property?",
+    a: "Use our CCTV Builder tool — select your property type, number of cameras, and preferred technology. It will recommend a complete setup with compatible recorder, cables, and accessories along with an instant price quote."
   },
   {
     q: "Can I view my cameras remotely on my phone?",
-    a: "Yes, absolutely! We set up the mobile app (available for both Android and iOS) during installation so you can view live footage, playback recordings, and receive motion detection alerts from anywhere in the world."
+    a: "Yes! Most modern CCTV systems support remote viewing via mobile apps (available for both Android and iOS). Our Learning Center has step-by-step guides to set up remote access on Hikvision, Dahua, and other brands."
   },
   {
-    q: "Do you provide warranty on products and installation?",
-    a: "Yes, all products come with manufacturer warranty (typically 1-2 years depending on the brand). Our installation work is guaranteed for 1 year. We also offer Annual Maintenance Contracts (AMC) for extended coverage and priority support."
-  },
-  {
-    q: "How long does installation take?",
-    a: "A standard 4-8 camera residential installation is typically completed within a single day. Larger commercial installations with 16+ cameras may take 2-3 days. We will provide an accurate timeline during the quotation phase."
+    q: "Do products come with warranty?",
+    a: "Yes, all products come with full manufacturer warranty (typically 1-2 years depending on the brand). We only stock genuine products from authorized channels, so your warranty is always valid."
   },
   {
     q: "Do I need internet for CCTV to work?",
-    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. We recommend a stable broadband connection for the best experience."
+    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. A stable broadband connection is recommended for the best experience."
+  },
+  {
+    q: "What is the difference between DVR and NVR?",
+    a: "DVR (Digital Video Recorder) works with analog cameras via coaxial cable, while NVR (Network Video Recorder) works with IP cameras via Ethernet cable. NVR systems generally offer higher resolution, better compression, and smart features. Check our Learning Center for a detailed comparison."
   },
 ];
 

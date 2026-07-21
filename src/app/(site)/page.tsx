@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { HomePage } from "@/components/pages/home-page";
 
 export const metadata: Metadata = {
-  title: "ConnectZ Sales & Services — Professional CCTV Security Solutions",
+  title: "ConnectZ — Buy CCTV Security Cameras & Accessories",
   description:
-    "ConnectZ Sales & Services offers professional CCTV security camera systems for homes, businesses & industries. Browse Hikvision, Dahua, Ezviz products. Free site survey, expert installation.",
+    "ConnectZ is your one-stop shop for genuine CCTV cameras, DVRs, NVRs & accessories. Use our Builder tool, compare cameras, and learn from our guides."
 };
 
 export default function HomeRoute() {

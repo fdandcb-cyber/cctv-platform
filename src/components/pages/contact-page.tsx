@@ -46,8 +46,7 @@ const fadeUp = {
 const SUBJECT_OPTIONS = [
   { value: "general", label: "General Inquiry" },
   { value: "quote", label: "Product Quote" },
-  { value: "installation", label: "Installation" },
-  { value: "support", label: "Support" },
+  { value: "support", label: "Product Support" },
   { value: "partnership", label: "Partnership" },
 ];
 
