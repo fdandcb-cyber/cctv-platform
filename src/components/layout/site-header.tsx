@@ -39,7 +39,7 @@ import {
 const NAV_LINKS: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/products" },
-  { label: "Services", href: "/services" },
+  { label: "Learn", href: "/learn" },
   { label: "Builder", href: "/builder" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },

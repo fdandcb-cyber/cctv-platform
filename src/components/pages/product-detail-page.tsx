@@ -12,6 +12,7 @@ import { useAppStore } from "@/store/app-store";
 import { useStore, type CctvProduct } from "@/store/cctv-store";
 import {
   ArrowLeft,
+  ChevronRight,
   Camera,
   Wifi,
   Radio,
@@ -31,6 +32,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("en-IN", {
@@ -164,8 +166,19 @@ export function ProductDetailPage() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-8"
+      className="mx-auto max-w-7xl px-4 py-8 sm:py-10 space-y-8"
     >
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <Link href="/products" className="hover:text-foreground transition-colors">Products</Link>
+        <ChevronRight className="h-3.5 w-3.5" />
+        <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
+          {product.brand} {product.modelName}
+        </span>
+      </div>
+
       <Button
         variant="ghost"
         size="sm"

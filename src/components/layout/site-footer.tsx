@@ -13,7 +13,7 @@ import {
 const QUICK_LINKS: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
   { label: "Products", href: "/products" },
-  { label: "Services", href: "/services" },
+  { label: "Learn", href: "/learn" },
   { label: "Builder", href: "/builder" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
@@ -24,12 +24,11 @@ const LEGAL_LINKS: { label: string; href: string }[] = [
   { label: "Terms of Service", href: "/terms" },
 ];
 
-const SERVICES = [
-  "Site Survey",
-  "Installation",
-  "AMC Support",
-  "Remote Monitoring",
-  "Access Control",
+const RESOURCES = [
+  { label: "CCTV Camera Types", href: "/learn" },
+  { label: "Buying Guide", href: "/learn" },
+  { label: "Installation Tips", href: "/learn" },
+  { label: "Comparison Tool", href: "/builder" },
 ];
 
 export function SiteFooter() {
@@ -73,17 +72,22 @@ export function SiteFooter() {
             </ul>
           </div>
 
-          {/* Column 3: Services */}
+          {/* Column 3: Resources */}
           <div className={cn("space-y-4")}>
             <h3 className={cn("text-sm font-semibold uppercase tracking-wider text-primary-foreground/60")}>
-              Services
+              Resources
             </h3>
             <ul className={cn("space-y-2.5")}>
-              {SERVICES.map((service) => (
-                <li key={service}>
-                  <span className={cn("text-sm text-primary-foreground/80")}>
-                    {service}
-                  </span>
+              {RESOURCES.map((res) => (
+                <li key={res.label}>
+                  <Link
+                    href={res.href}
+                    className={cn(
+                      "text-sm text-primary-foreground/80 transition-colors hover:text-primary-foreground hover:underline"
+                    )}
+                  >
+                    {res.label}
+                  </Link>
                 </li>
               ))}
             </ul>
