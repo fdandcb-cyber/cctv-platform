@@ -703,8 +703,8 @@ export function CctvBuilder() {
                 {cameraTechs.map((ct) => {
                   const sel = store.cameraTechs.includes(ct.value);
                   return (
-                    <motion.button key={ct.value} whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} onClick={() => store.toggleCameraTech(ct.value)}
-                      className={cn("text-left flex items-start gap-4 p-5 rounded-2xl border-2 transition-all relative",
+                    <motion.div key={ct.value} whileHover={{ y: -1 }} whileTap={{ scale: 0.99 }} onClick={() => store.toggleCameraTech(ct.value)} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); store.toggleCameraTech(ct.value); } }}
+                      className={cn("text-left flex items-start gap-4 p-5 rounded-2xl border-2 transition-all relative cursor-pointer",
                         sel ? "border-emerald-500 bg-emerald-50" : "border-border hover:border-emerald-300 bg-card"
                       )}>
                       <div className={cn("p-2.5 rounded-xl shrink-0 transition-colors", sel ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>{ct.icon}</div>
@@ -719,7 +719,7 @@ export function CctvBuilder() {
                           <Tooltip><TooltipTrigger><span className="text-[10px] text-emerald-600 underline decoration-dotted underline-offset-2 cursor-help">Price impact</span></TooltipTrigger><TooltipContent side="bottom" className="text-xs max-w-xs">{ct.priceImpact}</TooltipContent></Tooltip>
                         </div>
                       </div>
-                    </motion.button>
+                    </motion.div>
                   );
                 })}
               </div>
