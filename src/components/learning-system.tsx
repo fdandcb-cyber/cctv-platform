@@ -987,6 +987,7 @@ function FaqSectionWithSearch() {
     return faqData.filter((f) => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
   }, [search]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- mount detection pattern for SSR hydration fix
   useEffect(() => { setMounted(true); }, []);
 
   return (
