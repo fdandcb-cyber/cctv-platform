@@ -1052,11 +1052,11 @@ function CtaSection({ router }: { router: ReturnType<typeof useRouter> }) {
                 <Phone className="h-5 w-5 mr-2" /> Call Expert
               </Button>
             </motion.a>
-            <motion.button {...staggerItem} onClick={() => router.push("/products")}>
+            <motion.div {...staggerItem} onClick={() => router.push("/products")} className="inline-block">
               <Button size="lg" variant="outline" className="rounded-xl px-8 border-white/20 text-white hover:bg-white/10">
                 <Layers className="h-5 w-5 mr-2" /> Build Your Setup
               </Button>
-            </motion.button>
+            </motion.div>
           </motion.div>
         </div>
       </div>
