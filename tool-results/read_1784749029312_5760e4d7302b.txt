@@ -1,0 +1,502 @@
+   598→   598→    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-8">
+   599→   599→
+   600→   600→      {/* ═══ HEADER ═══ */}
+   601→   601→      <div className="text-center space-y-3">
+   602→   602→        <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-4 py-2 rounded-full text-sm font-medium border border-emerald-200">
+   603→   603→          <Shield className="h-4 w-4" /> CCTV Setup Builder
+   604→   604→        </div>
+   605→   605→        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+   606→   606→          Build Your Complete <span className="text-emerald-600">CCTV Setup</span>
+   607→   607→        </h1>
+   608→   608→        <p className="text-muted-foreground max-w-2xl mx-auto">
+   609→   609→          Follow each step below to configure your complete CCTV system. We auto-calculate the recorder, power supply, cables, HDD, and accessories based on your selections.
+   610→   610→        </p>
+   611→   611→        <div className="flex justify-center gap-2 pt-2">
+   612→   612→          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleCopyQuote} disabled={totalCameras === 0}>
+   613→   613→            <Copy className="h-3.5 w-3.5" /> Copy Quote
+   614→   614→          </Button>
+   615→   615→          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()} disabled={totalCameras === 0}>
+   616→   616→            <Printer className="h-3.5 w-3.5" /> Print
+   617→   617→          </Button>
+   618→   618→          <WhatsAppShare text={quoteText} label="WhatsApp" variant="outline" size="sm" className="text-green-700 border-green-300 hover:bg-green-50" />
+   619→   619→          <RazorpayCheckout amount={totalPrice} quoteData={{ quote: quoteText, selections: store.cameraSelections }} label="Pay Now" variant="outline" size="sm" className="text-purple-700 border-purple-300 hover:bg-purple-50" />
+   620→   620→          <Button variant="outline" size="sm" className="gap-1.5 text-red-600 hover:text-red-700" onClick={() => { store.resetBuilder(); toast.success("Configuration reset"); }}>
+   621→   621→            <RotateCcw className="h-3.5 w-3.5" /> Reset
+   622→   622→          </Button>
+   623→   623→        </div>
+   624→   624→      </div>
+   625→   625→
+   626→   626→      {/* ═══ STEP 1: PROPERTY TYPE ═══ */}
+   627→   627→      <Card className={cn("border-2 transition-colors", stepActive(1) ? "border-emerald-300" : "border-muted opacity-60")}>
+   628→   628→        <CardHeader className="pb-3">
+   629→   629→          <StepBadge num={1} title="Select Property Type" active={stepActive(1)} done={stepDone(1)} />
+   630→   630→        </CardHeader>
+   631→   631→        {stepActive(1) && (
+   632→   632→          <CardContent className="pt-0">
+   633→   633→            <p className="text-sm text-muted-foreground mb-4">Choose the type of property where you want to install CCTV cameras.</p>
+   634→   634→            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+   635→   635→              {propertyTypes.map((pt) => (
+   636→   636→                <button key={pt.value} onClick={() => store.setPropertyType(pt.value)}
+   637→   637→                  className={cn(
+   638→   638→                    "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center hover:shadow-md",
+   639→   639→                    store.propertyType === pt.value
+   640→   640→                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 shadow-sm"
+   641→   641→                      : "border-muted hover:border-emerald-300"
+   642→   642→                  )}>
+   643→   643→                  <div className={cn("p-2 rounded-lg", store.propertyType === pt.value ? "bg-emerald-100" : "bg-muted")}>{pt.icon}</div>
+   644→   644→                  <span className="text-sm font-semibold">{pt.label}</span>
+   645→   645→                  <span className="text-[11px] text-muted-foreground leading-tight">{pt.desc}</span>
+   646→   646→                </button>
+   647→   647→              ))}
+   648→   648→            </div>
+   649→   649→          </CardContent>
+   650→   650→        )}
+   651→   651→      </Card>
+   652→   652→
+   653→   653→      {/* ═══ STEP 2: AREA ═══ */}
+   654→   654→      <Card className={cn("border-2 transition-colors", stepActive(2) ? "border-emerald-300" : "border-muted opacity-60")}>
+   655→   655→        <CardHeader className="pb-3">
+   656→   656→          <StepBadge num={2} title="Property Area (sq ft)" active={stepActive(2)} done={stepDone(2)} />
+   657→   657→        </CardHeader>
+   658→   658→        {stepActive(2) && (
+   659→   659→          <CardContent className="pt-0 space-y-4">
+   660→   660→            <p className="text-sm text-muted-foreground">Enter the total area of your property in square feet. This helps us estimate how many cameras you need.</p>
+   661→   661→            <div className="max-w-xs">
+   662→   662→              <Label>Area (sq ft)</Label>
+   663→   663→              <Input type="number" placeholder="e.g. 1200" value={store.areaSqft} onChange={(e) => store.setAreaSqft(e.target.value)} className="mt-1.5 text-lg" min="0" />
+   664→   664→            </div>
+   665→   665→          </CardContent>
+   666→   666→        )}
+   667→   667→      </Card>
+   668→   668→
+   669→   669→      {/* ═══ STEP 3: CAMERA PROBABILITY ═══ */}
+   670→   670→      <Card className={cn("border-2 transition-colors", stepActive(3) ? "border-emerald-300" : "border-muted opacity-60")}>
+   671→   671→        <CardHeader className="pb-3">
+   672→   672→          <StepBadge num={3} title="Recommended Camera Quantity" active={stepActive(3)} done={stepDone(3)} />
+   673→   673→        </CardHeader>
+   674→   674→        {stepActive(3) && cameraSuggestion && (
+   675→   675→          <CardContent className="pt-0 space-y-4">
+   676→   676→            <p className="text-sm text-muted-foreground">Based on your <strong>{propertyTypes.find(p => p.value === store.propertyType)?.label}</strong> property of <strong>{area.toLocaleString()} sq ft</strong>, here is our camera recommendation:</p>
+   677→   677→            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+   678→   678→              <Card className="bg-amber-50 border-amber-200">
+   679→   679→                <CardContent className="p-4 text-center">
+   680→   680→                  <p className="text-xs text-amber-600 font-medium uppercase">Minimum</p>
+   681→   681→                  <p className="text-3xl font-bold text-amber-700 mt-1">{cameraSuggestion.min}</p>
+   682→   682→                  <p className="text-xs text-muted-foreground">cameras</p>
+   683→   683→                </CardContent>
+   684→   684→              </Card>
+   685→   685→              <Card className="bg-emerald-50 border-emerald-200">
+   686→   686→                <CardContent className="p-4 text-center">
+   687→   687→                  <p className="text-xs text-emerald-600 font-medium uppercase">Recommended</p>
+   688→   688→                  <p className="text-3xl font-bold text-emerald-700 mt-1">{cameraSuggestion.suggested}</p>
+   689→   689→                  <p className="text-xs text-muted-foreground">cameras</p>
+   690→   690→                </CardContent>
+   691→   691→              </Card>
+   692→   692→              <Card className="bg-sky-50 border-sky-200">
+   693→   693→                <CardContent className="p-4 text-center">
+   694→   694→                  <p className="text-xs text-sky-600 font-medium uppercase">Maximum</p>
+   695→   695→                  <p className="text-3xl font-bold text-sky-700 mt-1">{cameraSuggestion.max}</p>
+   696→   696→                  <p className="text-xs text-muted-foreground">cameras</p>
+   697→   697→                </CardContent>
+   698→   698→              </Card>
+   699→   699→            </div>
+   700→   700→            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+   701→   701→              <Lightbulb className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+   702→   702→              <p className="text-sm text-blue-700">These are estimates. You can choose the exact quantity in Step 6. Cover all entry points, parking areas, corridors, and blind spots. Outdoor areas typically need more coverage than indoor spaces.</p>
+   703→   703→            </div>
+   704→   704→          </CardContent>
+   705→   705→        )}
+   706→   706→      </Card>
+   707→   707→
+   708→   708→      {/* ═══ STEP 4: CAMERA SYSTEM TYPE ═══ */}
+   709→   709→      <Card className={cn("border-2 transition-colors", stepActive(4) ? "border-emerald-300" : "border-muted opacity-60")}>
+   710→   710→        <CardHeader className="pb-3">
+   711→   711→          <StepBadge num={4} title="Camera System Type" active={stepActive(4)} done={stepDone(4)} />
+   712→   712→        </CardHeader>
+   713→   713→        {stepActive(4) && (
+   714→   714→          <CardContent className="pt-0 space-y-4">
+   715→   715→            <p className="text-sm text-muted-foreground">Choose the type of CCTV system. This determines cable type, recorder, and power supply.</p>
+   716→   716→            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+   717→   717→              {cameraSystems.map((cs) => (
+   718→   718→                <button key={cs.value} onClick={() => store.setCameraSystem(cs.value)}
+   719→   719→                  className={cn(
+   720→   720→                    "text-left p-5 rounded-xl border-2 transition-all hover:shadow-md",
+   721→   721→                    store.cameraSystem === cs.value ? "border-emerald-500 bg-emerald-50 shadow-sm ring-2 ring-emerald-200" : "border-muted hover:border-emerald-300"
+   722→   722→                  )}>
+   723→   723→                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center mb-3", store.cameraSystem === cs.value ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>{cs.icon}</div>
+   724→   724→                  <h3 className="font-bold text-sm">{cs.label}</h3>
+   725→   725→                  <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{cs.desc}</p>
+   726→   726→                  {store.cameraSystem === cs.value && (
+   727→   727→                    <div className="mt-3 space-y-1.5">
+   728→   728→                      <p className="text-xs font-semibold text-emerald-600">Key Benefits:</p>
+   729→   729→                      {cs.pros.map(p => <p key={p} className="text-xs flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{p}</p>)}
+   730→   730→                    </div>
+   731→   731→                  )}
+   732→   732→                </button>
+   733→   733→              ))}
+   734→   734→            </div>
+   735→   735→          </CardContent>
+   736→   736→        )}
+   737→   737→      </Card>
+   738→   738→
+   739→   739→      {/* ═══ STEP 5: CAMERA TECHNOLOGY (MULTI-SELECT) ═══ */}
+   740→   740→      <Card className={cn("border-2 transition-colors", stepActive(5) ? "border-emerald-300" : "border-muted opacity-60")}>
+   741→   741→        <CardHeader className="pb-3">
+   742→   742→          <StepBadge num={5} title="Camera Technology (Select Multiple)" active={stepActive(5)} done={stepDone(5)} />
+   743→   743→        </CardHeader>
+   744→   744→        {stepActive(5) && (
+   745→   745→          <CardContent className="pt-0 space-y-4">
+   746→   746→            <p className="text-sm text-muted-foreground">Choose one or more camera technology levels. You can mix different technologies in your setup — for example, some cameras with basic night vision and a few with two-way talk at the entrance.</p>
+   747→   747→            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   748→   748→              {cameraTechs.map((ct) => {
+   749→   749→                const isSelected = store.cameraTechs.includes(ct.value);
+   750→   750→                return (
+   751→   751→                  <button key={ct.value} onClick={() => store.toggleCameraTech(ct.value)}
+   752→   752→                    className={cn(
+   753→   753→                      "text-left flex items-start gap-3 p-4 rounded-xl border-2 transition-all",
+   754→   754→                      isSelected ? "border-emerald-500 bg-emerald-50" : "border-muted hover:border-emerald-300"
+   755→   755→                    )}>
+   756→   756→                    <div className={cn("p-2 rounded-lg shrink-0", isSelected ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground")}>{ct.icon}</div>
+   757→   757→                    <div className="flex-1">
+   758→   758→                      <div className="flex items-center justify-between">
+   759→   759→                        <h3 className="font-semibold text-sm">{ct.label}</h3>
+   760→   760→                        <div className={cn("w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 ml-2", isSelected ? "bg-emerald-500 border-emerald-500" : "border-muted-foreground/30")}>
+   761→   761→                          {isSelected && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+   762→   762→                        </div>
+   763→   763→                      </div>
+   764→   764→                      <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{ct.desc}</p>
+   765→   765→                    </div>
+   766→   766→                  </button>
+   767→   767→                );
+   768→   768→              })}
+   769→   769→            </div>
+   770→   770→            {store.cameraTechs.length > 0 && (
+   771→   771→              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 flex items-center gap-2">
+   772→   772→                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+   773→   773→                <p className="text-sm text-emerald-700">Selected: {store.cameraTechs.map(t => cameraTechs.find(ct => ct.value === t)?.label).join(", ")}</p>
+   774→   774→              </div>
+   775→   775→            )}
+   776→   776→          </CardContent>
+   777→   777→        )}
+   778→   778→      </Card>
+   779→   779→
+   780→   780→      {/* ═══ STEP 6: SELECT CAMERAS FROM PRODUCT CATALOG ═══ */}
+   781→   781→      <Card className={cn("border-2 transition-colors", stepActive(6) ? "border-emerald-300" : "border-muted opacity-60")}>
+   782→   782→        <CardHeader className="pb-3">
+   783→   783→          <StepBadge num={6} title="Select Cameras (from Product Catalog)" active={stepActive(6)} done={stepDone(6)} />
+   784→   784→        </CardHeader>
+   785→   785→        {stepActive(6) && (
+   786→   786→          <CardContent className="pt-0 space-y-4">
+   787→   787→            <p className="text-sm text-muted-foreground">
+   788→   788→              Choose cameras from your product catalog. Click a product to add it. Adjust quantities with +/-.
+   789→   789→              {cameraSuggestion && <span> <strong>Recommended: {cameraSuggestion.suggested} cameras total.</strong></span>}
+   790→   790→            </p>
+   791→   791→
+   792→   792→            {/* Product Search & Filter */}
+   793→   793→            <div className="flex flex-col sm:flex-row gap-2">
+   794→   794→              <div className="relative flex-1">
+   795→   795→                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+   796→   796→                <Input placeholder="Search by brand, model, resolution..." value={productSearch} onChange={(e) => setProductSearch(e.target.value)} className="pl-9 h-9 text-sm" />
+   797→   797→              </div>
+   798→   798→              <Select value={productTypeFilter} onValueChange={setProductTypeFilter}>
+   799→   799→                <SelectTrigger className="w-32 h-9 text-sm"><SelectValue placeholder="All Types" /></SelectTrigger>
+   800→   800→                <SelectContent>
+   801→   801→                  <SelectItem value="all">All Types</SelectItem>
+   802→   802→                  <SelectItem value="Dome">Dome</SelectItem>
+   803→   803→                  <SelectItem value="Bullet">Bullet</SelectItem>
+   804→   804→                  <SelectItem value="PTZ">PTZ</SelectItem>
+   805→   805→                  <SelectItem value="WiFi">WiFi</SelectItem>
+   806→   806→                  <SelectItem value="4G">4G</SelectItem>
+   807→   807→                </SelectContent>
+   808→   808→              </Select>
+   809→   809→            </div>
+   810→   810→
+   811→   811→            {/* Available Products Grid */}
+   812→   812→            {productsLoading ? (
+   813→   813→              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+   814→   814→                {[...Array(6)].map((_, i) => (
+   815→   815→                  <div key={i} className="border rounded-xl p-3 space-y-2 animate-pulse">
+   816→   816→                    <div className="aspect-square bg-muted rounded-lg" />
+   817→   817→                    <div className="h-3 bg-muted rounded w-16" />
+   818→   818→                    <div className="h-4 bg-muted rounded w-24" />
+   819→   819→                    <div className="h-3 bg-muted rounded w-20" />
+   820→   820→                  </div>
+   821→   821→                ))}
+   822→   822→              </div>
+   823→   823→            ) : filteredProducts.length === 0 ? (
+   824→   824→              <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center">
+   825→   825→                <Package className="h-10 w-10 mx-auto text-amber-400 mb-2" />
+   826→   826→                <p className="text-sm font-medium text-amber-700">No cameras found for {store.cameraSystem.toUpperCase()} system</p>
+   827→   827→                <p className="text-xs text-amber-600 mt-1">Add {store.cameraSystem === "analog" ? "analog (DVR)" : store.cameraSystem === "ip" ? "IP (NVR)" : "WiFi"} cameras via the Admin panel first.</p>
+   828→   828→                <Button variant="outline" size="sm" className="mt-3 gap-1.5" onClick={() => router.push("/admin")}>
+   829→   829→                  <Shield className="h-3.5 w-3.5" /> Go to Admin Panel
+   830→   830→                </Button>
+   831→   831→              </div>
+   832→   832→            ) : (
+   833→   833→              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-[500px] overflow-y-auto pr-1">
+   834→   834→                {filteredProducts.map((product) => {
+   835→   835→                  const isSelected = store.cameraSelections.some(c => c.productId === product.id);
+   836→   836→                  const selectedQty = store.cameraSelections.find(c => c.productId === product.id)?.qty || 0;
+   837→   837→                  const unitPrice = product.salePrice && product.salePrice < product.price ? product.salePrice : product.price;
+   838→   838→                  return (
+   839→   839→                    <button key={product.id} onClick={() => addProduct(product)}
+   840→   840→                      className={cn(
+   841→   841→                        "text-left rounded-xl border-2 p-3 transition-all hover:shadow-md relative",
+   842→   842→                        isSelected ? "border-emerald-500 bg-emerald-50 shadow-sm" : "border-muted hover:border-emerald-300"
+   843→   843→                      )}>
+   844→   844→                      {isSelected && (
+   845→   845→                        <div className="absolute -top-2 -right-2 w-6 h-6 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
+   846→   846→                          {selectedQty}
+   847→   847→                        </div>
+   848→   848→                      )}
+   849→   849→                      <div className="aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+   850→   850→                        {product.imageUrl ? (
+   851→   851→                          <img src={product.imageUrl} alt={product.modelName} className="w-full h-full object-contain p-1" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+   852→   852→                        ) : (
+   853→   853→                          <Camera className="h-8 w-8 text-muted-foreground" />
+   854→   854→                        )}
+   855→   855→                      </div>
+   856→   856→                      <p className="text-[10px] text-muted-foreground uppercase">{product.brand}</p>
+   857→   857→                      <p className="text-xs font-semibold truncate" title={product.modelName}>{product.modelName}</p>
+   858→   858→                      <div className="flex items-center gap-1.5 mt-1">
+   859→   859→                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.resolution}</Badge>
+   860→   860→                        <Badge variant="outline" className="text-[10px] px-1.5 py-0">{product.cameraType}</Badge>
+   861→   861→                      </div>
+   862→   862→                      <div className="mt-1.5">
+   863→   863→                        {product.salePrice && product.salePrice < product.price ? (
+   864→   864→                          <div className="flex items-center gap-1">
+   865→   865→                            <span className="text-sm font-bold text-emerald-600">{fmt(unitPrice)}</span>
+   866→   866→                            <span className="text-[10px] text-muted-foreground line-through">{fmt(product.price)}</span>
+   867→   867→                          </div>
+   868→   868→                        ) : (
+   869→   869→                          <span className="text-sm font-bold">{fmt(product.price)}</span>
+   870→   870→                        )}
+   871→   871→                      </div>
+   872→   872→                      {isSelected && <p className="text-[10px] text-emerald-600 font-medium mt-1">{selectedQty} added (click to +1)</p>}
+   873→   873→                    </button>
+   874→   874→                  );
+   875→   875→                })}
+   876→   876→              </div>
+   877→   877→            )}
+   878→   878→
+   879→   879→            <p className="text-xs text-muted-foreground">{filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""} available</p>
+   880→   880→
+   881→   881→            {/* Selected Cameras Table */}
+   882→   882→            {store.cameraSelections.length > 0 && (
+   883→   883→              <div className="border rounded-xl overflow-hidden">
+   884→   884→                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 bg-muted px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+   885→   885→                  <span>Product</span><span>Resolution</span><span>Technology</span><span className="text-center">Qty</span><span className="text-right">Price</span><span className="w-8"></span>
+   886→   886→                </div>
+   887→   887→                {store.cameraSelections.map((cam) => {
+   888→   888→                  const unitPrice = cam.salePrice && cam.salePrice < cam.price ? cam.salePrice : cam.price;
+   889→   889→                  return (
+   890→   890→                    <div key={cam.productId} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t">
+   891→   891→                      <div className="flex items-center gap-2 min-w-0">
+   892→   892→                        {cam.imageUrl ? (
+   893→   893→                          <img src={cam.imageUrl} alt="" className="w-8 h-8 rounded object-contain bg-muted border shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+   894→   894→                        ) : (
+   895→   895→                          <div className="w-8 h-8 rounded bg-muted border flex items-center justify-center shrink-0"><Camera className="h-4 w-4 text-muted-foreground" /></div>
+   896→   896→                        )}
+   897→   897→                        <div className="min-w-0">
+   898→   898→                          <p className="text-xs font-semibold truncate">{cam.brand} {cam.modelName}</p>
+   899→   899→                          <p className="text-[10px] text-muted-foreground">{cam.cameraType}</p>
+   900→   900→                        </div>
+   901→   901→                      </div>
+   902→   902→                      <Badge variant="outline" className="w-fit text-xs">{cam.mp}</Badge>
+   903→   903→                      <Select value={cam.tech} onValueChange={(v) => updateSelectionTech(cam.productId, v as CameraTech)}>
+   904→   904→                        <SelectTrigger className="h-8 text-xs w-full max-w-[130px]">
+   905→   905→                          <SelectValue />
+   906→   906→                        </SelectTrigger>
+   907→   907→                        <SelectContent>
+   908→   908→                          {cameraTechs.filter(ct => store.cameraTechs.includes(ct.value)).map(ct => (
+   909→   909→                            <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+   910→   910→                          ))}
+   911→   911→                        </SelectContent>
+   912→   912→                      </Select>
+   913→   913→                      <div className="flex justify-center">
+   914→   914→                        <QtyControl value={cam.qty} onChange={(v) => updateSelectionQty(cam.productId, v)} />
+   915→   915→                      </div>
+   916→   916→                      <div className="text-right">
+   917→   917→                        <p className="text-xs font-semibold">{fmt(unitPrice * cam.qty)}</p>
+   918→   918→                        <p className="text-[10px] text-muted-foreground">{fmt(unitPrice)} x {cam.qty}</p>
+   919→   919→                      </div>
+   920→   920→                      <Button size="icon" variant="ghost" className="h-7 w-7 text-red-400 hover:text-red-600" onClick={() => removeSelection(cam.productId)}>
+   921→   921→                        <span className="text-lg leading-none">&times;</span>
+   922→   922→                      </Button>
+   923→   923→                    </div>
+   924→   924→                  );
+   925→   925→                })}
+   926→   926→                <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 bg-emerald-50 border-t font-bold text-sm">
+   927→   927→                  <span>{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</span>
+   928→   928→                  <span></span><span></span>
+   929→   929→                  <span></span>
+   930→   930→                  <span className="text-right text-emerald-700">{fmt(totalPrice)}</span>
+   931→   931→                  <span></span>
+   932→   932→                </div>
+   933→   933→              </div>
+   934→   934→            )}
+   935→   935→
+   936→   936→            {/* Empty selected state */}
+   937→   937→            {store.cameraSelections.length === 0 && !productsLoading && filteredProducts.length > 0 && (
+   938→   938→              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+   939→   939→                <Lightbulb className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+   940→   940→                <p className="text-xs text-blue-700">Click on any product above to add it to your configuration. You can add the same product multiple times — click again to increase quantity, or use +/- in the table below.</p>
+   941→   941→              </div>
+   942→   942→            )}
+   943→   943→          </CardContent>
+   944→   944→        )}
+   945→   945→      </Card>
+   946→   946→
+   947→   947→      {/* ═══ STEP 7: DVR/NVR SUGGESTION ═══ */}
+   948→   948→      <Card className={cn("border-2 transition-colors", stepActive(7) ? "border-emerald-300" : "border-muted opacity-60")}>
+   949→   949→        <CardHeader className="pb-3">
+   950→   950→          <StepBadge num={7} title="Recorder (DVR/NVR) — Auto Suggested" active={stepActive(7)} done={stepDone(7)} />
+   951→   951→        </CardHeader>
+   952→   952→        {stepActive(7) && (
+   953→   953→          <CardContent className="pt-0 space-y-4">
+   954→   954→            <p className="text-sm text-muted-foreground">Based on your <strong>{totalCameras} camera{totalCameras !== 1 ? "s" : ""}</strong> and <strong>{store.cameraSystem}</strong> system, here is the recommended recorder configuration:</p>
+   955→   955→            {recorderConfig ? (
+   956→   956→              <div className="space-y-3">
+   957→   957→                {/* Summary */}
+   958→   958→                <Card className={cn("border-2", store.cameraSystem === "analog" ? "border-sky-200 bg-sky-50" : store.cameraSystem === "ip" ? "border-emerald-200 bg-emerald-50" : "border-violet-200 bg-violet-50")}>
+   959→   959→                  <CardContent className="p-5">
+   960→   960→                    <div className="flex items-start gap-4">
+   961→   961→                      <div className={cn("p-3 rounded-xl shrink-0", store.cameraSystem === "analog" ? "bg-sky-100 text-sky-700" : store.cameraSystem === "ip" ? "bg-emerald-100 text-emerald-700" : "bg-violet-100 text-violet-700")}>
+   962→   962→                        {store.cameraSystem === "analog" ? <HardDrive className="h-6 w-6" /> : store.cameraSystem === "ip" ? <Server className="h-6 w-6" /> : <Cloud className="h-6 w-6" />}
+   963→   963→                      </div>
+   964→   964→                      <div className="flex-1">
+   965→   965→                        <div className="flex items-center gap-2 mb-1">
+   966→   966→                          <h3 className="font-bold">{recorderConfig.type}</h3>
+   967→   967→                          {recorderConfig.units.length > 0 && <Badge variant="secondary">{recorderConfig.units.length} unit{recorderConfig.units.length > 1 ? "s" : ""} required</Badge>}
+   968→   968→                        </div>
+   969→   969→                        <p className="text-sm text-muted-foreground">{recorderConfig.summary}</p>
+   970→   970→                        {store.cameraSystem === "analog" && (
+   971→   971→                          <div className="mt-2 bg-amber-50 border border-amber-200 rounded-lg p-2 flex items-start gap-2">
+   972→   972→                            <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+   973→   973→                            <p className="text-xs text-amber-700">Match the DVR brand with camera brand — Hikvision cameras need Hikvision DVR (HD-TVI), Dahua cameras need Dahua DVR (HD-CVI). They are NOT cross-compatible.</p>
+   974→   974→                          </div>
+   975→   975→                        )}
+   976→   976→                        {recorderConfig.exceedsMax && (
+   977→   977→                          <div className="mt-2 bg-red-50 border border-red-200 rounded-lg p-2 flex items-start gap-2">
+   978→   978→                            <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+   979→   979→                            <p className="text-xs text-red-700">
+   980→   980→                              {totalCameras} cameras exceed the maximum available single {recorderConfig.type} ({store.cameraSystem === "analog" ? "32" : "256"} channels). Multiple {recorderConfig.type} units are required as shown above.
+   981→   981→                            </p>
+   982→   982→                          </div>
+   983→   983→                        )}
+   984→   984→                      </div>
+   985→   985→                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+   986→   986→                    </div>
+   987→   987→                  </CardContent>
+   988→   988→                </Card>
+   989→   989→
+   990→   990→                {/* Individual unit cards — always show when multiple units OR when exceeds max */}
+   991→   991→                {(recorderConfig.units.length > 1 || recorderConfig.exceedsMax) && (
+   992→   992→                  <div>
+   993→   993→                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Unit Breakdown</p>
+   994→   994→                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+   995→   995→                      {recorderConfig.units.map((unit, i) => (
+   996→   996→                        <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3 border">
+   997→   997→                          <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+   998→   998→                            <HardDrive className="h-5 w-5" />
+   999→   999→                          </div>
+  1000→  1000→                          <div>
+  1001→  1001→                            <p className="text-sm font-semibold">{unit.channels}-Channel {recorderConfig.type} #{i + 1}</p>
+  1002→  1002→                            <p className="text-xs text-muted-foreground">{unit.usedPorts} camera{unit.usedPorts !== 1 ? "s" : ""} connected, {unit.channels - unit.usedPorts} channel{unit.channels - unit.usedPorts !== 1 ? "s" : ""} spare</p>
+  1003→  1003→                          </div>
+  1004→  1004→                        </div>
+  1005→  1005→                      ))}
+  1006→  1006→                    </div>
+  1007→  1007→                  </div>
+  1008→  1008→                )}
+  1009→  1009→              </div>
+  1010→  1010→            ) : (
+  1011→  1011→              <div className="bg-muted/50 rounded-xl p-6 text-center">
+  1012→  1012→                <Camera className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+  1013→  1013→                <p className="text-sm text-muted-foreground">Add cameras in Step 6 to see the recorder recommendation.</p>
+  1014→  1014→              </div>
+  1015→  1015→            )}
+  1016→  1016→          </CardContent>
+  1017→  1017→        )}
+  1018→  1018→      </Card>
+  1019→  1019→
+  1020→  1020→      {/* ═══ STEP 8: POWER SUPPLY ═══ */}
+  1021→  1021→      <Card className={cn("border-2 transition-colors", stepActive(8) ? "border-emerald-300" : "border-muted opacity-60")}>
+  1022→  1022→        <CardHeader className="pb-3">
+  1023→  1023→          <StepBadge num={8} title="Power Supply — Auto Suggested" active={stepActive(8)} done={stepDone(8)} />
+  1024→  1024→        </CardHeader>
+  1025→  1025→        {stepActive(8) && (
+  1026→  1026→          <CardContent className="pt-0 space-y-4">
+  1027→  1027→            <p className="text-sm text-muted-foreground">
+  1028→  1028→              {store.cameraSystem === "wifi"
+  1029→  1029→                ? "WiFi cameras are powered by the included adapter. No separate power supply is needed."
+  1030→  1030→                : `Based on your ${totalCameras} camera${totalCameras !== 1 ? "s" : ""}, here is the recommended power solution:`}
+  1031→  1031→            </p>
+  1032→  1032→            {store.cameraSystem === "wifi" ? (
+  1033→  1033→              <Card className="border-2 border-violet-200 bg-violet-50">
+  1034→  1034→                <CardContent className="p-4 flex items-center gap-3">
+  1035→  1035→                  <Plug className="h-5 w-5 text-violet-500" />
+  1036→  1036→                  <div>
+  1037→  1037→                    <p className="font-semibold text-sm">No Separate Power Supply Needed</p>
+  1038→  1038→                    <p className="text-xs text-muted-foreground">Each WiFi camera comes with its own 12V power adapter. Just plug into a nearby power outlet.</p>
+  1039→  1039→                  </div>
+  1040→  1040→                </CardContent>
+  1041→  1041→              </Card>
+  1042→  1042→            ) : powerConfig ? (
+  1043→  1043→              <div className="space-y-3">
+  1044→  1044→                <Card className="border-2 border-amber-200 bg-amber-50">
+  1045→  1045→                  <CardContent className="p-5">
+  1046→  1046→                    <div className="flex items-start gap-4">
+  1047→  1047→                      <div className="bg-amber-100 text-amber-700 p-3 rounded-xl shrink-0">
+  1048→  1048→                        {store.cameraSystem === "analog" ? <Zap className="h-6 w-6" /> : <Router className="h-6 w-6" />}
+  1049→  1049→                      </div>
+  1050→  1050→                      <div className="flex-1">
+  1051→  1051→                        <div className="flex items-center gap-2 mb-1">
+  1052→  1052→                          <h3 className="font-bold">{store.cameraSystem === "analog" ? "SMPS Power Supply" : "PoE Switch"}</h3>
+  1053→  1053→                          {powerConfig.units.length > 0 && <Badge variant="secondary">{powerConfig.units.length} unit{powerConfig.units.length > 1 ? "s" : ""} required</Badge>}
+  1054→  1054→                          {hasAbove2mp && store.cameraSystem === "ip" && <Badge className="bg-amber-600 text-white">Gigabit</Badge>}
+  1055→  1055→                        </div>
+  1056→  1056→                        <p className="text-sm text-muted-foreground">{powerConfig.summary}</p>
+  1057→  1057→                        {hasAbove2mp && store.cameraSystem === "ip" && (
+  1058→  1058→                          <div className="mt-2 bg-amber-100 border border-amber-300 rounded-lg p-2">
+  1059→  1059→                            <p className="text-xs text-amber-700 flex items-center gap-1"><Info className="h-3 w-3" /> Gigabit PoE switch is required because you selected cameras above 2MP which need higher bandwidth.</p>
+  1060→  1060→                          </div>
+  1061→  1061→                        )}
+  1062→  1062→                      </div>
+  1063→  1063→                      <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+  1064→  1064→                    </div>
+  1065→  1065→                  </CardContent>
+  1066→  1066→                </Card>
+  1067→  1067→
+  1068→  1068→                {/* Individual unit cards */}
+  1069→  1069→                {powerConfig.units.length > 1 && (
+  1070→  1070→                  <div>
+  1071→  1071→                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Unit Breakdown</p>
+  1072→  1072→                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+  1073→  1073→                      {powerConfig.units.map((unit, i) => (
+  1074→  1074→                        <div key={i} className="flex items-center gap-3 bg-muted/50 rounded-lg p-3 border">
+  1075→  1075→                          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", store.cameraSystem === "analog" ? "bg-amber-100 text-amber-700" : "bg-emerald-100 text-emerald-700")}>
+  1076→  1076→                            {store.cameraSystem === "analog" ? <Zap className="h-5 w-5" /> : <Router className="h-5 w-5" />}
+  1077→  1077→                          </div>
+  1078→  1078→                          <div>
+  1079→  1079→                            <p className="text-sm font-semibold">{unit.ports}-{store.cameraSystem === "analog" ? "Channel SMPS" : "Port PoE Switch"} #{i + 1}</p>
+  1080→  1080→                            <p className="text-xs text-muted-foreground">{unit.usedPorts} camera{unit.usedPorts !== 1 ? "s" : ""} connected, {unit.ports - unit.usedPorts} port{unit.ports - unit.usedPorts !== 1 ? "s" : ""} spare</p>
+  1081→  1081→                            {unit.variant === "giga" && <Badge className="mt-1 bg-amber-600 text-white text-[10px]">Gigabit</Badge>}
+  1082→  1082→                          </div>
+  1083→  1083→                        </div>
+  1084→  1084→                      ))}
+  1085→  1085→                    </div>
+  1086→  1086→                  </div>
+  1087→  1087→                )}
+  1088→  1088→
+  1089→  1089→                {store.cameraSystem === "ip" && totalCameras > 24 && (
+  1090→  1090→                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-2">
+  1091→  1091→                    <Info className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+  1092→  1092→                    <p className="text-xs text-blue-700">PoE switches are available in 4, 8, 16, and 24-port variants in the market. For {totalCameras} cameras, we recommend {powerConfig.units.length}x PoE switches. 32-port and 48-port PoE switches do not exist.</p>
+  1093→  1093→                  </div>
+  1094→  1094→                )}
+  1095→  1095→              </div>
+  1096→  1096→            ) : (
+  1097→  1097→              <div className="bg-muted/50 rounded-xl p-6 text-center">
+
+[showing lines 598-1097 of 1475; use offset=1098 with limit to continue reading]
