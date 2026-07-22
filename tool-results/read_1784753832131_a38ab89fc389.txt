@@ -1,0 +1,741 @@
+     1→"use client";
+     2→
+     3→import { useEffect, useRef, useState } from "react";
+     4→import { cn } from "@/lib/utils";
+     5→import { motion, useInView } from "framer-motion";
+     6→import { Button } from "@/components/ui/button";
+     7→import { Card, CardContent } from "@/components/ui/card";
+     8→import {
+     9→  Target,
+    10→  Eye,
+    11→  Heart,
+    12→  ShieldCheck,
+    13→  ArrowRight,
+    14→  Users,
+    15→  Building2,
+    16→  Clock,
+    17→  ThumbsUp,
+    18→ Award,
+    19→  Quote,
+    20→  Star,
+    21→  CheckCircle2,
+    22→ Phone,
+    23→  TrendingUp,
+    24→  MapPin,
+    25→  Briefcase,
+    26→} from "lucide-react";
+    27→import { useRouter } from "next/navigation";
+    28→
+    29→/* ------------------------------------------------------------------ */
+    30→/*  Animation helpers                                                  */
+    31→/* ------------------------------------------------------------------ */
+    32→const fadeUp = {
+    33→  initial: { opacity: 0, y: 24 },
+    34→  whileInView: { opacity: 1, y: 0 },
+    35→  viewport: { once: true } as const,
+    36→  transition: { duration: 0.55 },
+    37→};
+    38→
+    39→const staggerContainer = {
+    40→  initial: {},
+    41→  whileInView: { transition: { staggerChildren: 0.1 } },
+    42→  viewport: { once: true } as const,
+    43→};
+    44→
+    45→const staggerItem = {
+    46→  initial: { opacity: 0, y: 20 },
+    47→  whileInView: { opacity: 1, y: 0 },
+    48→  transition: { duration: 0.45 },
+    49→};
+    50→
+    51→/* ------------------------------------------------------------------ */
+    52→/*  Animated Counter                                                   */
+    53→/* ------------------------------------------------------------------ */
+    54→function AnimatedCounter({
+    55→  target,
+    56→  suffix = "",
+    57→  prefix = "",
+    58→  duration = 2000,
+    59→}: {
+    60→  target: number;
+    61→  suffix?: string;
+    62→  prefix?: string;
+    63→  duration?: number;
+    64→}) {
+    65→  const ref = useRef<HTMLSpanElement>(null);
+    66→  const inView = useInView(ref, { once: true, margin: "-50px" });
+    67→  const [count, setCount] = useState(0);
+    68→
+    69→  useEffect(() => {
+    70→    if (!inView) return;
+    71→    let start = 0;
+    72→    const step = Math.ceil(target / (duration / 16));
+    73→    const timer = setInterval(() => {
+    74→      start += step;
+    75→      if (start >= target) {
+    76→        setCount(target);
+    77→        clearInterval(timer);
+    78→      } else {
+    79→        setCount(start);
+    80→      }
+    81→    }, 16);
+    82→    return () => clearInterval(timer);
+    83→  }, [inView, target, duration]);
+    84→
+    85→  return (
+    86→    <span ref={ref}>
+    87→      {prefix}{count.toLocaleString("en-IN")}{suffix}
+    88→    </span>
+    89→  );
+    90→}
+    91→
+    92→/* ------------------------------------------------------------------ */
+    93→/*  Data                                                               */
+    94→/* ------------------------------------------------------------------ */
+    95→const PILLARS = [
+    96→  {
+    97→    icon: <Target className="h-7 w-7" />,
+    98→    title: "Our Mission",
+    99→    description:
+   100→      "To provide reliable, affordable, and cutting-edge CCTV security solutions that protect homes, businesses, and communities across India. We strive to democratize access to professional-grade surveillance technology, ensuring that every property owner can benefit from advanced security regardless of their technical expertise or budget constraints.",
+   101→  },
+   102→  {
+   103→    icon: <Eye className="h-7 w-7" />,
+   104→    title: "Our Vision",
+   105→    description:
+   106→      "To become India's most trusted CCTV equipment supplier — known for genuine products, competitive pricing, and tools that help customers make informed decisions. We envision a future where security technology is seamlessly integrated into every home and business, powered by expert guidance and transparent practices.",
+   107→  },
+   108→  {
+   109→    icon: <Heart className="h-7 w-7" />,
+   110→    title: "Our Values",
+   111→    description:
+   112→      "Integrity, transparency, and a customer-first approach drive everything we do. We believe in delivering real value, not just products. Every interaction is guided by our commitment to honest advice, genuine products, and long-term relationships built on trust and reliability.",
+   113→  },
+   114→];
+   115→
+   116→const STATS = [
+   117→  {
+   118→    icon: <ShieldCheck className="h-6 w-6" />,
+   119→    value: 500,
+   120→    suffix: "+",
+   121→    label: "Products Delivered",
+   122→    description: "Security systems installed nationwide",
+   123→  },
+   124→  {
+   125→    icon: <Building2 className="h-6 w-6" />,
+   126→    value: 10,
+   127→    suffix: "+",
+   128→    label: "Brand Partners",
+   129→    description: "Authorized dealer partnerships",
+   130→  },
+   131→  {
+   132→    icon: <Clock className="h-6 w-6" />,
+   133→    value: 5,
+   134→    suffix: "+",
+   135→    label: "Years Experience",
+   136→    description: "In electronic security industry",
+   137→  },
+   138→  {
+   139→    icon: <ThumbsUp className="h-6 w-6" />,
+   140→    value: 98,
+   141→    suffix: "%",
+   142→    label: "Customer Satisfaction",
+   143→    description: "Based on post-installation surveys",
+   144→  },
+   145→];
+   146→
+   147→const TIMELINE = [
+   148→  {
+   149→    year: "2020",
+   150→    title: "Founded",
+   151→    description:
+   152→      "ConnectZ was established with a vision to make professional CCTV security accessible to everyone in India, starting as a small local supplier.",
+   153→    icon: <Briefcase className="h-5 w-5" />,
+   154→  },
+   155→  {
+   156→    year: "2021",
+   157→    title: "Brand Partnerships",
+   158→    description:
+   159→      "Secured authorized dealer partnerships with Hikvision, Dahua, Ezviz, and Imou, expanding our product catalog significantly.",
+   160→    icon: <TrendingUp className="h-5 w-5" />,
+   161→  },
+   162→  {
+   163→    year: "2023",
+   164→    title: "Digital Platform Launch",
+   165→    description:
+   166→      "Launched our e-commerce platform with the interactive CCTV Builder tool and comprehensive Learning Center for customer education.",
+   167→    icon: <Building2 className="h-5 w-5" />,
+   168→  },
+   169→  {
+   170→    year: "2024",
+   171→    title: "500+ Installations",
+   172→    description:
+   173→      "Crossed the milestone of 500 successful security system deliveries with a 98% customer satisfaction rate across India.",
+   174→    icon: <Award className="h-5 w-5" />,
+   175→  },
+   176→  {
+   177→    year: "2025",
+   178→    title: "AI-Powered Solutions",
+   179→    description:
+   180→      "Expanded into AI-powered surveillance with smart analytics, and introduced advanced comparison tools and consultation services.",
+   181→    icon: <Star className="h-5 w-5" />,
+   182→  },
+   183→];
+   184→
+   185→const TEAM = [
+   186→  {
+   187→    name: "Rajesh Kumar",
+   188→    role: "Founder & CEO",
+   189→    initials: "RK",
+   190→    bio: "15+ years in electronic security. Founded ConnectZ to bridge the gap between quality CCTV products and Indian customers.",
+   191→  },
+   192→  {
+   193→    name: "Priya Sharma",
+   194→    role: "Operations Head",
+   195→    initials: "PS",
+   196→    bio: "Expert in supply chain management ensuring genuine products reach customers with full warranty coverage.",
+   197→  },
+   198→  {
+   199→    name: "Amit Verma",
+   200→    role: "Lead Technician",
+   201→    initials: "AV",
+   202→    bio: "Certified CCTV installation specialist with 10+ years of hands-on experience in residential and commercial setups.",
+   203→  },
+   204→  {
+   205→    name: "Sneha Patel",
+   206→    role: "Customer Support Lead",
+   207→    initials: "SP",
+   208→    bio: "Passionate about customer experience, ensuring every query is resolved within 24 hours with personalized solutions.",
+   209→  },
+   210→];
+   211→
+   212→const TESTIMONIALS = [
+   213→  {
+   214→    name: "Vikram Reddy",
+   215→    role: "Homeowner, Hyderabad",
+   216→    text: "ConnectZ helped me design the perfect 4-camera system for my home. The Builder tool was incredibly easy to use, and the team ensured seamless installation. Highly recommended!",
+   217→    rating: 5,
+   218→  },
+   219→  {
+   220→    name: "Anita Deshmukh",
+   221→    role: "Restaurant Owner, Pune",
+   222→    text: "We needed a comprehensive CCTV system for our restaurant. ConnectZ provided genuine Hikvision cameras at the best price, and their after-sales support has been outstanding.",
+   223→    rating: 5,
+   224→  },
+   225→  {
+   226→    name: "Suresh Menon",
+   227→    role: "Warehouse Manager, Chennai",
+   228→    text: "As a business owner, security is paramount. ConnectZ understood our requirements and delivered a 16-camera setup that covers every corner of our warehouse. Professional service!",
+   229→    rating: 5,
+   230→  },
+   231→];
+   232→
+   233→const BRANDS = ["Hikvision", "Dahua", "Ezviz", "Imou", "CP Plus", "Godrej"];
+   234→
+   235→const CERTIFICATIONS = [
+   236→  "Authorized Hikvision Dealer",
+   237→  "Authorized Dahua Partner",
+   238→  "Certified CCTV Installer",
+   239→  "Razorpay Verified Merchant",
+   240→];
+   241→
+   242→/* ------------------------------------------------------------------ */
+   243→/*  About Page                                                         */
+   244→/* ------------------------------------------------------------------ */
+   245→export function AboutPage() {
+   246→  const router = useRouter();
+   247→
+   248→  return (
+   249→    <div className="min-h-screen bg-background">
+   250→          HERO
+   251→      Section
+   252→      <section className="relative overflow-hidden px-6 lg:px-8 py-24 sm:py-32">
+   253→        <div
+   254→          className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-background/95 to-background/80 before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,oklch(0.6_0.15_160/0.12),transparent_70%)]"
+   255→        />
+   256→        <div className="relative z-10 mx-auto max-w-4xl text-center">
+   257→          <motion.div
+   258→            initial={{ opacity: 0, y: 20 }}
+   259→            animate={{ opacity: 1, y: 0 }}
+   260→            transition={{ duration: 0.5 }}
+   261→            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-6"
+   262→          >
+   263→            <ShieldCheck className="h-4 w-4" />
+   264→            Trusted Since 2020
+   265→          </motion.div>
+   266→
+   267→          <motion.h1
+   268→            initial={{ opacity: 0, y: 20 }}
+   269→            animate={{ opacity: 1, y: 0 }}
+   270→            transition={{ duration: 0.5, delay: 0.1 }}
+   271→            className="text-4xl sm:text-5xl font-extrabold tracking-tight"
+   272→          >
+   273→            About{" "}
+   274→            <span className="text-primary">ConnectZ</span>
+   275→          </motion.h1>
+   276→
+   277→          <motion.p
+   278→            initial={{ opacity: 0, y: 20 }}
+   279→            animate={{ opacity: 1, y: 0 }}
+   280→            transition={{ duration: 0.5, delay: 0.2 }}
+   281→            className="mt-6 text-lg leading-relaxed text-muted-foreground max-w-2xl mx-auto"
+   282→          >
+   283→            ConnectZ is a trusted CCTV equipment supplier specializing in
+   284→            security cameras, recorders, and accessories. We provide genuine
+   285→            products from top brands along with interactive tools like our CCTV
+   286→            Builder and Learning Center to help you design the perfect security
+   287→            setup.
+   288→          </motion.p>
+   289→
+   290→          
+   291→          <motion.div
+   292→            initial={{ opacity: 0, y: 20 }}
+   293→            animate={{ opacity: 1, y: 0 }}
+   294→            transition={{ duration: 0.5, delay: 0.3 }}
+   295→            className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+   296→          >
+   297→            <span className="flex items-center gap-1.5">
+   298→              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   299→              100% Genuine
+   300→            </span>
+   301→            <span className="flex items-center gap-1.5">
+   302→              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+   303→              Full Warranty
+   304→            </span>
+   305→            <span className="flex items-center gap-1.5">
+   306→              <Phone className="h-4 w-4 text-emerald-600" />
+   307→              Expert Support
+   308→            </span>
+   309→            <span className="flex items-center gap-1.5">
+   310→              <MapPin className="h-4 w-4 text-emerald-600" />
+   311→              Pan-India Delivery
+   312→            </span>
+   313→          </motion.div>
+   314→        </div>
+   315→      </section>
+   316→
+   317→          MISSION / VISION / VALUES
+   318→      Section
+   319→      <section className="px-6 lg:px-8 py-24">
+   320→        <div className="mx-auto max-w-7xl">
+   321→          <motion.div {...fadeUp} className="text-center mb-14">
+   322→            <h2 className="text-3xl font-bold sm:text-4xl">What Drives Us</h2>
+   323→            <p className="mt-3 text-lg text-muted-foreground">
+   324→              The principles behind everything we do
+   325→            </p>
+   326→          </motion.div>
+   327→
+   328→          <motion.div
+   329→            {...staggerContainer}
+   330→            className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
+   331→          >
+   332→            {PILLARS.map((item) => (
+   333→              <motion.div key={item.title} {...staggerItem}>
+   334→                <Card className="h-full rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+   335→                  <CardContent className="p-8 space-y-5">
+   336→                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+   337→                      {item.icon}
+   338→                    </div>
+   339→                    <h3 className="text-xl font-semibold">{item.title}</h3>
+   340→                    <p className="text-sm leading-relaxed text-muted-foreground">
+   341→                      {item.description}
+   342→                    </p>
+   343→                  </CardContent>
+   344→                </Card>
+   345→              </motion.div>
+   346→            ))}
+   347→          </motion.div>
+   348→        </div>
+   349→      </section>
+   350→
+   351→          WHO WE ARE
+   352→      Section
+   353→      <section className="px-6 lg:px-8 py-24 bg-muted/30">
+   354→        <div className="mx-auto max-w-3xl">
+   355→          <motion.div {...fadeUp} className="space-y-6">
+   356→            <h2 className="text-3xl font-bold sm:text-4xl text-center">
+   357→              Who We Are
+   358→            </h2>
+   359→            <p className="text-muted-foreground leading-relaxed">
+   360→              ConnectZ was founded with a single goal: to make professional-grade
+   361→              CCTV equipment accessible to everyone. Based in India, we supply
+   362→              homeowners, business owners, and industrial clients with genuine
+   363→              security products from authorized channels. Our journey began with
+   364→              a small shop and has grown into a trusted online platform serving
+   365→              customers across the nation.
+   366→            </p>
+   367→            <p className="text-muted-foreground leading-relaxed">
+   368→              With over 5 years of experience in the electronic security
+   369→              industry, we have served more than 500 customers across India. We
+   370→              are authorized dealers for top brands including Hikvision, Dahua,
+   371→              CP Plus, Ezviz, Imou, and Godrej, ensuring every product we sell
+   372→              is 100% genuine with full manufacturer warranty coverage. Our team
+   373→              carefully vets every supplier and product before it reaches our
+   374→              catalog.
+   375→            </p>
+   376→            <p className="text-muted-foreground leading-relaxed">
+   377→              Beyond just selling products, we provide powerful tools — our CCTV
+   378→              Builder helps you design a complete security system with an instant
+   379→              quote, the Learning Center teaches you everything about camera types
+   380→              and setup, and the Compare tool lets you evaluate cameras
+   381→              side-by-side. Our commitment to quality and transparency has earned
+   382→              us a 98% satisfaction rate, making us one of the most trusted names
+   383→              in Indian CCTV retail.
+   384→            </p>
+   385→          </motion.div>
+   386→        </div>
+   387→      </section>
+   388→
+   389→          ANIMATED STATS
+   390→      Section
+   391→      <section className="px-6 lg:px-8 py-24">
+   392→        <div className="mx-auto max-w-7xl">
+   393→          <motion.div {...fadeUp} className="text-center mb-14">
+   394→            <h2 className="text-3xl font-bold sm:text-4xl">By The Numbers</h2>
+   395→            <p className="mt-3 text-lg text-muted-foreground">
+   396→              Our growth reflects our commitment to excellence
+   397→            </p>
+   398→          </motion.div>
+   399→
+   400→          <motion.div
+   401→            {...staggerContainer}
+   402→            className="grid gap-8 grid-cols-2 lg:grid-cols-4"
+   403→          >
+   404→            {STATS.map((stat) => (
+   405→              <motion.div key={stat.label} {...staggerItem}>
+   406→                <Card className="h-full rounded-2xl border shadow-sm text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+   407→                  <CardContent className="p-8 space-y-3">
+   408→                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+   409→                      {stat.icon}
+   410→                    </div>
+   411→                    <p className="text-4xl font-extrabold">
+   412→                      <AnimatedCounter
+   413→                        target={stat.value}
+   414→                        suffix={stat.suffix}
+   415→                      />
+   416→                    </p>
+   417→                    <p className="font-semibold">{stat.label}</p>
+   418→                    <p className="text-xs text-muted-foreground">
+   419→                      {stat.description}
+   420→                    </p>
+   421→                  </CardContent>
+   422→                </Card>
+   423→              </motion.div>
+   424→            ))}
+   425→          </motion.div>
+   426→        </div>
+   427→      </section>
+   428→
+   429→          TIMELINE
+   430→      Section
+   431→      <section className="px-6 lg:px-8 py-24 bg-muted/30">
+   432→        <div className="mx-auto max-w-4xl">
+   433→          <motion.div {...fadeUp} className="text-center mb-14">
+   434→            <h2 className="text-3xl font-bold sm:text-4xl">Our Journey</h2>
+   435→            <p className="mt-3 text-lg text-muted-foreground">
+   436→              Key milestones in ConnectZ&apos;s growth
+   437→            </p>
+   438→          </motion.div>
+   439→
+   440→          <div className="relative">
+   441→            
+   442→            <div className="absolute left-6 sm:left-1/2 sm:-translate-x-px top-0 bottom-0 w-0.5 bg-border" aria-hidden="true" />
+   443→
+   444→            {TIMELINE.map((item, i) => (
+   445→              <motion.div
+   446→                key={item.year}
+   447→                initial={{ opacity: 0, y: 24 }}
+   448→                whileInView={{ opacity: 1, y: 0 }}
+   449→                viewport={{ once: true }}
+   450→                transition={{ duration: 0.5, delay: i * 0.1 }}
+   451→                className={cn(
+   452→                  "relative flex items-start gap-6 sm:gap-0 pb-12 last:pb-0",
+   453→                  i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"
+   454→                )}
+   455→              >
+   456→                
+   457→                <div
+   458→                  className={cn(
+   459→                    "absolute left-6 sm:left-1/2 -translate-x-1/2 z-10",
+   460→                    "flex h-10 w-10 items-center justify-center rounded-full",
+   461→                    "bg-background border-2 border-primary text-primary"
+   462→                  )}
+   463→                >
+   464→                  {item.icon}
+   465→                </div>
+   466→
+   467→                
+   468→                <div
+   469→                  className={cn(
+   470→                    "ml-16 sm:ml-0 sm:w-[calc(50%-2rem)]",
+   471→                    i % 2 === 0 ? "sm:pr-8 sm:text-right" : "sm:pl-8 sm:text-left"
+   472→                  )}
+   473→                >
+   474→                  <span className="text-sm font-bold text-primary">{item.year}</span>
+   475→                  <h3 className="text-lg font-semibold mt-1">{item.title}</h3>
+   476→                  <p className="text-sm text-muted-foreground leading-relaxed mt-2">
+   477→                    {item.description}
+   478→                  </p>
+   479→                </div>
+   480→              </motion.div>
+   481→            ))}
+   482→          </div>
+   483→        </div>
+   484→      </section>
+   485→
+   486→          BRAND PARTNERS & CERTIFICATIONS
+   487→      Section
+   488→      <section className="px-6 lg:px-8 py-24">
+   489→        <div className="mx-auto max-w-7xl">
+   490→          <motion.div {...fadeUp} className="text-center mb-14">
+   491→            <h2 className="text-3xl font-bold sm:text-4xl">Our Partners</h2>
+   492→            <p className="mt-3 text-lg text-muted-foreground">
+   493→              Authorized dealer for industry-leading brands
+   494→            </p>
+   495→          </motion.div>
+   496→
+   497→          <motion.div
+   498→            {...staggerContainer}
+   499→            className="grid gap-6 grid-cols-3 sm:grid-cols-6"
+   500→          >
+   501→            {BRANDS.map((brand) => (
+   502→              <motion.div key={brand} {...staggerItem}>
+   503→                <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+   504→                  <CardContent className="p-4 sm:p-6 flex items-center justify-center h-20 sm:h-24">
+   505→                    <span className="text-sm sm:text-base font-bold text-muted-foreground/70 text-center">
+   506→                      {brand}
+   507→                    </span>
+   508→                  </CardContent>
+   509→                </Card>
+   510→              </motion.div>
+   511→            ))}
+   512→          </motion.div>
+   513→
+   514→          
+   515→          <motion.div
+   516→            {...fadeUp}
+   517→            className="mt-12 flex flex-wrap items-center justify-center gap-4"
+   518→          >
+   519→            {CERTIFICATIONS.map((cert) => (
+   520→              <div
+   521→                key={cert}
+   522→                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-sm font-medium"
+   523→              >
+   524→                <Award className="h-4 w-4" />
+   525→                {cert}
+   526→              </div>
+   527→            ))}
+   528→          </motion.div>
+   529→        </div>
+   530→      </section>
+   531→
+   532→          TEAM
+   533→      Section
+   534→      <section className="px-6 lg:px-8 py-24 bg-muted/30">
+   535→        <div className="mx-auto max-w-7xl">
+   536→          <motion.div {...fadeUp} className="text-center mb-14">
+   537→            <h2 className="text-3xl font-bold sm:text-4xl">Meet Our Team</h2>
+   538→            <p className="mt-3 text-lg text-muted-foreground">
+   539→              Dedicated professionals behind ConnectZ
+   540→            </p>
+   541→          </motion.div>
+   542→
+   543→          <motion.div
+   544→            {...staggerContainer}
+   545→            className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+   546→          >
+   547→            {TEAM.map((member) => (
+   548→              <motion.div key={member.name} {...staggerItem}>
+   549→                <Card className="h-full rounded-2xl border shadow-sm text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+   550→                  <CardContent className="p-8 space-y-4">
+   551→                    <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground text-2xl font-bold ring-4 ring-primary/10">
+   552→                      {member.initials}
+   553→                    </div>
+   554→                    <div>
+   555→                      <h3 className="font-semibold text-lg">{member.name}</h3>
+   556→                      <p className="text-sm text-primary font-medium mt-0.5">
+   557→                        {member.role}
+   558→                      </p>
+   559→                    </div>
+   560→                    <p className="text-sm text-muted-foreground leading-relaxed">
+   561→                      {member.bio}
+   562→                    </p>
+   563→                  </CardContent>
+   564→                </Card>
+   565→              </motion.div>
+   566→            ))}
+   567→          </motion.div>
+   568→        </div>
+   569→      </section>
+   570→
+   571→          TESTIMONIALS
+   572→      Section
+   573→      <section className="px-6 lg:px-8 py-24">
+   574→        <div className="mx-auto max-w-7xl">
+   575→          <motion.div {...fadeUp} className="text-center mb-14">
+   576→            <h2 className="text-3xl font-bold sm:text-4xl">
+   577→              What Our Customers Say
+   578→            </h2>
+   579→            <p className="mt-3 text-lg text-muted-foreground">
+   580→              Real feedback from our valued customers
+   581→            </p>
+   582→          </motion.div>
+   583→
+   584→          <motion.div
+   585→            {...staggerContainer}
+   586→            className="grid gap-8 md:grid-cols-3"
+   587→          >
+   588→            {TESTIMONIALS.map((t) => (
+   589→              <motion.div key={t.name} {...staggerItem}>
+   590→                <Card className="h-full rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+   591→                  <CardContent className="p-8 space-y-5">
+   592→                    <Quote className="h-8 w-8 text-primary/20" />
+   593→                    <p className="text-sm leading-relaxed text-muted-foreground">
+   594→                      &ldquo;{t.text}&rdquo;
+   595→                    </p>
+   596→                    <div className="flex items-center gap-1">
+   597→                      {Array.from({ length: t.rating }).map((_, i) => (
+   598→                        <Star
+   599→                          key={i}
+   600→                          className="h-4 w-4 text-amber-400 fill-amber-400"
+   601→                        />
+   602→                      ))}
+   603→                    </div>
+   604→                    <div className="flex items-center gap-3">
+   605→                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary text-sm font-bold">
+   606→                        {t.name
+   607→                          .split(" ")
+   608→                          .map((n) => n[0])
+   609→                          .join("")}
+   610→                      </div>
+   611→                      <div>
+   612→                        <p className="text-sm font-semibold">{t.name}</p>
+   613→                        <p className="text-xs text-muted-foreground">
+   614→                          {t.role}
+   615→                        </p>
+   616→                      </div>
+   617→                    </div>
+   618→                  </CardContent>
+   619→                </Card>
+   620→              </motion.div>
+   621→            ))}
+   622→          </motion.div>
+   623→        </div>
+   624→      </section>
+   625→
+   626→          WHY CHOOSE US
+   627→      Section
+   628→      <section className="px-6 lg:px-8 py-24 bg-muted/30">
+   629→        <div className="mx-auto max-w-7xl">
+   630→          <motion.div {...fadeUp} className="text-center mb-14">
+   631→            <h2 className="text-3xl font-bold sm:text-4xl">Why Choose ConnectZ</h2>
+   632→            <p className="mt-3 text-lg text-muted-foreground">
+   633→              What sets us apart from the rest
+   634→            </p>
+   635→          </motion.div>
+   636→
+   637→          <motion.div
+   638→            {...staggerContainer}
+   639→            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+   640→          >
+   641→            {[
+   642→              {
+   643→                icon: <ShieldCheck className="h-6 w-6" />,
+   644→                title: "100% Genuine Products",
+   645→                desc: "Every product comes with manufacturer warranty and is sourced through authorized channels only.",
+   646→              },
+   647→              {
+   648→                icon: <Target className="h-6 w-6" />,
+   649→                title: "Expert Guidance",
+   650→                desc: "Our CCTV Builder and Learning Center help you make informed decisions tailored to your needs.",
+   651→              },
+   652→              {
+   653→                icon: <Truck className="h-6 w-6" />,
+   654→                title: "Pan-India Delivery",
+   655→                desc: "Fast and reliable shipping across India with real-time tracking and secure packaging.",
+   656→              },
+   657→              {
+   658→                icon: <Users className="h-6 w-6" />,
+   659→                title: "Dedicated Support",
+   660→                desc: "Our team of experts is available 7 days a week via phone, email, and WhatsApp for any assistance.",
+   661→              },
+   662→              {
+   663→                icon: <Award className="h-6 w-6" />,
+   664→                title: "Best Prices",
+   665→                desc: "Competitive pricing with regular deals and discounts, ensuring maximum value for your investment.",
+   666→              },
+   667→              {
+   668→                icon: <Clock className="h-6 w-6" />,
+   669→                title: "Quick Installation",
+   670→                desc: "Professional installation services available to get your security system up and running fast.",
+   671→              },
+   672→            ].map((item) => (
+   673→              <motion.div key={item.title} {...staggerItem}>
+   674→                <div className="flex items-start gap-4 p-2">
+   675→                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+   676→                    {item.icon}
+   677→                  </div>
+   678→                  <div>
+   679→                    <h3 className="font-semibold">{item.title}</h3>
+   680→                    <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+   681→                      {item.desc}
+   682→                    </p>
+   683→                  </div>
+   684→                </div>
+   685→              </motion.div>
+   686→            ))}
+   687→          </motion.div>
+   688→        </div>
+   689→      </section>
+   690→
+   691→          CTA
+   692→      Section
+   693→      <section className="px-6 lg:px-8 py-24">
+   694→        <div className="mx-auto max-w-4xl">
+   695→          <motion.div {...fadeUp}>
+   696→            <Card className="bg-primary text-primary-foreground overflow-hidden rounded-2xl border-0 shadow-xl">
+   697→              <CardContent className="p-10 sm:p-14 text-center space-y-8">
+   698→                <div className="flex justify-center">
+   699→                  <div className="p-4 rounded-2xl bg-primary-foreground/10">
+   700→                    <Users className="h-12 w-12" />
+   701→                  </div>
+   702→                </div>
+   703→                <div className="space-y-3">
+   704→                  <h2 className="text-2xl sm:text-3xl font-bold">
+   705→                    Ready to Secure Your Property?
+   706→                  </h2>
+   707→                  <p className="text-primary-foreground/80 text-lg max-w-xl mx-auto leading-relaxed">
+   708→                    Get in touch for a free consultation and customized quote
+   709→                    tailored to your security needs. Our experts are ready to
+   710→                    help you design the perfect system.
+   711→                  </p>
+   712→                </div>
+   713→                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+   714→                  <Button
+   715→                    size="lg"
+   716→                    variant="secondary"
+   717→                    className="gap-2 text-base px-8 rounded-xl"
+   718→                    onClick={() => router.push("/contact")}
+   719→                  >
+   720→                    Book Free Consultation
+   721→                    <ArrowRight className="h-4 w-4" />
+   722→                  </Button>
+   723→                  <Button
+   724→                    size="lg"
+   725→                    variant="outline"
+   726→                    className="gap-2 text-base px-8 rounded-xl border-primary-foreground/30 text-primary-foreground hover:bg-primary-foreground/10"
+   727→                    onClick={() => router.push("/builder")}
+   728→                  >
+   729→                    <Target className="h-4 w-4" />
+   730→                    Try CCTV Builder
+   731→                  </Button>
+   732→                </div>
+   733→              </CardContent>
+   734→            </Card>
+   735→          </motion.div>
+   736→        </div>
+   737→      </section>
+   738→    </div>
+   739→  );
+   740→}
+   741→
