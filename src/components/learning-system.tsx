@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useStore } from "@/store/cctv-store";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -980,11 +980,14 @@ function ComparisonTables() {
 
 function FaqSectionWithSearch() {
   const [search, setSearch] = useState("");
+  const [mounted, setMounted] = useState(false);
   const filtered = useMemo(() => {
     if (!search.trim()) return faqData;
     const q = search.toLowerCase();
     return faqData.filter((f) => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
   }, [search]);
+
+  useEffect(() => { setMounted(true); }, []);
 
   return (
     <motion.section {...fadeUp} className="py-16">
@@ -1009,7 +1012,7 @@ function FaqSectionWithSearch() {
           <p className="text-muted-foreground font-medium">No matching questions found</p>
           <p className="text-sm text-muted-foreground/70 mt-1">Try a different search term</p>
         </div>
-      ) : (
+      ) : mounted ? (
         <Accordion type="single" collapsible className="space-y-2">
           {filtered.map((item, i) => (
             <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4 bg-card hover:bg-accent/30 transition-colors">
@@ -1018,6 +1021,14 @@ function FaqSectionWithSearch() {
             </AccordionItem>
           ))}
         </Accordion>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((item, i) => (
+            <div key={i} className="border rounded-xl px-4 bg-card py-4">
+              <p className="font-medium text-sm">{item.q}</p>
+            </div>
+          ))}
+        </div>
       )}
     </motion.section>
   );
