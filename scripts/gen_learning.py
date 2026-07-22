@@ -1,4 +1,8 @@
-"use client";
+import os
+
+OUTPUT = "/home/z/my-project/src/components/learning-system.tsx"
+
+code = r'''"use client";
 
 import { useState, useMemo } from "react";
 import { useStore } from "@/store/cctv-store";
@@ -47,6 +51,13 @@ const staggerItem = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
   transition: { duration: 0.45, ease: "easeOut" },
+};
+
+const scaleIn = {
+  initial: { opacity: 0, scale: 0.95 },
+  whileInView: { opacity: 1, scale: 1 },
+  viewport: { once: true } as const,
+  transition: { duration: 0.4, ease: "easeOut" },
 };
 
 const premiumCard = cn(
@@ -112,7 +123,7 @@ const cameraTypesData = [
     color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200",
     accent: "bg-rose-600", image: "/cctv-guide-images/4g_camera.png",
     tagline: "Works anywhere with a 4G signal \u2014 no WiFi, no power needed",
-    description: `4G LTE cameras are the ultimate solution for locations where neither WiFi nor power cables are available. They connect to the mobile 4G network using a SIM card (just like your phone) and many models come with a built-in solar panel that charges the internal battery during the day. This means you can install them literally anywhere \u2014 farm fields, construction sites, remote gates, forest areas, highway projects, or any off-grid location.`,
+    description: `4G LTE cameras are the ultimate solution for locations where neither WiFi nor power cables are available. They connect to the mobile 4G network using a SIM card (just like your phone) and many models come with a built-in solar panel that charges the internal battery during the day.`,
     bestFor: ["Farm fields & agriculture", "Construction sites", "Remote gates & entry points", "Highway & road projects", "Any place without WiFi/electricity"],
     pros: ["Works without WiFi or electricity", "Solar powered (no electricity bill)", "Install anywhere with 4G signal", "Instant mobile alerts via 4G", "Truly wireless installation"],
     cons: ["Requires 4G SIM + monthly data plan", "Higher initial cost", "Depends on 4G network coverage", "Limited bandwidth may reduce video quality", "Battery degrades over 2-3 years"],
@@ -167,7 +178,7 @@ const mobileAppsData = [
       "Register a new account with your email address",
       "On your DVR/NVR, go to Main Menu \u2192 System \u2192 Network \u2192 P2P \u2192 Enable",
       "Note the Device Serial Number and verification code shown on screen",
-      "In the app, tap '+' \u2192 'Scan QR Code' or enter serial number manually",
+      "In the app, tap \u2018+\u2019 \u2192 \u2018Scan QR Code\u2019 or enter serial number manually",
       "Enter the verification code when prompted \u2014 your device will appear",
       "Tap the device to view live streams from all connected cameras",
     ]
@@ -247,9 +258,9 @@ const faqData = [
 
 const installSteps = [
   { step: "1. Plan Camera Positions", detail: "Walk around your property and identify all entry points, vulnerable areas, and key spots you want to monitor. Mark camera locations on a simple sketch of your property. Consider camera field of view, lighting conditions, and cable routing paths to your DVR/NVR location." },
-  { step: "2. Run Cables", detail: "For DVR systems: Run RG59 coaxial cable from each camera location to the DVR. For NVR systems: Run Cat5e/Cat6 Ethernet cable from each camera to the NVR. Use cable clips or conduit to secure cables along walls. For WiFi cameras: Just ensure a power outlet is nearby and WiFi signal is strong." },
-  { step: "3. Mount Cameras", detail: "Use the included mounting bracket to attach each camera to the wall or ceiling. For outdoor cameras, seal all cable entry points with silicone to prevent water damage. Aim each camera to cover the intended area." },
-  { step: "4. Connect to Recorder", detail: "For DVR: Connect each camera\u2019s coaxial cable to the DVR input ports. For NVR: Connect each camera\u2019s Ethernet cable to the NVR\u2019s PoE ports. Connect the DVR/NVR to your router using an Ethernet cable for remote viewing." },
+  { step: "2. Run Cables", detail: "For DVR systems: Run RG59 coaxial cable from each camera location to the DVR. For NVR systems: Run Cat5e/Cat6 Ethernet cable from each camera to the NVR. Use cable clips or conduit to secure cables along walls. For WiFi cameras: Just ensure a power outlet is nearby and WiFi signal is strong at the camera location." },
+  { step: "3. Mount Cameras", detail: "Use the included mounting bracket to attach each camera to the wall or ceiling. For outdoor cameras, seal all cable entry points with silicone to prevent water damage. Aim each camera to cover the intended area. Most cameras allow you to adjust the angle after mounting." },
+  { step: "4. Connect to Recorder", detail: "For DVR: Connect each camera\u2019s coaxial cable to the DVR input ports. For NVR: Connect each camera\u2019s Ethernet cable to the NVR\u2019s PoE ports. Connect the DVR/NVR to your router using an Ethernet cable for remote viewing. Connect a monitor to the HDMI port." },
   { step: "5. Power On & Configure", detail: "Power on the DVR/NVR. It will auto-detect the cameras. Set the date/time, recording schedule (24/7 or motion-activated), and resolution. Install a hard drive if not pre-installed. Configure motion detection zones and sensitivity for each camera." },
   { step: "6. Set Up Mobile Viewing", detail: "Download the appropriate app (iVMS-4500/Hik-Connect for Hikvision, DMSS for Dahua). Create an account, enable P2P/Cloud access on your DVR/NVR, and scan the QR code to add your device. Test live viewing and motion notification alerts." },
 ];
@@ -318,7 +329,7 @@ const featuredArticles = [
 
 const comparisonTables = [
   {
-    title: "Bullet vs Dome",
+    title: "Bullet vs Dome Camera",
     headers: ["Feature", "Bullet Camera", "Dome Camera"],
     rows: [
       ["Best For", "Outdoors, long-range", "Indoors, discreet"],
@@ -326,13 +337,13 @@ const comparisonTables = [
       ["Deterrence", "Highly visible", "Lens direction hidden"],
       ["Vandal Resistance", "Low (exposed)", "High (dome cover)"],
       ["Installation", "Wall mount, easy to aim", "Ceiling mount, fixed angle"],
-      ["Field of View", "60° - 90°", "80° - 110°"],
+      ["Field of View", "60\u00b0 - 90\u00b0", "80\u00b0 - 110\u00b0"],
       ["Weatherproof", "IP66/IP67 standard", "IP66 on outdoor models"],
-      ["Price Range", "₹1,000 - ₹8,000", "₹1,200 - ₹6,000"],
+      ["Price Range", "\u20b91,000 - \u20b98,000", "\u20b91,200 - \u20b96,000"],
     ],
   },
   {
-    title: "IP vs Analog",
+    title: "IP Camera vs Analog Camera",
     headers: ["Feature", "IP Camera", "Analog Camera"],
     rows: [
       ["Technology", "Digital (network)", "Analog (coaxial signal)"],
@@ -353,14 +364,14 @@ const comparisonTables = [
       ["Cable", "Coaxial (RG59)", "Ethernet (Cat5e/Cat6)"],
       ["Power to Camera", "Separate power cable", "PoE (single cable)"],
       ["Audio", "Separate audio cable needed", "Built-in audio over network"],
-      ["Max Resolution", "Up to 8MP (4K)", "4K+ (12MP+)"],
+      ["Max Resolution", "Up to 8MP (4K)", "4K+ (12MP+)",],
       ["Smart Analytics", "Limited", "Advanced (AI, face, line cross)"],
       ["Max Cable Length", "300m (with amplifier)", "100m per segment"],
       ["Best For", "Budget setups, retrofits", "New installs, high quality"],
     ],
   },
   {
-    title: "WiFi vs Wired",
+    title: "WiFi vs Wired Camera",
     headers: ["Feature", "WiFi Camera", "Wired Camera"],
     rows: [
       ["Installation", "Easy DIY, power only", "Requires cable running"],
@@ -370,7 +381,7 @@ const comparisonTables = [
       ["Storage", "MicroSD / Cloud", "DVR/NVR HDD"],
       ["Scalability", "1-4 cameras typically", "4-32+ cameras"],
       ["Best For", "Apartments, small setups", "Homes, offices, commercial"],
-      ["Cost", "₹1,500 - ₹7,000", "₹8,000 - ₹1,15,000 (system)"],
+      ["Cost", "\u20b91,500 - \u20b97,000", "\u20b98,000 - \u20b91,15,000 (system)"],
     ],
   },
 ];
@@ -382,18 +393,21 @@ const popularTopics = [
 ];
 
 // ═══════════════════════════════════════════════════════════════
-// HERO SECTION
+// SECTION 1 — HERO
 // ═══════════════════════════════════════════════════════════════
 
 function HeroSection({ onStartLearning, onBrowseProducts }: { onStartLearning: () => void; onBrowseProducts: () => void }) {
   return (
     <section className="relative overflow-hidden py-20 lg:py-28">
+      {/* Background */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/50 via-background to-background dark:from-emerald-950/20 dark:via-background dark:to-background" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-emerald-500/[0.06] rounded-full blur-3xl" />
         <div className="absolute top-20 right-1/4 w-72 h-72 bg-emerald-400/[0.04] rounded-full blur-3xl" />
+        {/* Dot grid */}
         <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
       </div>
+
       <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
         <motion.div {...fadeUp}>
           <Badge variant="outline" className="mb-6 px-4 py-1.5 text-sm font-medium border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
@@ -401,23 +415,52 @@ function HeroSection({ onStartLearning, onBrowseProducts }: { onStartLearning: (
             ConnectZ Learning Center
           </Badge>
         </motion.div>
-        <motion.h1 {...fadeUp} transition={{ duration: 0.6, ease: "easeOut" }} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+
+        <motion.h1
+          {...fadeUp}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6"
+        >
           Master CCTV Security{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">Step by Step</span>
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">
+            Step by Step
+          </span>
         </motion.h1>
-        <motion.p {...fadeUp} transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }} className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-10">
-          From understanding camera types to choosing the right setup for your budget —
+
+        <motion.p
+          {...fadeUp}
+          transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+          className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-10"
+        >
+          From understanding camera types to choosing the right setup for your budget — 
           become a CCTV expert with our comprehensive, free learning resources. No technical background needed.
         </motion.p>
+
         <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Button size="lg" onClick={onStartLearning} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-105 transition-all duration-200 rounded-xl px-8 text-base">
-            <BookOpen className="h-5 w-5 mr-2" /> Start Learning
+          <Button
+            size="lg"
+            onClick={onStartLearning}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-105 transition-all duration-200 rounded-xl px-8 text-base"
+          >
+            <BookOpen className="h-5 w-5 mr-2" />
+            Start Learning
           </Button>
-          <Button size="lg" variant="outline" onClick={onBrowseProducts} className="rounded-xl px-8 text-base hover:bg-muted/50">
-            Browse Products <ArrowRight className="h-4 w-4 ml-2" />
+          <Button
+            size="lg"
+            variant="outline"
+            onClick={onBrowseProducts}
+            className="rounded-xl px-8 text-base hover:bg-muted/50"
+          >
+            Browse Products
+            <ArrowRight className="h-4 w-4 ml-2" />
           </Button>
         </motion.div>
-        <motion.div {...staggerContainer} className="flex flex-wrap items-center justify-center gap-3">
+
+        {/* Trust badges */}
+        <motion.div
+          {...staggerContainer}
+          className="flex flex-wrap items-center justify-center gap-3"
+        >
           {[
             { icon: <Sparkles className="h-4 w-4" />, text: "Beginner Friendly" },
             { icon: <BookOpen className="h-4 w-4" />, text: "Step-by-Step Tutorials" },
@@ -426,7 +469,8 @@ function HeroSection({ onStartLearning, onBrowseProducts }: { onStartLearning: (
           ].map((badge) => (
             <motion.div key={badge.text} {...staggerItem}>
               <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/50 border border-border/40 rounded-full px-3 py-1.5">
-                <span className="text-emerald-500">{badge.icon}</span> {badge.text}
+                <span className="text-emerald-500">{badge.icon}</span>
+                {badge.text}
               </div>
             </motion.div>
           ))}
@@ -437,7 +481,7 @@ function HeroSection({ onStartLearning, onBrowseProducts }: { onStartLearning: (
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SEARCH COMPONENT
+// SECTION 2 — SEARCH
 // ═══════════════════════════════════════════════════════════════
 
 function LearningSearch({ value, onChange, onTopicClick }: {
@@ -470,29 +514,40 @@ function LearningSearch({ value, onChange, onTopicClick }: {
           </button>
         )}
       </div>
+      {/* Autocomplete dropdown */}
       <AnimatePresence>
         {showSuggestions && filtered.length > 0 && (
           <motion.div
-            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
             className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden"
           >
             {filtered.slice(0, 5).map((topic) => (
-              <button key={topic} onClick={() => { onChange(""); onTopicClick(topic); }}
+              <button
+                key={topic}
+                onClick={() => { onChange(""); onTopicClick(topic); }}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center gap-2 transition-colors"
               >
-                <Search className="h-3.5 w-3.5 text-muted-foreground" /> {topic}
+                <Search className="h-3.5 w-3.5 text-muted-foreground" />
+                {topic}
               </button>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
+      {/* Popular topics */}
       {!focused && !value && (
         <div className="mt-3 flex flex-wrap items-center gap-2 justify-center">
           <span className="text-xs text-muted-foreground mr-1">Popular:</span>
           {popularTopics.slice(0, 5).map((topic) => (
-            <button key={topic} onClick={() => onTopicClick(topic)}
+            <button
+              key={topic}
+              onClick={() => onTopicClick(topic)}
               className="text-xs bg-muted/50 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300 text-muted-foreground border border-border/40 rounded-full px-3 py-1 transition-colors"
-            >{topic}</button>
+            >
+              {topic}
+            </button>
           ))}
         </div>
       )}
@@ -501,7 +556,7 @@ function LearningSearch({ value, onChange, onTopicClick }: {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// LEARNING PROGRESS
+// SECTION 3 — LEARNING PROGRESS
 // ═══════════════════════════════════════════════════════════════
 
 function LearningProgress() {
@@ -556,7 +611,7 @@ function LearningProgress() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SIDEBAR NAVIGATION
+// SECTION 4 — SIDEBAR
 // ═══════════════════════════════════════════════════════════════
 
 function SidebarNav({
@@ -565,6 +620,7 @@ function SidebarNav({
   learnSection: string; setLearnSection: (s: string) => void;
   mobileOpen: boolean; setMobileOpen: (o: boolean) => void; router: ReturnType<typeof useRouter>;
 }) {
+  const [expanded, setExpanded] = useState(true);
   const totalCompleted = learnSections.reduce((a, s) => a + s.completed, 0);
   const totalLessons = learnSections.reduce((a, s) => a + s.lessons, 0);
 
@@ -574,22 +630,33 @@ function SidebarNav({
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Learning Topics</h3>
         <p className="text-xs text-muted-foreground/70">{totalCompleted}/{totalLessons} lessons completed</p>
         <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
-          <div className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-            style={{ width: `${totalLessons > 0 ? (totalCompleted / totalLessons) * 100 : 0}%` }} />
+          <div
+            className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+            style={{ width: `${totalLessons > 0 ? (totalCompleted / totalLessons) * 100 : 0}%` }}
+          />
         </div>
       </div>
+
       {learnSections.map((s) => {
         const isActive = learnSection === s.id;
+        const progress = s.lessons > 0 ? Math.round((s.completed / s.lessons) * 100) : 0;
         const isComplete = s.lessons > 0 && s.completed === s.lessons;
+
         return (
-          <button key={s.id} onClick={() => { setLearnSection(s.id); setMobileOpen(false); }}
+          <button
+            key={s.id}
+            onClick={() => { setLearnSection(s.id); setMobileOpen(false); }}
             className={cn(
               "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-left group",
               isActive
                 ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800 shadow-sm"
                 : "hover:bg-muted/80 text-muted-foreground hover:text-foreground"
-            )} aria-current={isActive ? "page" : undefined}>
-            <span className={cn("shrink-0", isActive ? "text-emerald-600" : "text-muted-foreground group-hover:text-foreground")}>{s.icon}</span>
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            <span className={cn("shrink-0", isActive ? "text-emerald-600" : "text-muted-foreground group-hover:text-foreground")}>
+              {s.icon}
+            </span>
             <span className="flex-1 truncate">{s.label}</span>
             {s.lessons > 0 && (
               <span className={cn(
@@ -602,9 +669,13 @@ function SidebarNav({
           </button>
         );
       })}
+
       <Separator className="my-3" />
-      <button onClick={() => { router.push("/products"); setMobileOpen(false); }}
-        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left">
+
+      <button
+        onClick={() => { router.push("/products"); setMobileOpen(false); }}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+      >
         <Camera className="h-4 w-4" /> Back to Products
       </button>
     </nav>
@@ -612,27 +683,44 @@ function SidebarNav({
 
   return (
     <>
+      {/* Desktop sidebar */}
       <aside className="hidden lg:block w-64 shrink-0">
         <div className="sticky top-24 bg-card border border-border/60 rounded-2xl p-4 shadow-sm">
           {sidebarContent}
         </div>
       </aside>
-      <Button variant="outline" size="sm" className="lg:hidden flex items-center gap-2 mb-4"
-        onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle learning menu">
-        <Menu className="h-4 w-4" /> Topics
+
+      {/* Mobile drawer toggle */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="lg:hidden flex items-center gap-2 mb-4"
+        onClick={() => setMobileOpen(!mobileOpen)}
+        aria-label="Toggle learning menu"
+      >
+        <Menu className="h-4 w-4" />
+        Topics
       </Button>
+
+      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
             <motion.aside
               initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed top-0 left-0 bottom-0 w-72 bg-background border-r z-50 p-4 overflow-y-auto lg:hidden">
+              className="fixed top-0 left-0 bottom-0 w-72 bg-background border-r z-50 p-4 overflow-y-auto lg:hidden"
+            >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-lg">Topics</h3>
-                <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}><X className="h-5 w-5" /></Button>
+                <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
               </div>
               {sidebarContent}
             </motion.aside>
@@ -644,27 +732,32 @@ function SidebarNav({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CATEGORY FILTERS
+// SECTION 5 — CATEGORY FILTERS
 // ═══════════════════════════════════════════════════════════════
 
 function CategoryFilters({ active, onChange }: { active: string; onChange: (id: string) => void }) {
   return (
     <motion.div {...fadeUp} className="flex flex-wrap gap-2 mb-8">
       {categoryFilters.map((cat) => (
-        <button key={cat.id} onClick={() => onChange(cat.id)}
+        <button
+          key={cat.id}
+          onClick={() => onChange(cat.id)}
           className={cn(
             "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
             active === cat.id
               ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
               : "bg-card text-muted-foreground border-border/60 hover:border-emerald-500/50 hover:text-emerald-600"
-          )}>{cat.label}</button>
+          )}
+        >
+          {cat.label}
+        </button>
       ))}
     </motion.div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MODULE CARDS (Overview)
+// SECTION 6 — LEARNING MODULE CARDS (Overview)
 // ═══════════════════════════════════════════════════════════════
 
 const moduleCards = [
@@ -678,6 +771,7 @@ const moduleCards = [
 
 function ModuleCards({ setLearnSection, activeCategory }: { setLearnSection: (s: string) => void; activeCategory: string }) {
   const filtered = activeCategory === "all" ? moduleCards : moduleCards.filter((c) => c.category === activeCategory);
+
   if (filtered.length === 0) {
     return (
       <div className="text-center py-16">
@@ -687,29 +781,46 @@ function ModuleCards({ setLearnSection, activeCategory }: { setLearnSection: (s:
       </div>
     );
   }
+
   return (
     <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
       {filtered.map((card) => (
         <motion.div key={card.section} {...staggerItem}>
-          <Card className={cn(premiumCard, "cursor-pointer group overflow-hidden")} onClick={() => setLearnSection(card.section)}>
+          <Card
+            className={cn(
+              premiumCard, "cursor-pointer group overflow-hidden",
+            )}
+            onClick={() => setLearnSection(card.section)}
+          >
+            {/* Image / gradient area */}
             <div className={cn("h-32 bg-gradient-to-br relative overflow-hidden", card.bg)}>
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300", card.iconBg)}>
                   {card.icon}
                 </div>
               </div>
-              <Badge variant="secondary" className="absolute top-3 right-3 text-[10px]">{card.difficulty}</Badge>
+              {/* Difficulty badge */}
+              <Badge variant="secondary" className="absolute top-3 right-3 text-[10px]">
+                {card.difficulty}
+              </Badge>
             </div>
+
             <CardContent className="p-5 space-y-3">
-              <h3 className="font-bold text-lg group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
-                {card.title}
-                <ArrowRight className="h-4 w-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-              </h3>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-bold text-lg group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
+                  {card.title}
+                  <ArrowRight className="h-4 w-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                </h3>
+              </div>
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{card.desc}</p>
+
+              {/* Meta row */}
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {card.time}</span>
                 <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {card.lessons} Lessons</span>
               </div>
+
+              {/* Progress bar */}
               {card.progress > 0 && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-[11px]">
@@ -721,9 +832,21 @@ function ModuleCards({ setLearnSection, activeCategory }: { setLearnSection: (s:
                   </div>
                 </div>
               )}
-              <Button variant={card.progress > 0 ? "outline" : "default"} size="sm"
-                className={cn("w-full mt-1 rounded-lg text-sm", card.progress === 0 && "bg-emerald-600 hover:bg-emerald-700 text-white")}>
-                {card.progress > 0 ? (<><Play className="h-3.5 w-3.5 mr-1.5" /> Continue Learning</>) : (<><BookOpen className="h-3.5 w-3.5 mr-1.5" /> Start Learning</>)}
+
+              {/* CTA */}
+              <Button
+                variant={card.progress > 0 ? "outline" : "default"}
+                size="sm"
+                className={cn(
+                  "w-full mt-1 rounded-lg text-sm",
+                  card.progress === 0 && "bg-emerald-600 hover:bg-emerald-700 text-white"
+                )}
+              >
+                {card.progress > 0 ? (
+                  <><Play className="h-3.5 w-3.5 mr-1.5" /> Continue Learning</>
+                ) : (
+                  <><BookOpen className="h-3.5 w-3.5 mr-1.5" /> Start Learning</>
+                )}
               </Button>
             </CardContent>
           </Card>
@@ -734,11 +857,12 @@ function ModuleCards({ setLearnSection, activeCategory }: { setLearnSection: (s:
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INTERACTIVE FLOW DIAGRAM
+// SECTION 7 — INTERACTIVE FLOW DIAGRAM
 // ═══════════════════════════════════════════════════════════════
 
 function InteractiveFlowDiagram() {
   const [activeStep, setActiveStep] = useState<number | null>(null);
+
   const steps = [
     { icon: <Camera className="h-6 w-6" />, label: "Camera", desc: "Captures video of the surveillance area. Available in Dome, Bullet, WiFi, PTZ, and 4G types. Resolution ranges from 2MP to 8MP (4K).", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
     { icon: <Cable className="h-6 w-6" />, label: "Cable / WiFi", desc: "Coaxial (RG59) for DVR systems or Ethernet (Cat5e/Cat6) for NVR systems. WiFi cameras connect wirelessly. PoE carries both data and power.", color: "text-sky-600", bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800" },
@@ -752,50 +876,91 @@ function InteractiveFlowDiagram() {
       <Card className={cn(premiumCard, "overflow-hidden")}>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-xl">
-            <Lightbulb className="h-5 w-5 text-amber-500" /> How Does a CCTV System Work?
+            <Lightbulb className="h-5 w-5 text-amber-500" />
+            How Does a CCTV System Work?
           </CardTitle>
           <p className="text-sm text-muted-foreground">Hover or tap each component to learn more</p>
         </CardHeader>
         <CardContent className="p-6">
+          {/* Desktop: horizontal flow */}
           <div className="hidden md:flex items-center justify-center gap-2">
             {steps.map((step, i) => (
               <div key={step.label} className="flex items-center">
                 <motion.div
                   whileHover={{ scale: 1.05, y: -4 }}
-                  onMouseEnter={() => setActiveStep(i)} onMouseLeave={() => setActiveStep(null)}
+                  onMouseEnter={() => setActiveStep(i)}
+                  onMouseLeave={() => setActiveStep(null)}
                   onClick={() => setActiveStep(activeStep === i ? null : i)}
-                  className={cn("w-40 p-4 rounded-xl border-2 cursor-pointer text-center transition-all duration-300", step.bg, activeStep === i && "shadow-lg ring-2 ring-emerald-500/30")}>
+                  className={cn(
+                    "w-40 p-4 rounded-xl border-2 cursor-pointer text-center transition-all duration-300",
+                    step.bg,
+                    activeStep === i && "shadow-lg ring-2 ring-emerald-500/30"
+                  )}
+                >
                   <div className={cn("flex justify-center mb-2", step.color)}>{step.icon}</div>
                   <p className="font-semibold text-sm">{step.label}</p>
                   {activeStep === i && (
-                    <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-xs text-muted-foreground mt-2 leading-relaxed">{step.desc}</motion.p>
+                    <motion.p
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      className="text-xs text-muted-foreground mt-2 leading-relaxed"
+                    >
+                      {step.desc}
+                    </motion.p>
                   )}
                 </motion.div>
                 {i < steps.length - 1 && (
-                  <motion.div animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="mx-1">
+                  <motion.div
+                    animate={{ y: [0, 4, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                    className="mx-1"
+                  >
                     <ArrowRight className="h-5 w-5 text-muted-300" />
                   </motion.div>
                 )}
               </div>
             ))}
           </div>
+
+          {/* Mobile: vertical flow */}
           <div className="md:hidden space-y-3">
             {steps.map((step, i) => (
               <div key={step.label}>
-                <motion.div whileTap={{ scale: 0.98 }} onClick={() => setActiveStep(activeStep === i ? null : i)}
-                  className={cn("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300", step.bg, activeStep === i && "shadow-lg ring-2 ring-emerald-500/30")}>
+                <motion.div
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setActiveStep(activeStep === i ? null : i)}
+                  className={cn(
+                    "flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300",
+                    step.bg,
+                    activeStep === i && "shadow-lg ring-2 ring-emerald-500/30"
+                  )}
+                >
                   <div className={cn("shrink-0", step.color)}>{step.icon}</div>
                   <div className="flex-1">
                     <p className="font-semibold text-sm">{step.label}</p>
                     <AnimatePresence>
                       {activeStep === i && (
-                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="text-xs text-muted-foreground mt-1 leading-relaxed">{step.desc}</motion.p>
+                        <motion.p
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="text-xs text-muted-foreground mt-1 leading-relaxed"
+                        >
+                          {step.desc}
+                        </motion.p>
                       )}
                     </AnimatePresence>
                   </div>
-                  <ChevronDown className={cn("h-4 w-4 text-muted-400 transition-transform duration-200 shrink-0", activeStep === i && "rotate-180")} />
+                  <ChevronDown className={cn(
+                    "h-4 w-4 text-muted-400 transition-transform duration-200 shrink-0",
+                    activeStep === i && "rotate-180"
+                  )} />
                 </motion.div>
-                {i < steps.length - 1 && <div className="flex justify-center py-0.5"><ArrowDown className="h-4 w-4 text-muted-300" /></div>}
+                {i < steps.length - 1 && (
+                  <div className="flex justify-center py-0.5">
+                    <ArrowDown className="h-4 w-4 text-muted-300" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -806,7 +971,7 @@ function InteractiveFlowDiagram() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FEATURED ARTICLES
+// SECTION 8 — FEATURED ARTICLES
 // ═══════════════════════════════════════════════════════════════
 
 function FeaturedArticles() {
@@ -826,7 +991,9 @@ function FeaturedArticles() {
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Badge variant="outline" className="text-[10px] px-2 py-0">{article.category}</Badge>
-                  <span>{article.readTime}</span><span>·</span><span>{article.difficulty}</span>
+                  <span>{article.readTime}</span>
+                  <span>·</span>
+                  <span>{article.difficulty}</span>
                 </div>
                 <h3 className="font-bold leading-snug group-hover:text-emerald-600 transition-colors">{article.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{article.preview}</p>
@@ -846,7 +1013,7 @@ function FeaturedArticles() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// VIDEO TUTORIALS
+// SECTION 9 — VIDEO TUTORIALS
 // ═══════════════════════════════════════════════════════════════
 
 function VideoTutorials() {
@@ -855,7 +1022,8 @@ function VideoTutorials() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-            <Play className="h-6 w-6 text-emerald-600" /> Watch & Learn
+            <Play className="h-6 w-6 text-emerald-600" />
+            Watch & Learn
           </h2>
           <p className="text-muted-foreground mt-1">Video tutorials to help you get started quickly</p>
         </div>
@@ -864,17 +1032,22 @@ function VideoTutorials() {
         {videoTutorials.map((video) => (
           <motion.div key={video.title} {...staggerItem}>
             <Card className={cn(premiumCard, "group cursor-pointer overflow-hidden")}>
+              {/* Video thumbnail placeholder */}
               <div className="h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative flex items-center justify-center">
                 <div className="w-14 h-14 rounded-full bg-white/90 dark:bg-black/50 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                   <Play className="h-6 w-6 text-emerald-600 ml-0.5" />
                 </div>
-                <Badge className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px]">{video.duration}</Badge>
+                <Badge className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px]">
+                  {video.duration}
+                </Badge>
               </div>
               <CardContent className="p-4 space-y-2">
                 <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors">{video.title}</h3>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Badge variant="outline" className="text-[10px] px-2 py-0">{video.category}</Badge>
-                  <span>{video.difficulty}</span><span>·</span><span>{video.views} views</span>
+                  <span>{video.difficulty}</span>
+                  <span>·</span>
+                  <span>{video.views} views</span>
                 </div>
               </CardContent>
             </Card>
@@ -886,7 +1059,7 @@ function VideoTutorials() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// DOWNLOADS SECTION
+// SECTION 10 — DOWNLOADS
 // ═══════════════════════════════════════════════════════════════
 
 function DownloadsSection() {
@@ -894,7 +1067,8 @@ function DownloadsSection() {
     <motion.section {...fadeUp} className="py-16">
       <div className="mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
-          <Download className="h-6 w-6 text-emerald-600" /> Downloadable Resources
+          <Download className="h-6 w-6 text-emerald-600" />
+          Downloadable Resources
         </h2>
         <p className="text-muted-foreground mt-1">Free guides, checklists, and reference materials</p>
       </div>
@@ -924,35 +1098,57 @@ function DownloadsSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// COMPARISON TABLES
+// SECTION 11 — COMPARISON TABLES
 // ═══════════════════════════════════════════════════════════════
 
 function ComparisonTables() {
   const [activeTable, setActiveTable] = useState(0);
+
   return (
     <motion.section {...fadeUp} className="py-16">
       <div className="mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold">Comparison Tables</h2>
         <p className="text-muted-foreground mt-1">Side-by-side comparisons to help you decide</p>
       </div>
+
+      {/* Table selector */}
       <div className="flex flex-wrap gap-2 mb-6">
         {comparisonTables.map((table, i) => (
-          <button key={table.title} onClick={() => setActiveTable(i)}
+          <button
+            key={table.title}
+            onClick={() => setActiveTable(i)}
             className={cn(
               "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
-              activeTable === i ? "bg-emerald-600 text-white border-emerald-600" : "bg-card text-muted-foreground border-border/60 hover:border-emerald-500/50"
-            )}>{table.title}</button>
+              activeTable === i
+                ? "bg-emerald-600 text-white border-emerald-600"
+                : "bg-card text-muted-foreground border-border/60 hover:border-emerald-500/50"
+            )}
+          >
+            {table.title}
+          </button>
         ))}
       </div>
+
       <AnimatePresence mode="wait">
-        <motion.div key={activeTable} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+        <motion.div
+          key={activeTable}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.3 }}
+        >
           <Card className={cn(premiumCard, "overflow-hidden")}>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/50">
                     {comparisonTables[activeTable].headers.map((h, i) => (
-                      <th key={i} className={cn("px-4 py-3 text-left font-semibold whitespace-nowrap", i === 0 ? "text-muted-foreground" : "text-foreground")}>{h}</th>
+                      <th key={i} className={cn(
+                        "px-4 py-3 text-left font-semibold whitespace-nowrap",
+                        i === 0 ? "text-muted-foreground" : "text-foreground"
+                      )}>
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
@@ -960,7 +1156,9 @@ function ComparisonTables() {
                   {comparisonTables[activeTable].rows.map((row, ri) => (
                     <tr key={ri} className={cn("border-t border-border/50", ri % 2 === 0 ? "bg-background" : "bg-muted/20")}>
                       {row.map((cell, ci) => (
-                        <td key={ci} className={cn("px-4 py-2.5", ci === 0 ? "font-medium text-muted-foreground" : "")}>{cell}</td>
+                        <td key={ci} className={cn("px-4 py-2.5", ci === 0 ? "font-medium text-muted-foreground" : "")}>
+                          {cell}
+                        </td>
                       ))}
                     </tr>
                   ))}
@@ -975,11 +1173,12 @@ function ComparisonTables() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// FAQ WITH SEARCH
+// SECTION 12 — FAQ WITH SEARCH
 // ═══════════════════════════════════════════════════════════════
 
 function FaqSectionWithSearch() {
   const [search, setSearch] = useState("");
+
   const filtered = useMemo(() => {
     if (!search.trim()) return faqData;
     const q = search.toLowerCase();
@@ -992,17 +1191,28 @@ function FaqSectionWithSearch() {
         <h2 className="text-2xl sm:text-3xl font-bold">Frequently Asked Questions</h2>
         <p className="text-muted-foreground mt-1">Common questions about CCTV systems</p>
       </div>
+
+      {/* Search */}
       <div className={cn(
         "relative flex items-center rounded-xl border bg-card shadow-sm mb-6 max-w-lg transition-all duration-200",
         search ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
       )}>
         <Search className="h-4 w-4 text-muted-foreground ml-4 shrink-0" />
-        <input type="text" placeholder="Search questions..." value={search} onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/60" aria-label="Search frequently asked questions" />
+        <input
+          type="text"
+          placeholder="Search questions..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/60"
+          aria-label="Search frequently asked questions"
+        />
         {search && (
-          <button onClick={() => setSearch("")} className="mr-3 p-1 rounded-md hover:bg-muted text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
+          <button onClick={() => setSearch("")} className="mr-3 p-1 rounded-md hover:bg-muted text-muted-foreground">
+            <X className="h-3.5 w-3.5" />
+          </button>
         )}
       </div>
+
       {filtered.length === 0 ? (
         <div className="text-center py-12 bg-muted/30 rounded-2xl">
           <HelpCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
@@ -1012,9 +1222,17 @@ function FaqSectionWithSearch() {
       ) : (
         <Accordion type="single" collapsible className="space-y-2">
           {filtered.map((item, i) => (
-            <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4 bg-card hover:bg-accent/30 transition-colors">
-              <AccordionTrigger className="text-left font-medium text-sm hover:no-underline py-4">{item.q}</AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">{item.a}</AccordionContent>
+            <AccordionItem
+              key={i}
+              value={`faq-${i}`}
+              className="border rounded-xl px-4 bg-card hover:bg-accent/30 transition-colors"
+            >
+              <AccordionTrigger className="text-left font-medium text-sm hover:no-underline py-4">
+                {item.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                {item.a}
+              </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
@@ -1024,7 +1242,7 @@ function FaqSectionWithSearch() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CTA SECTION
+// SECTION 13 — CTA SECTION
 // ═══════════════════════════════════════════════════════════════
 
 function CtaSection({ router }: { router: ReturnType<typeof useRouter> }) {
@@ -1034,27 +1252,34 @@ function CtaSection({ router }: { router: ReturnType<typeof useRouter> }) {
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl" />
+
         <div className="relative px-8 py-16 lg:px-16 lg:py-20 text-center">
           <motion.div {...fadeUp}>
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight">Need Help Choosing the Right Setup?</h2>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight">
+              Need Help Choosing the Right Setup?
+            </h2>
             <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
               Talk to our CCTV experts. We will help you pick the perfect cameras, recorder, and accessories for your specific needs and budget.
             </p>
           </motion.div>
+
           <motion.div {...staggerContainer} className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <motion.a {...staggerItem} href="https://wa.me/7809465102" target="_blank" rel="noopener noreferrer">
               <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl px-8 shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-105 transition-all">
-                <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Us
+                <MessageCircle className="h-5 w-5 mr-2" />
+                WhatsApp Us
               </Button>
             </motion.a>
             <motion.a {...staggerItem} href="tel:7809465102">
               <Button size="lg" variant="outline" className="rounded-xl px-8 border-white/20 text-white hover:bg-white/10">
-                <Phone className="h-5 w-5 mr-2" /> Call Expert
+                <Phone className="h-5 w-5 mr-2" />
+                Call Expert
               </Button>
             </motion.a>
             <motion.button {...staggerItem} onClick={() => router.push("/products")}>
               <Button size="lg" variant="outline" className="rounded-xl px-8 border-white/20 text-white hover:bg-white/10">
-                <Layers className="h-5 w-5 mr-2" /> Build Your Setup
+                <Layers className="h-5 w-5 mr-2" />
+                Build Your Setup
               </Button>
             </motion.button>
           </motion.div>
@@ -1065,7 +1290,7 @@ function CtaSection({ router }: { router: ReturnType<typeof useRouter> }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// ENHANCED INDIVIDUAL SECTIONS
+// INDIVIDUAL CONTENT SECTIONS (Enhanced)
 // ═══════════════════════════════════════════════════════════════
 
 function CameraTypesSection() {
@@ -1078,18 +1303,25 @@ function CameraTypesSection() {
         <h2 className="text-2xl sm:text-3xl font-bold mb-2">Understanding CCTV Camera Types</h2>
         <p className="text-muted-foreground">Click on any camera type to learn in detail. Each card shows where it works best, advantages, and limitations.</p>
       </motion.div>
+
       <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {cameraTypesData.map((ct) => (
           <motion.div key={ct.id} {...staggerItem}>
             <Card
               className={cn(
                 "cursor-pointer transition-all duration-300 border-2",
-                selected === ct.id ? cn(ct.border, "shadow-lg -translate-y-1") : "hover:shadow-lg hover:-translate-y-1"
+                selected === ct.id
+                  ? cn(ct.border, "shadow-lg -translate-y-1")
+                  : "hover:shadow-lg hover:-translate-y-1"
               )}
-              onClick={() => setSelected(selected === ct.id ? null : ct.id)}>
+              onClick={() => setSelected(selected === ct.id ? null : ct.id)}
+            >
               <CardContent className="p-5 space-y-3">
                 <div className="flex items-center gap-3">
-                  <motion.div whileHover={{ scale: 1.1, rotate: 5 }} className={cn("w-12 h-12 rounded-xl flex items-center justify-center border", ct.bg, ct.color, ct.border)}>
+                  <motion.div
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    className={cn("w-12 h-12 rounded-xl flex items-center justify-center border", ct.bg, ct.color, ct.border)}
+                  >
                     {ct.icon}
                   </motion.div>
                   <div>
@@ -1105,37 +1337,57 @@ function CameraTypesSection() {
           </motion.div>
         ))}
       </motion.div>
+
       <AnimatePresence>
         {cam && (
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.4 }}
+          >
             <Card className="border-2 overflow-hidden">
               <div className={cn(cam.bg, "p-4 flex items-center gap-3 border-b", cam.border)}>
                 <div className={cn("w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm", cam.color)}>{cam.icon}</div>
-                <div><h3 className="text-xl font-bold">{cam.name}</h3><p className="text-sm text-muted-foreground">{cam.tagline}</p></div>
+                <div>
+                  <h3 className="text-xl font-bold">{cam.name}</h3>
+                  <p className="text-sm text-muted-foreground">{cam.tagline}</p>
+                </div>
               </div>
               <CardContent className="p-6 space-y-6">
                 <p className="text-muted-foreground leading-relaxed">{cam.description}</p>
                 <div>
                   <h4 className="font-semibold mb-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Best For</h4>
                   <div className="flex flex-wrap gap-2">
-                    {cam.bestFor.map((b) => (<Badge key={b} variant="outline" className={cn(cam.border, cam.textColor)}>{b}</Badge>))}
+                    {cam.bestFor.map((b) => (
+                      <Badge key={b} variant="outline" className={cn(cam.border, cam.textColor)}>{b}</Badge>
+                    ))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <h4 className="font-semibold flex items-center gap-2 text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Advantages</h4>
-                    <ul className="space-y-1.5">{cam.pros.map((p) => (<li key={p} className="text-sm flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /><span>{p}</span></li>))}</ul>
+                    <ul className="space-y-1.5">
+                      {cam.pros.map((p) => <li key={p} className="text-sm flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /><span>{p}</span></li>)}
+                    </ul>
                   </div>
                   <div className="space-y-2">
                     <h4 className="font-semibold flex items-center gap-2 text-red-600"><XCircle className="h-4 w-4" /> Limitations</h4>
-                    <ul className="space-y-1.5">{cam.cons.map((c) => (<li key={c} className="text-sm flex items-start gap-2"><XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" /><span>{c}</span></li>))}</ul>
+                    <ul className="space-y-1.5">
+                      {cam.cons.map((c) => <li key={c} className="text-sm flex items-start gap-2"><XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" /><span>{c}</span></li>)}
+                    </ul>
                   </div>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Typical Specifications</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {Object.entries(cam.specs).map(([key, val]) => (
-                      <Card key={key} className="bg-muted/50"><CardContent className="p-3"><p className="text-xs text-muted-foreground uppercase tracking-wide">{key.replace(/([A-Z])/g, " $1")}</p><p className="font-medium text-sm mt-1">{val}</p></CardContent></Card>
+                      <Card key={key} className="bg-muted/50">
+                        <CardContent className="p-3">
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide">{key.replace(/([A-Z])/g, " $1")}</p>
+                          <p className="font-medium text-sm mt-1">{val}</p>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 </div>
@@ -1151,12 +1403,14 @@ function CameraTypesSection() {
 function DvrNvrSection() {
   const d = dvrNvrData.dvr;
   const n = dvrNvrData.nvr;
+
   return (
     <div className="space-y-6">
       <motion.div {...fadeUp}>
         <h2 className="text-2xl sm:text-3xl font-bold mb-2">DVR vs NVR — Which One Do You Need?</h2>
         <p className="text-muted-foreground">The recorder is the brain of your CCTV system. Understanding this difference is the most important decision you will make.</p>
       </motion.div>
+
       <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {[d, n].map((item, i) => (
           <motion.div key={item.name} {...staggerItem}>
@@ -1202,6 +1456,7 @@ function CompatibilitySection() {
         <h2 className="text-2xl sm:text-3xl font-bold mb-2">Brand Compatibility Guide</h2>
         <p className="text-muted-foreground">Understanding which cameras work with which recorders is critical. A wrong combination means your system simply will not work.</p>
       </motion.div>
+
       <motion.div {...fadeUp}>
         <Card className={cn(premiumCard, "overflow-hidden")}>
           <div className="overflow-x-auto">
@@ -1236,6 +1491,7 @@ function CompatibilitySection() {
           </div>
         </Card>
       </motion.div>
+
       <motion.div {...fadeUp}>
         <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5">
           <h3 className="font-bold flex items-center gap-2 text-amber-700 dark:text-amber-400 mb-2"><AlertTriangle className="h-5 w-5" /> Important Rule</h3>
@@ -1253,7 +1509,8 @@ function MobileSetupSection() {
         <h2 className="text-2xl sm:text-3xl font-bold mb-2">Mobile Viewing Setup</h2>
         <p className="text-muted-foreground">Watch your CCTV cameras from anywhere in the world using your smartphone. Here are the step-by-step instructions for the most popular apps.</p>
       </motion.div>
-      {mobileAppsData.map((brand) => (
+
+      {mobileAppsData.map((brand, bi) => (
         <motion.div key={brand.brand} {...fadeUp}>
           <Card className={cn(premiumCard, "overflow-hidden")}>
             <div className="p-4 border-b bg-muted/30 flex items-center gap-3">
@@ -1261,14 +1518,18 @@ function MobileSetupSection() {
               <h3 className="font-bold text-lg">{brand.brand}</h3>
             </div>
             <CardContent className="p-6 space-y-6">
+              {/* Apps */}
               <div className="flex flex-wrap gap-3">
                 {brand.apps.map((app) => (
                   <Badge key={app.name} variant="outline" className={cn("px-3 py-1.5 text-sm", app.color)}>
-                    <Smartphone className="h-3.5 w-3.5 mr-1" /> {app.name}
+                    <Smartphone className="h-3.5 w-3.5 mr-1" />
+                    {app.name}
                     <span className="ml-2 opacity-70">{app.use}</span>
                   </Badge>
                 ))}
               </div>
+
+              {/* Steps */}
               <div className="space-y-3">
                 <h4 className="font-semibold">Setup Steps</h4>
                 {brand.steps.map((step, si) => (
@@ -1295,12 +1556,15 @@ function BudgetGuideSection() {
         <h2 className="text-2xl sm:text-3xl font-bold mb-2">Budget Guide — Find Your Perfect Setup</h2>
         <p className="text-muted-foreground">Your budget determines the quality, number of cameras, and features you can get. Here are recommended setups for every budget range.</p>
       </motion.div>
+
       <motion.div {...staggerContainer} className="space-y-5">
         {budgetGuides.map((guide) => (
           <motion.div key={guide.range} {...staggerItem}>
             <Card className={cn(premiumCard, "overflow-hidden")}>
               <div className={cn("p-4 border-b flex items-center gap-3", guide.lightColor, guide.borderColor)}>
-                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", guide.color, "text-white")}>{guide.icon}</div>
+                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", guide.color, "text-white")}>
+                  {guide.icon}
+                </div>
                 <div className="flex-1">
                   <h3 className={cn("font-bold", guide.textColor)}>{guide.label}</h3>
                   <p className="text-sm font-semibold">{guide.range}</p>
@@ -1309,198 +1573,4 @@ function BudgetGuideSection() {
               <CardContent className="p-5 space-y-4">
                 <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
                 <div className="space-y-2">
-                  <h4 className="font-semibold text-sm">Recommended Setup:</h4>
-                  {guide.recommended.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                      <span className="text-muted-foreground">{item}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground">Estimated Total</p>
-                    <p className={cn("font-bold text-lg", guide.textColor)}>{guide.totalCost}</p>
-                  </div>
-                  <div className="bg-muted/50 rounded-lg p-3">
-                    <p className="text-xs text-muted-foreground">WiFi Alternative</p>
-                    <p className="font-medium text-sm mt-1">{guide.alternative}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
-    </div>
-  );
-}
-
-function InstallationSection() {
-  return (
-    <div className="space-y-8">
-      <motion.div {...fadeUp}>
-        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Installation Guide</h2>
-        <p className="text-muted-foreground">Follow these steps to set up your CCTV system correctly. Whether you are installing a wired DVR/NVR system or a simple WiFi camera, this guide covers everything.</p>
-      </motion.div>
-
-      <motion.div {...staggerContainer} className="space-y-4">
-        {installSteps.map((item, i) => (
-          <motion.div key={i} {...staggerItem}>
-            <Card className={cn(premiumCard, "overflow-hidden")}>
-              <CardContent className="p-5 flex gap-4">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0 text-emerald-700 dark:text-emerald-300 font-bold text-lg">
-                  {i + 1}
-                </div>
-                <div className="flex-1 pb-4 border-b border-muted last:border-0 last:pb-0">
-                  <h4 className="font-semibold text-sm">{item.step}</h4>
-                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.detail}</p>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      <motion.div {...fadeUp}>
-        <Card className={cn(premiumCard, "bg-slate-50 dark:bg-slate-900/30")}>
-          <CardHeader><CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5" /> Tools You Will Need</CardTitle></CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {[
-                "Drill machine + drill bits", "Screwdriver set", "RG59 coaxial cable", "BNC connectors / couplers",
-                "Power cable (2-core)", "Cable clips / ties", "Ethernet cable (Cat5e/Cat6)", "HDMI cable",
-                "SATA HDD (1TB-2TB)", "Ladder / step stool", "Measuring tape", "Cable tester (optional)",
-              ].map((tool) => (
-                <div key={tool} className="flex items-center gap-2 bg-background rounded-lg p-3 border text-sm">
-                  <Wrench className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> {tool}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// OVERVIEW (Dashboard) SECTION
-// ═══════════════════════════════════════════════════════════════
-
-function OverviewSection({ setLearnSection, activeCategory, setActiveCategory }: {
-  setLearnSection: (s: string) => void; activeCategory: string; setActiveCategory: (c: string) => void;
-}) {
-  return (
-    <div className="space-y-12">
-      <CategoryFilters active={activeCategory} onChange={setActiveCategory} />
-      <ModuleCards setLearnSection={setLearnSection} activeCategory={activeCategory} />
-      <InteractiveFlowDiagram />
-      <FeaturedArticles />
-      <VideoTutorials />
-      <DownloadsSection />
-      <ComparisonTables />
-      <FaqSectionWithSearch />
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// MAIN LEARNING SYSTEM
-// ═══════════════════════════════════════════════════════════════
-
-export function LearningSystem() {
-  const { learnSection, setLearnSection } = useStore();
-  const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [mobileSidebar, setMobileSidebar] = useState(false);
-
-  const handleTopicClick = (topic: string) => {
-    const mapping: Record<string, string> = {
-      "CCTV Camera Types": "camera-types",
-      "DVR vs NVR": "dvr-nvr",
-      "Hikvision Compatibility": "compatibility",
-      "Mobile App Setup": "mobile-setup",
-      "WiFi Camera Installation": "camera-types",
-      "Night Vision Comparison": "camera-types",
-      "HDD Storage Calculation": "budget",
-      "PTZ Camera Guide": "camera-types",
-      "Budget Setup Under 10K": "budget",
-      "ColorVu vs IR": "camera-types",
-    };
-    const section = mapping[topic];
-    if (section) setLearnSection(section);
-  };
-
-  const handleStartLearning = () => {
-    setLearnSection("camera-types");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const renderSection = () => {
-    switch (learnSection) {
-      case "camera-types": return <CameraTypesSection />;
-      case "dvr-nvr": return <DvrNvrSection />;
-      case "compatibility": return <CompatibilitySection />;
-      case "mobile-setup": return <MobileSetupSection />;
-      case "budget": return <BudgetGuideSection />;
-      case "installation": return <InstallationSection />;
-      case "faq": return <FaqSectionWithSearch />;
-      default: return <OverviewSection setLearnSection={setLearnSection} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen">
-      {/* Hero - only on overview */}
-      {learnSection === "overview" && (
-        <HeroSection onStartLearning={handleStartLearning} onBrowseProducts={() => router.push("/products")} />
-      )}
-
-      {/* Search - only on overview */}
-      {learnSection === "overview" && (
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <LearningSearch value={searchQuery} onChange={setSearchQuery} onTopicClick={handleTopicClick} />
-        </div>
-      )}
-
-      {/* Main content area */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-          <button onClick={() => router.push("/products")} className="hover:text-foreground transition-colors">Catalog</button>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <span className="font-medium text-foreground">Learning Center</span>
-          {learnSection !== "overview" && (
-            <>
-              <ChevronRight className="h-3.5 w-3.5" />
-              <button onClick={() => setLearnSection("overview")} className="hover:text-foreground transition-colors">{learnSections.find((s) => s.id === learnSection)?.label}</button>
-            </>
-          )}
-        </div>
-
-        <div className="flex flex-col lg:flex-row gap-8 pb-20">
-          <SidebarNav
-            learnSection={learnSection}
-            setLearnSection={setLearnSection}
-            mobileOpen={mobileSidebar}
-            setMobileOpen={setMobileSidebar}
-            router={router}
-          />
-
-          <div className="flex-1 min-w-0">
-            {/* Progress - only on overview */}
-            {learnSection === "overview" && <LearningProgress />}
-
-            {/* Section content */}
-            {renderSection()}
-
-            {/* CTA - only on overview */}
-            {learnSection === "overview" && <CtaSection router={router} />}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+                  <h4 className=
