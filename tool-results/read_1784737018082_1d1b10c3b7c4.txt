@@ -959,66 +959,67 @@
    959→
    960→export function LearningSystem() {
    961→  const { learnSection, setLearnSection } = useStore();
-   962→
-   963→  const renderSection = () => {
-   964→    switch (learnSection) {
-   965→      case "camera-types": return <CameraTypesSection />;
-   966→      case "dvr-nvr": return <DvrNvrSection />;
-   967→      case "compatibility": return <CompatibilitySection />;
-   968→      case "mobile-setup": return <MobileSetupSection />;
-   969→      case "budget": return <BudgetGuideSection />;
-   970→      case "installation": return <InstallationSection />;
-   971→      case "faq": return <FaqSection />;
-   972→      default: return <OverviewSection />;
-   973→    }
-   974→  };
-   975→
-   976→  return (
-   977→    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-   978→      {/* Breadcrumb */}
-   979→      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-   980→        <button onClick={() => router.push("/products")} className="hover:text-foreground transition-colors">Catalog</button>
-   981→        <ChevronRight className="h-3.5 w-3.5" />
-   982→        <span className="font-medium text-foreground">Learning Center</span>
-   983→        {learnSection !== "overview" && (
-   984→          <>
-   985→            <ChevronRight className="h-3.5 w-3.5" />
-   986→            <span className="font-medium">{learnSections.find((s) => s.id === learnSection)?.label}</span>
-   987→          </>
-   988→        )}
-   989→      </div>
-   990→
-   991→      <div className="flex flex-col lg:flex-row gap-6">
-   992→        {/* Sidebar Navigation */}
-   993→        <aside className="w-full lg:w-56 shrink-0">
-   994→          <nav className="sticky top-20 space-y-1">
-   995→            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">Learning Topics</h3>
-   996→            {learnSections.map((s) => (
-   997→              <button
-   998→                key={s.id}
-   999→                onClick={() => setLearnSection(s.id)}
-  1000→                className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left", learnSection === s.id
-  1001→                    ? "bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200"
-  1002→                    : "hover:bg-muted text-muted-foreground hover:text-foreground")}
-  1003→              >
-  1004→                {s.icon} {s.label}
-  1005→              </button>
-  1006→            ))}
-  1007→            <Separator className="my-3" />
-  1008→            <button
-  1009→              onClick={() => router.push("/products")}
-  1010→              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
-  1011→            >
-  1012→              <Camera className="h-4 w-4" /> Back to Product Catalog
-  1013→            </button>
-  1014→          </nav>
-  1015→        </aside>
-  1016→
-  1017→        {/* Content */}
-  1018→        <div className="flex-1 min-w-0">
-  1019→          {renderSection()}
-  1020→        </div>
-  1021→      </div>
-  1022→    </div>
-  1023→  );
-  1024→}
+   962→  const router = useRouter();
+   963→
+   964→  const renderSection = () => {
+   965→    switch (learnSection) {
+   966→      case "camera-types": return <CameraTypesSection />;
+   967→      case "dvr-nvr": return <DvrNvrSection />;
+   968→      case "compatibility": return <CompatibilitySection />;
+   969→      case "mobile-setup": return <MobileSetupSection />;
+   970→      case "budget": return <BudgetGuideSection />;
+   971→      case "installation": return <InstallationSection />;
+   972→      case "faq": return <FaqSection />;
+   973→      default: return <OverviewSection />;
+   974→    }
+   975→  };
+   976→
+   977→  return (
+   978→    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+   979→      {/* Breadcrumb */}
+   980→      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+   981→        <button onClick={() => router.push("/products")} className="hover:text-foreground transition-colors">Catalog</button>
+   982→        <ChevronRight className="h-3.5 w-3.5" />
+   983→        <span className="font-medium text-foreground">Learning Center</span>
+   984→        {learnSection !== "overview" && (
+   985→          <>
+   986→            <ChevronRight className="h-3.5 w-3.5" />
+   987→            <span className="font-medium">{learnSections.find((s) => s.id === learnSection)?.label}</span>
+   988→          </>
+   989→        )}
+   990→      </div>
+   991→
+   992→      <div className="flex flex-col lg:flex-row gap-6">
+   993→        {/* Sidebar Navigation */}
+   994→        <aside className="w-full lg:w-56 shrink-0">
+   995→          <nav className="sticky top-20 space-y-1">
+   996→            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3 px-3">Learning Topics</h3>
+   997→            {learnSections.map((s) => (
+   998→              <button
+   999→                key={s.id}
+  1000→                onClick={() => setLearnSection(s.id)}
+  1001→                className={cn("w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left", learnSection === s.id
+  1002→                    ? "bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200"
+  1003→                    : "hover:bg-muted text-muted-foreground hover:text-foreground")}
+  1004→              >
+  1005→                {s.icon} {s.label}
+  1006→              </button>
+  1007→            ))}
+  1008→            <Separator className="my-3" />
+  1009→            <button
+  1010→              onClick={() => router.push("/products")}
+  1011→              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+  1012→            >
+  1013→              <Camera className="h-4 w-4" /> Back to Product Catalog
+  1014→            </button>
+  1015→          </nav>
+  1016→        </aside>
+  1017→
+  1018→        {/* Content */}
+  1019→        <div className="flex-1 min-w-0">
+  1020→          {renderSection()}
+  1021→        </div>
+  1022→      </div>
+  1023→    </div>
+  1024→  );
+  1025→}
