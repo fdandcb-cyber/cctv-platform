@@ -201,7 +201,7 @@ export function SiteHeader() {
               aria-label="Cart"
             >
               <ShoppingCart className={cn("h-4 w-4")} />
-              {cartCount > 0 && (
+              {mounted && cartCount > 0 && (
                 <Badge
                   className={cn(
                     "absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full p-0 text-[10px] bg-emerald-600 text-white border-2 border-background"
