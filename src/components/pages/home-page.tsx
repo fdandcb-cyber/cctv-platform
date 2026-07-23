@@ -191,7 +191,7 @@ const fadeUp = {
   initial: { opacity: 0, y: 24 },
   whileInView: { opacity: 1, y: 0 },
   viewport: { once: true, margin: "-60px" } as const,
-  transition: { duration: 0.5, ease: "easeOut" },
+  transition: { duration: 0.5, ease: "easeOut" as const },
 };
 
 const staggerContainer = {
@@ -203,7 +203,7 @@ const staggerContainer = {
 const staggerItem = {
   initial: { opacity: 0, y: 20 },
   whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, ease: "easeOut" },
+  transition: { duration: 0.45, ease: "easeOut" as const },
 };
 
 // ─── Reusable premium card class ───
@@ -251,7 +251,7 @@ function HeroSection() {
         <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
+          transition={{ duration: 0.6, ease: "easeOut" as const }}
           className="flex justify-center mb-8"
         >
           <div

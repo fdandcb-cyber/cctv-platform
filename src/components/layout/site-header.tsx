@@ -110,7 +110,7 @@ export function SiteHeader() {
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "relative text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200",
+                  "relative text-sm font-medium px-4 py-2 rounded-xl transition-all duration-200",
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
@@ -167,7 +167,7 @@ export function SiteHeader() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn("rounded-lg")}
+                  className={cn("rounded-xl")}
                   onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
                   aria-label="Close search"
                 >
@@ -186,7 +186,7 @@ export function SiteHeader() {
                   size="icon"
                   onClick={() => setSearchOpen(true)}
                   aria-label="Search"
-                  className="rounded-lg"
+                  className="rounded-xl"
                 >
                   <Search className={cn("h-4 w-4")} />
                 </Button>
@@ -196,7 +196,7 @@ export function SiteHeader() {
 
           {/* Cart */}
           <Link href="/cart">
-            <Button variant="ghost" size="icon" className={cn("relative rounded-lg")} aria-label="Cart">
+            <Button variant="ghost" size="icon" className={cn("relative rounded-xl")} aria-label="Cart">
               <ShoppingCart className={cn("h-4 w-4")} />
               {mounted && cartCount > 0 && (
                 <Badge className={cn(
@@ -215,7 +215,7 @@ export function SiteHeader() {
               size="icon"
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               aria-label="Toggle theme"
-              className="hidden sm:inline-flex rounded-lg"
+              className="hidden sm:inline-flex rounded-xl"
             >
               {theme === "dark" ? <Sun className={cn("h-4 w-4")} /> : <Moon className={cn("h-4 w-4")} />}
             </Button>
@@ -226,7 +226,7 @@ export function SiteHeader() {
             <Button
               variant="ghost"
               size="icon"
-              className={cn("hidden sm:inline-flex rounded-lg text-muted-foreground hover:text-foreground")}
+              className={cn("hidden sm:inline-flex rounded-xl text-muted-foreground hover:text-foreground")}
               aria-label="Admin"
             >
               <Settings className={cn("h-4 w-4")} />
@@ -266,7 +266,7 @@ export function SiteHeader() {
             </DropdownMenu>
           ) : (
             <Link href="/auth">
-              <Button variant="ghost" size="sm" className={cn("hidden sm:inline-flex rounded-lg")}>
+              <Button variant="ghost" size="sm" className={cn("hidden sm:inline-flex rounded-xl")}>
                 <User className={cn("mr-1.5 h-4 w-4")} />
                 Login
               </Button>
@@ -277,7 +277,7 @@ export function SiteHeader() {
           <Button
             variant="ghost"
             size="icon"
-            className={cn("lg:hidden rounded-lg")}
+            className={cn("lg:hidden rounded-xl")}
             onClick={toggleMobileMenu}
             aria-label="Toggle menu"
           >

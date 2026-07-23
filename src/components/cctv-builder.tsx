@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { fmt } from "@/lib/format";
 import { WhatsAppShare } from "@/components/whatsapp-button";
 import { RazorpayCheckout } from "@/components/razorpay-checkout";
 import {
@@ -41,13 +42,11 @@ import { motion, AnimatePresence } from "framer-motion";
 // ANIMATION VARIANTS
 // ═══════════════════════════════════════════════════════════════
 
-const fadeUp = { hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } } };
-const fadeIn = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.3 } } };
-const scaleIn = { hidden: { opacity: 0, scale: 0.95 }, visible: { opacity: 1, scale: 1, transition: { duration: 0.3, ease: "easeOut" } } };
-const slideDown = { hidden: { opacity: 0, height: 0 }, visible: { opacity: 1, height: "auto", transition: { duration: 0.3, ease: "easeOut" } }, exit: { opacity: 0, height: 0, transition: { duration: 0.2 } } };
-const countUp = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { duration: 0.5 } } };
-
-const fmt = (n: number) => "\u20b9" + n.toLocaleString("en-IN");
+const fadeUp = { initial: { opacity: 0, y: 16 }, whileInView: { opacity: 1, y: 0 }, transition: { duration: 0.4, ease: "easeOut" as const } };
+const fadeIn = { initial: { opacity: 0 }, whileInView: { opacity: 1 }, transition: { duration: 0.3 } };
+const scaleIn = { initial: { opacity: 0, scale: 0.95 }, whileInView: { opacity: 1, scale: 1 }, transition: { duration: 0.3, ease: "easeOut" as const } };
+const slideDown = { initial: { opacity: 0, height: 0 }, whileInView: { opacity: 1, height: "auto" as const }, transition: { duration: 0.3, ease: "easeOut" as const } };
+const countUp = { initial: { opacity: 0 }, whileInView: { opacity: 1 }, transition: { duration: 0.5 } };
 
 // ═══════════════════════════════════════════════════════════════
 // CONSTANTS & DATA

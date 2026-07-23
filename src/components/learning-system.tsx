@@ -1108,7 +1108,7 @@ function CameraTypesSection() {
                 <div>
                   <h4 className="font-semibold mb-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Best For</h4>
                   <div className="flex flex-wrap gap-2">
-                    {cam.bestFor.map((b) => (<Badge key={b} variant="outline" className={cn(cam.border, cam.textColor)}>{b}</Badge>))}
+                    {cam.bestFor.map((b) => (<Badge key={b} variant="outline" className={cn(cam.border, cam.color)}>{b}</Badge>))}
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
