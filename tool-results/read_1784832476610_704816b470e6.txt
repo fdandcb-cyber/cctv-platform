@@ -1,0 +1,1497 @@
+     1→"use client";
+     2→
+     3→import { useState, useEffect, useMemo } from "react";
+     4→import { useStore } from "@/store/cctv-store";
+     5→import { cn } from "@/lib/utils";
+     6→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     7→import { Badge } from "@/components/ui/badge";
+     8→import { Button } from "@/components/ui/button";
+     9→import { Separator } from "@/components/ui/separator";
+    10→import {
+    11→  Accordion, AccordionContent, AccordionItem, AccordionTrigger
+    12→} from "@/components/ui/accordion";
+    13→import {
+    14→  Camera, Wifi, Radio, Signal, MonitorPlay, ChevronRight, ChevronDown,
+    15→  BookOpen, GraduationCap, ShieldCheck, Smartphone, DollarSign,
+    16→  Zap, AlertTriangle, CheckCircle2, XCircle, Info, ArrowRight,
+    17→  Sun, Moon, Droplets, Cable, HardDrive, Cloud, Settings,
+    18→  Eye, ScanLine, RotateCcw, Move, Battery, Router,
+    19→  HelpCircle, Lightbulb, Wrench, Users, Building2, Home,
+    20→  TreePine, Video, MonitorSpeaker, Cpu, Tag,
+    21→  Search, Play, Download, Clock, FileText, BarChart3, Trophy,
+    22→  BookMarked, MessageCircle, Phone, ExternalLink, Star, Target,
+    23→  Layers, WifiOff, ArrowDown, ChevronLeft, Menu, X, Check,
+    24→  Sparkles, Headphones, Share2, BookmarkPlus
+    25→} from "lucide-react";
+    26→import { useRouter } from "next/navigation";
+    27→import { motion, AnimatePresence } from "framer-motion";
+    28→import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion";
+    29→
+    30→const premiumCard = cn(
+    31→  "h-full gap-0 py-0 rounded-2xl",
+    32→  "border border-border/60 shadow-sm",
+    33→  "hover:shadow-xl hover:-translate-y-1",
+    34→  "transition-all duration-300 ease-out",
+    35→  "hover:border-emerald-500/50",
+    36→  "outline-none"
+    37→);
+    38→
+    39→// ═══════════════════════════════════════════════════════════════
+    40→// LEARNING DATA
+    41→// ═══════════════════════════════════════════════════════════════
+    42→
+    43→const cameraTypesData = [
+    44→  {
+    45→    id: "dome", name: "Dome Camera", icon: <Camera className="h-6 w-6" />,
+    46→    color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200",
+    47→    accent: "bg-emerald-600", image: "/cctv-guide-images/dome_camera.png",
+    48→    tagline: "Indoor champion with a vandal-proof dome cover",
+    49→    description: `Dome cameras get their name from their dome-shaped housing. They are the most popular choice for indoor installations like homes, offices, shops, and restaurants. The dome cover makes it very difficult for anyone to tell which direction the camera lens is pointing, which acts as a natural deterrent. Most dome cameras are designed for ceiling mounting and offer a clean, professional appearance that blends into any interior decor. They are available in both fixed and PTZ (pan-tilt-zoom) versions, with resolutions ranging from 2MP (1080p) to 4K (8MP). Many models now come with built-in infrared for night vision up to 20-30 meters, and some premium models feature ColorVu technology that can record in full color even in near-total darkness.`,
+    50→    bestFor: ["Indoor home security", "Office & retail shops", "Reception areas & lobbies", "Restaurants & hotels", "Schools & hospitals"],
+    51→    pros: ["Vandal-resistant dome cover", "Direction of lens is hidden", "Clean professional look", "Easy ceiling mount", "Wide field of view (80-110\u00b0)"],
+    52→    cons: ["Limited outdoor use (non-weatherproof models)", "Shorter IR range than bullet cameras", "Harder to aim precisely after installation"],
+    53→    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 20-30m or ColorVu", weatherRating: "IP66 (outdoor) / Indoor", fieldOfView: "80\u00b0 - 110\u00b0", price: "\u20b91,200 - \u20b96,000" }
+    54→  },
+    55→  {
+    56→    id: "bullet", name: "Bullet Camera", icon: <Camera className="h-6 w-6" />,
+    57→    color: "text-sky-600", bg: "bg-sky-50", border: "border-sky-200",
+    58→    accent: "bg-sky-600", image: "/cctv-guide-images/bullet_camera.png",
+    59→    tagline: "Long-range outdoor performer with powerful night vision",
+    60→    description: `Bullet cameras are cylindrical in shape and are designed primarily for outdoor surveillance. They are mounted on walls or ceilings using a bracket and their elongated body houses a larger lens assembly that provides superior long-range vision. This makes them ideal for monitoring driveways, parking lots, perimeters, and large open areas. Bullet cameras typically have a longer infrared (IR) range compared to dome cameras \u2014 often reaching 40-80 meters \u2014 making them excellent for nighttime surveillance. Their visible, deterrent appearance also makes them great for areas where you want potential intruders to clearly see that the premises are under surveillance.`,
+    61→    bestFor: ["Outdoor perimeter monitoring", "Driveways & gate entry", "Parking lots & garages", "Long corridors & hallways", "Warehouses & factories"],
+    62→    pros: ["Long IR night vision range (40-80m)", "Visible deterrent effect", "Weatherproof (IP66/IP67)", "Easy to install and aim", "Longer detection distance"],
+    63→    cons: ["More noticeable / less discreet", "Can be tampered with (vandalism risk)", "Not ideal for tight indoor spaces", "Larger physical size"],
+    64→    specs: { resolution: "2MP / 4MP / 5MP / 8MP", nightVision: "IR 40-80m or ColorVu", weatherRating: "IP66 / IP67", fieldOfView: "60\u00b0 - 90\u00b0", price: "\u20b91,000 - \u20b98,000" }
+    65→  },
+    66→  {
+    67→    id: "wifi", name: "WiFi Camera", icon: <Wifi className="h-6 w-6" />,
+    68→    color: "text-violet-600", bg: "bg-violet-50", border: "border-violet-200",
+    69→    accent: "bg-violet-600", image: "/cctv-guide-images/wifi_camera.png",
+    70→    tagline: "No cables needed \u2014 plug, connect WiFi, and watch from anywhere",
+    71→    description: `WiFi cameras (also called wireless IP cameras) connect to your home or office WiFi network instead of requiring a cable run back to a DVR/NVR. This makes them incredibly easy to install \u2014 you just need a power outlet near the camera. Most WiFi cameras store footage on a MicroSD card and/or upload to cloud storage, so you don\u2019t even need a separate DVR or NVR. They are perfect for renters, apartments, and small setups where running cables through walls is not possible.`,
+    72→    bestFor: ["Apartments & rental homes", "Quick DIY installation", "Baby monitoring & pet watching", "Small shops & offices", "Indoor spaces where cabling is hard"],
+    73→    pros: ["No cable running needed (only power)", "Easy DIY installation", "Works with MicroSD + Cloud storage", "Mobile app with instant alerts", "Two-way audio communication"],
+    74→    cons: ["Depends on WiFi signal strength", "Limited range from router", "May have lag/delay on live view", "Higher bandwidth consumption", "Less reliable than wired systems"],
+    75→    specs: { resolution: "2MP / 3MP / 4MP", nightVision: "IR 10-15m or ColorVu", weatherRating: "IP65 (outdoor) / Indoor", fieldOfView: "90\u00b0 - 130\u00b0", price: "\u20b91,500 - \u20b97,000" }
+    76→  },
+    77→  {
+    78→    id: "ptz", name: "PTZ Camera", icon: <Radio className="h-6 w-6" />,
+    79→    color: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200",
+    80→    accent: "bg-amber-600", image: "/cctv-guide-images/ptz_camera.png",
+    81→    tagline: "One camera that can pan, tilt, and zoom to cover a huge area",
+    82→    description: `PTZ stands for Pan-Tilt-Zoom. These cameras can rotate horizontally (pan up to 360\u00b0), move vertically (tilt up to 90\u00b0 to 180\u00b0), and optically zoom in on distant objects (up to 20x, 30x, or even 40x magnification). A single PTZ camera can replace 4-8 fixed cameras because it can monitor a very large area and zoom in on specific points of interest.`,
+    83→    bestFor: ["Large open areas", "Parking lots & malls", "Warehouses & factories", "Traffic monitoring", "Any area needing 360\u00b0 coverage"],
+    84→    pros: ["360\u00b0 pan + vertical tilt + optical zoom", "One camera covers a huge area", "Auto-tracking moving objects", "Remote controlled via app/Joystick", "Auto-tour / patrol mode"],
+    85→    cons: ["More expensive (\u20b98,000 - \u20b950,000+)", "Complex installation and setup", "Only records where it\u2019s pointing", "Moving parts can wear out", "Requires skilled operator for best use"],
+    86→    specs: { resolution: "2MP / 4MP / 8MP", nightVision: "IR 100-200m", weatherRating: "IP66 / IP67", fieldOfView: "360\u00b0 pan, 90\u00b0 tilt, 20-40x zoom", price: "\u20b98,000 - \u20b950,000+" }
+    87→  },
+    88→  {
+    89→    id: "4g", name: "4G LTE / Solar Camera", icon: <Signal className="h-6 w-6" />,
+    90→    color: "text-rose-600", bg: "bg-rose-50", border: "border-rose-200",
+    91→    accent: "bg-rose-600", image: "/cctv-guide-images/4g_camera.png",
+    92→    tagline: "Works anywhere with a 4G signal \u2014 no WiFi, no power needed",
+    93→    description: `4G LTE cameras are the ultimate solution for locations where neither WiFi nor power cables are available. They connect to the mobile 4G network using a SIM card (just like your phone) and many models come with a built-in solar panel that charges the internal battery during the day. This means you can install them literally anywhere \u2014 farm fields, construction sites, remote gates, forest areas, highway projects, or any off-grid location.`,
+    94→    bestFor: ["Farm fields & agriculture", "Construction sites", "Remote gates & entry points", "Highway & road projects", "Any place without WiFi/electricity"],
+    95→    pros: ["Works without WiFi or electricity", "Solar powered (no electricity bill)", "Install anywhere with 4G signal", "Instant mobile alerts via 4G", "Truly wireless installation"],
+    96→    cons: ["Requires 4G SIM + monthly data plan", "Higher initial cost", "Depends on 4G network coverage", "Limited bandwidth may reduce video quality", "Battery degrades over 2-3 years"],
+    97→    specs: { resolution: "2MP / 4MP", nightVision: "IR 15-30m + Color", weatherRating: "IP66 / IP67", fieldOfView: "100\u00b0 - 130\u00b0", price: "\u20b95,000 - \u20b920,000" }
+    98→  },
+    99→];
+   100→
+   101→const dvrNvrData = {
+   102→  dvr: {
+   103→    name: "DVR (Digital Video Recorder)", icon: <HardDrive className="h-5 w-5" />,
+   104→    description: `A DVR records video from analog cameras connected via coaxial cable (the same type of cable used for TV connections). DVRs are used with HD-TVI (Hikvision), HD-CVI (Dahua), or AHD technology cameras. The coaxial cable carries both video signal and power (when using a power-over-coax setup), which simplifies wiring. DVRs are the most cost-effective solution for standard home and small business security.`,
+   105→    technology: "HD-TVI / HD-CVI / AHD", cable: "Coaxial (RG59 / RG6) + Power cable",
+   106→    maxResolution: "8MP (4K) on supported models", channels: "4 / 8 / 16 channels",
+   107→    brands: "Hikvision (HD-TVI), Dahua (HD-CVI), CP Plus", priceRange: "\u20b92,500 - \u20b915,000",
+   108→    compatibility: "CRITICAL: Hikvision HD-TVI cameras work with Hikvision DVRs. Dahua HD-CVI cameras work with Dahua DVRs. They are NOT cross-compatible in most cases. Always match the camera technology with the DVR brand."
+   109→  },
+   110→  nvr: {
+   111→    name: "NVR (Network Video Recorder)", icon: <Cloud className="h-5 w-5" />,
+   112→    description: `An NVR records video from IP (network) cameras connected via Ethernet cable (Cat5e/Cat6). NVRs are the modern standard for high-resolution surveillance. They support Power over Ethernet (PoE), meaning a single Ethernet cable carries both video data and power to each camera \u2014 no separate power cable needed.`,
+   113→    technology: "IP (Internet Protocol)", cable: "Ethernet (Cat5e / Cat6) with PoE",
+   114→    maxResolution: "4K (8MP) and higher", channels: "4 / 8 / 16 / 32 channels",
+   115→    brands: "Hikvision, Dahua, Reolink, Uniview", priceRange: "\u20b94,000 - \u20b925,000",
+   116→    compatibility: "NVRs are generally universal \u2014 most IP cameras work with most NVRs via ONVIF protocol. However, some advanced smart features (like face detection) may only work with same-brand camera+NVR combos."
+   117→  }
+   118→};
+   119→
+   120→const mobileAppsData = [
+   121→  {
+   122→    brand: "Hikvision",
+   123→    apps: [
+   124→      { name: "iVMS-4500", use: "For DVR/NVR connected cameras", color: "bg-orange-50 text-orange-700 border-orange-200" },
+   125→      { name: "Ezviz", use: "For WiFi/Cloud cameras (Ezviz brand by Hikvision)", color: "bg-blue-50 text-blue-700 border-blue-200" },
+   126→      { name: "Hik-Connect", use: "For newer Hikvision IP cameras with cloud P2P", color: "bg-sky-50 text-sky-700 border-sky-200" },
+   127→    ],
+   128→    steps: [
+   129→      "Download the correct app from Google Play Store or Apple App Store",
+   130→      "Create a free account / sign up with your email and phone number",
+   131→      "On your DVR/NVR, go to Menu \u2192 Network \u2192 Platform Access \u2192 Enable Hik-Connect",
+   132→      "Scan the QR code displayed on your DVR/NVR monitor using the app",
+   133→      "The camera will appear in your app \u2014 tap to view live video",
+   134→      "Enable Push Notifications in app settings to get motion alerts on your phone",
+   135→    ]
+   136→  },
+   137→  {
+   138→    brand: "Dahua",
+   139→    apps: [
+   140→      { name: "DMSS", use: "For DVR/NVR and IP cameras", color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+   141→      { name: "Imou Life", use: "For WiFi/Cloud cameras (Imou brand by Dahua)", color: "bg-purple-50 text-purple-700 border-purple-200" },
+   142→    ],
+   143→    steps: [
+   144→      "Download DMSS or Imou Life from Google Play Store or Apple App Store",
+   145→      "Register a new account with your email address",
+   146→      "On your DVR/NVR, go to Main Menu \u2192 System \u2192 Network \u2192 P2P \u2192 Enable",
+   147→      "Note the Device Serial Number and verification code shown on screen",
+   148→      "In the app, tap '+' \u2192 'Scan QR Code' or enter serial number manually",
+   149→      "Enter the verification code when prompted \u2014 your device will appear",
+   150→      "Tap the device to view live streams from all connected cameras",
+   151→    ]
+   152→  },
+   153→];
+   154→
+   155→const budgetGuides = [
+   156→  {
+   157→    range: "Under \u20b95,000", label: "Basic Starter Kit", color: "bg-emerald-600",
+   158→    lightColor: "bg-emerald-50", textColor: "text-emerald-700", borderColor: "border-emerald-200",
+   159→    icon: <Home className="h-5 w-5" />,
+   160→    description: "Perfect for small homes, single rooms, or shop counters. You get 1-2 basic cameras with a small DVR or WiFi camera setup. This is the most affordable entry point into CCTV security.",
+   161→    recommended: [
+   162→      "1x Dome or Bullet camera (2MP, HD-TVI) \u2014 \u20b91,000 - \u20b91,500",
+   163→      "1x 4-channel DVR (Hikvision/Dahua) \u2014 \u20b92,500 - \u20b93,500",
+   164→      "1x 500GB HDD (for recording) \u2014 \u20b91,200 - \u20b91,500",
+   165→      "Cables & power supply \u2014 \u20b9500 - \u20b9800",
+   166→    ],
+   167→    totalCost: "\u20b95,200 - \u20b97,300",
+   168→    alternative: "1x WiFi camera with MicroSD card (no DVR needed) \u2014 \u20b91,500 - \u20b93,500"
+   169→  },
+   170→  {
+   171→    range: "\u20b95,000 - \u20b910,000", label: "Home Security Pack", color: "bg-sky-600",
+   172→    lightColor: "bg-sky-50", textColor: "text-sky-700", borderColor: "border-sky-200",
+   173→    icon: <Building2 className="h-5 w-5" />,
+   174→    description: "Ideal for a complete home setup covering 2-4 cameras. This covers all entry points, parking area, and main living areas. You get better resolution, more storage, and night vision capabilities.",
+   175→    recommended: [
+   176→      "2-4x Dome/Bullet cameras (2-4MP) \u2014 \u20b92,000 - \u20b95,000",
+   177→      "1x 4/8-channel DVR or NVR \u2014 \u20b93,000 - \u20b95,000",
+   178→      "1x 1TB HDD \u2014 \u20b92,000 - \u20b92,500",
+   179→      "Cables, connectors & power supply \u2014 \u20b91,000 - \u20b91,500",
+   180→    ],
+   181→    totalCost: "\u20b98,000 - \u20b914,000",
+   182→    alternative: "2x WiFi cameras + 1x PTZ for large room \u2014 \u20b96,000 - \u20b912,000"
+   183→  },
+   184→  {
+   185→    range: "\u20b910,000 - \u20b925,000", label: "Premium Setup", color: "bg-amber-600",
+   186→    lightColor: "bg-amber-50", textColor: "text-amber-700", borderColor: "border-amber-200",
+   187→    icon: <ShieldCheck className="h-5 w-5" />,
+   188→    description: "Professional-grade setup for large homes, offices, or small businesses. Features 4-8 cameras with 4MP/5MP resolution, ColorVu night vision, smart motion detection, and remote viewing on mobile.",
+   189→    recommended: [
+   190→      "4-8x Dome/Bullet cameras (4-5MP, ColorVu) \u2014 \u20b96,000 - \u20b915,000",
+   191→      "1x 8-channel NVR with PoE \u2014 \u20b95,000 - \u20b98,000",
+   192→      "1x 2TB HDD \u2014 \u20b93,500 - \u20b94,500",
+   193→      "Cat6 cables, PoE injectors, accessories \u2014 \u20b92,000 - \u20b93,000",
+   194→    ],
+   195→    totalCost: "\u20b916,500 - \u20b930,500",
+   196→    alternative: "Mix of 4x IP cameras + 1x PTZ + NVR \u2014 \u20b918,000 - \u20b928,000"
+   197→  },
+   198→  {
+   199→    range: "\u20b925,000+", label: "Enterprise / Commercial", color: "bg-rose-600",
+   200→    lightColor: "bg-rose-50", textColor: "text-rose-700", borderColor: "border-rose-200",
+   201→    icon: <Building2 className="h-5 w-5" />,
+   202→    description: "Complete commercial solution for malls, warehouses, factories, multi-story buildings. Includes 8-16+ cameras with 4K resolution, AI-powered analytics, PTZ cameras, and professional installation.",
+   203→    recommended: [
+   204→      "8-16x IP cameras (4-8MP) with AI features \u2014 \u20b915,000 - \u20b940,000",
+   205→      "1-2x PTZ cameras (20x zoom) \u2014 \u20b910,000 - \u20b930,000",
+   206→      "16-channel NVR with PoE \u2014 \u20b98,000 - \u20b915,000",
+   207→      "4TB+ HDD or NAS storage \u2014 \u20b95,000 - \u20b910,000",
+   208→      "Structured cabling, UPS backup, installation \u2014 \u20b910,000 - \u20b920,000",
+   209→    ],
+   210→    totalCost: "\u20b948,000 - \u20b91,15,000",
+   211→    alternative: "Complete with remote monitoring service \u2014 \u20b950,000 - \u20b92,00,000"
+   212→  },
+   213→];
+   214→
+   215→const faqData = [
+   216→  { q: "Can I use a Hikvision camera with a Dahua DVR?", a: "In most cases, NO. Hikvision cameras use HD-TVI technology and Dahua DVRs use HD-CVI technology \u2014 they are different signal standards. A Hikvision HD-TVI camera will NOT work with a Dahua HD-CVI DVR, and vice versa. However, if both the camera and DVR are IP-based (network cameras + NVR), they usually work together via the ONVIF protocol. Always check compatibility before buying." },
+   217→  { q: "How much HDD storage do I need?", a: "For a 2MP (1080p) camera recording 24/7, you need approximately 20-30GB per day per camera. So for 4 cameras over 30 days: 4 \u00d7 25GB \u00d7 30 = 3,000GB (3TB). With H.265+ compression, this drops to about 1.5-2TB. For 4MP cameras, double these numbers. If you use motion-only recording instead of 24/7, storage needs drop by 40-60%." },
+   218→  { q: "Can I view my CCTV cameras on my mobile phone?", a: "Yes! Every modern DVR, NVR, and WiFi camera supports mobile viewing. For Hikvision systems, use iVMS-4500 or Hik-Connect app. For Dahua systems, use DMSS app. For WiFi cameras, use the brand\u2019s dedicated app (Ezviz, Imou Life, etc.). You just need an internet connection on the DVR/NVR and your phone. The setup usually takes 5-10 minutes." },
+   219→  { q: "What is the difference between IR and ColorVu night vision?", a: "IR (Infrared) night vision records in black and white in complete darkness. It\u2019s reliable and has longer range (20-80m). ColorVu (Hikvision) or Full-Color (Dahua) uses a large aperture lens and advanced sensor to record in full color even in very low light. ColorVu provides more detail but has shorter range. Some premium cameras offer both modes and switch automatically." },
+   220→  { q: "Do I need internet for CCTV to work?", a: "No! Your CCTV system works perfectly without internet. The cameras record to the DVR/NVR hard drive directly through cables. Internet is only needed for remote mobile viewing when you\u2019re away from home, and for cloud backup. Without internet, you can still watch live and recorded footage on a monitor connected directly to the DVR/NVR." },
+   221→  { q: "How long does CCTV footage get stored?", a: "It depends on your HDD size and recording settings. With motion-only recording on a 1TB HDD with 4 cameras (2MP): approximately 15-20 days. With 24/7 recording: approximately 7-10 days. With 4 cameras (4MP) on 2TB: approximately 10-15 days. You can extend storage by using motion recording, lower frame rates, or adding more HDDs." },
+   222→  { q: "What resolution should I choose for my cameras?", a: "2MP (1080p) is sufficient for most home and small business use. 4MP offers 50% more detail and is ideal for entrances and areas where facial recognition is important. 5MP and 8MP (4K) provide the highest detail for large areas, but require more storage and bandwidth. For general surveillance, 2-4MP is the sweet spot balancing quality and cost." },
+   223→  { q: "Can I mix different camera brands with one DVR/NVR?", a: "For analog systems (DVR), mixing brands is risky \u2014 Hikvision HD-TVI cameras only reliably work with Hikvision DVRs, and Dahua HD-CVI cameras with Dahua DVRs. For IP systems (NVR), you can mix brands using the ONVIF protocol, but you may lose some brand-specific smart features. For best results, stick with the same brand throughout your system." },
+   224→];
+   225→
+   226→const installSteps = [
+   227→  { step: "1. Plan Camera Positions", detail: "Walk around your property and identify all entry points, vulnerable areas, and key spots you want to monitor. Mark camera locations on a simple sketch of your property. Consider camera field of view, lighting conditions, and cable routing paths to your DVR/NVR location." },
+   228→  { step: "2. Run Cables", detail: "For DVR systems: Run RG59 coaxial cable from each camera location to the DVR. For NVR systems: Run Cat5e/Cat6 Ethernet cable from each camera to the NVR. Use cable clips or conduit to secure cables along walls. For WiFi cameras: Just ensure a power outlet is nearby and WiFi signal is strong." },
+   229→  { step: "3. Mount Cameras", detail: "Use the included mounting bracket to attach each camera to the wall or ceiling. For outdoor cameras, seal all cable entry points with silicone to prevent water damage. Aim each camera to cover the intended area." },
+   230→  { step: "4. Connect to Recorder", detail: "For DVR: Connect each camera\u2019s coaxial cable to the DVR input ports. For NVR: Connect each camera\u2019s Ethernet cable to the NVR\u2019s PoE ports. Connect the DVR/NVR to your router using an Ethernet cable for remote viewing." },
+   231→  { step: "5. Power On & Configure", detail: "Power on the DVR/NVR. It will auto-detect the cameras. Set the date/time, recording schedule (24/7 or motion-activated), and resolution. Install a hard drive if not pre-installed. Configure motion detection zones and sensitivity for each camera." },
+   232→  { step: "6. Set Up Mobile Viewing", detail: "Download the appropriate app (iVMS-4500/Hik-Connect for Hikvision, DMSS for Dahua). Create an account, enable P2P/Cloud access on your DVR/NVR, and scan the QR code to add your device. Test live viewing and motion notification alerts." },
+   233→];
+   234→
+   235→const compatibilityData = [
+   236→  { brand1: "Hikvision", brand2: "Hikvision", works: true, note: "Full compatibility with all features", tech: "HD-TVI" },
+   237→  { brand1: "Dahua", brand2: "Dahua", works: true, note: "Full compatibility with all features", tech: "HD-CVI" },
+   238→  { brand1: "Hikvision", brand2: "Dahua", works: false, note: "Different signal tech (TVI vs CVI)", tech: "Incompatible" },
+   239→  { brand1: "CP Plus", brand2: "Hikvision", works: false, note: "CP Plus uses AHD, Hikvision uses TVI", tech: "Incompatible" },
+   240→  { brand1: "Any IP Camera", brand2: "Any NVR (ONVIF)", works: true, note: "Basic features via ONVIF protocol", tech: "IP / ONVIF" },
+   241→  { brand1: "Hikvision IP", brand2: "Dahua NVR", works: true, note: "Basic streaming works, smart features may not", tech: "IP / ONVIF" },
+   242→];
+   243→
+   244→// ═══════════════════════════════════════════════════════════════
+   245→// NEW DATA: Categories, Downloads, Videos, Articles, Comparisons
+   246→// ═══════════════════════════════════════════════════════════════
+   247→
+   248→const categoryFilters = [
+   249→  { id: "all", label: "All Topics" },
+   250→  { id: "beginner", label: "Beginner" },
+   251→  { id: "intermediate", label: "Intermediate" },
+   252→  { id: "advanced", label: "Advanced" },
+   253→  { id: "buying-guide", label: "Buying Guide" },
+   254→  { id: "installation", label: "Installation" },
+   255→  { id: "troubleshooting", label: "Troubleshooting" },
+   256→  { id: "networking", label: "Networking" },
+   257→  { id: "storage", label: "Storage" },
+   258→  { id: "mobile", label: "Mobile Viewing" },
+   259→];
+   260→
+   261→const learnSections = [
+   262→  { id: "overview", label: "Overview", icon: <BookOpen className="h-4 w-4" />, lessons: 0, completed: 0, category: "all" },
+   263→  { id: "camera-types", label: "Camera Types", icon: <Camera className="h-4 w-4" />, lessons: 8, completed: 5, category: "beginner" },
+   264→  { id: "dvr-nvr", label: "DVR vs NVR", icon: <MonitorPlay className="h-4 w-4" />, lessons: 5, completed: 3, category: "beginner" },
+   265→  { id: "compatibility", label: "Compatibility", icon: <Cpu className="h-4 w-4" />, lessons: 4, completed: 2, category: "intermediate" },
+   266→  { id: "mobile-setup", label: "Mobile Viewing", icon: <Smartphone className="h-4 w-4" />, lessons: 6, completed: 4, category: "networking" },
+   267→  { id: "budget", label: "Budget Guide", icon: <DollarSign className="h-4 w-4" />, lessons: 6, completed: 1, category: "buying-guide" },
+   268→  { id: "installation", label: "Installation", icon: <Wrench className="h-4 w-4" />, lessons: 12, completed: 0, category: "installation" },
+   269→  { id: "faq", label: "FAQ", icon: <HelpCircle className="h-4 w-4" />, lessons: 10, completed: 7, category: "all" },
+   270→];
+   271→
+   272→const downloadResources = [
+   273→  { title: "Installation Checklist", desc: "Step-by-step checklist for CCTV installation", icon: <CheckCircle2 className="h-5 w-5" />, format: "PDF", size: "250 KB" },
+   274→  { title: "CCTV Buying Guide", desc: "Complete guide to choosing the right CCTV system", icon: <FileText className="h-5 w-5" />, format: "PDF", size: "1.2 MB" },
+   275→  { title: "Compatibility Chart", desc: "Brand compatibility reference for cameras & recorders", icon: <Cpu className="h-5 w-5" />, format: "PDF", size: "180 KB" },
+   276→  { title: "Wiring Diagram", desc: "Visual diagram for DVR and NVR wiring setups", icon: <Cable className="h-5 w-5" />, format: "PDF", size: "320 KB" },
+   277→  { title: "Camera Placement Guide", desc: "Optimal camera positions for different property types", icon: <Eye className="h-5 w-5" />, format: "PDF", size: "450 KB" },
+   278→  { title: "Storage Calculator", desc: "Calculate HDD storage needs based on cameras & settings", icon: <HardDrive className="h-5 w-5" />, format: "XLSX", size: "85 KB" },
+   279→];
+   280→
+   281→const videoTutorials = [
+   282→  { title: "How to Set Up a Complete CCTV System", duration: "12:30", category: "Installation", difficulty: "Beginner", views: "15.2K" },
+   283→  { title: "DVR vs NVR - Which Should You Buy?", duration: "8:45", category: "Buying Guide", difficulty: "Beginner", views: "22.1K" },
+   284→  { title: "Hikvision iVMS-4500 App Setup Tutorial", duration: "6:20", category: "Mobile", difficulty: "Beginner", views: "31.5K" },
+   285→  { title: "Dahua DMSS App - Full Setup Guide", duration: "7:10", category: "Mobile", difficulty: "Beginner", views: "18.7K" },
+   286→  { title: "CCTV Camera Placement - Best Practices", duration: "10:15", category: "Installation", difficulty: "Intermediate", views: "9.3K" },
+   287→  { title: "HDD Storage Calculation Explained", duration: "5:50", category: "Storage", difficulty: "Intermediate", views: "7.8K" },
+   288→];
+   289→
+   290→const featuredArticles = [
+   291→  { title: "Complete Guide to CCTV Resolutions: 2MP vs 4MP vs 8MP", category: "Buying Guide", readTime: "8 min", difficulty: "Beginner", date: "Jul 10, 2026", preview: "Understanding camera resolution is the first step to making the right purchase. We break down what each resolution means in real-world terms." },
+   292→  { title: "H.265 vs H.264 Compression: Save 50% Storage", category: "Storage", readTime: "5 min", difficulty: "Intermediate", date: "Jul 5, 2026", preview: "H.265+ compression can halve your storage requirements without losing video quality. Learn how it works and which recorders support it." },
+   293→  { title: "How to Choose the Right HDD for Your DVR/NVR", category: "Buying Guide", readTime: "6 min", difficulty: "Beginner", date: "Jun 28, 2026", preview: "Not all hard drives are equal. Surveillance-grade HDDs are designed for 24/7 writing. Here is what to look for." },
+   294→  { title: "PoE Explained: Power Over Ethernet for CCTV", category: "Networking", readTime: "7 min", difficulty: "Intermediate", date: "Jun 20, 2026", preview: "Power over Ethernet lets you power IP cameras through the same cable that carries data. Simplify your installation with PoE." },
+   295→];
+   296→
+   297→const comparisonTables = [
+   298→  {
+   299→    title: "Bullet vs Dome",
+   300→    headers: ["Feature", "Bullet Camera", "Dome Camera"],
+   301→    rows: [
+   302→      ["Best For", "Outdoors, long-range", "Indoors, discreet"],
+   303→      ["Night Vision", "40-80m (longer range)", "20-30m (standard)"],
+   304→      ["Deterrence", "Highly visible", "Lens direction hidden"],
+   305→      ["Vandal Resistance", "Low (exposed)", "High (dome cover)"],
+   306→      ["Installation", "Wall mount, easy to aim", "Ceiling mount, fixed angle"],
+   307→      ["Field of View", "60° - 90°", "80° - 110°"],
+   308→      ["Weatherproof", "IP66/IP67 standard", "IP66 on outdoor models"],
+   309→      ["Price Range", "₹1,000 - ₹8,000", "₹1,200 - ₹6,000"],
+   310→    ],
+   311→  },
+   312→  {
+   313→    title: "IP vs Analog",
+   314→    headers: ["Feature", "IP Camera", "Analog Camera"],
+   315→    rows: [
+   316→      ["Technology", "Digital (network)", "Analog (coaxial signal)"],
+   317→      ["Recorder", "NVR", "DVR"],
+   318→      ["Cable", "Cat5e/Cat6 (Ethernet)", "RG59 (Coaxial)"],
+   319→      ["Max Resolution", "4K+ (12MP+)", "8MP (4K)"],
+   320→      ["Power", "PoE (single cable)", "Separate power cable"],
+   321→      ["Smart Features", "Face detection, line crossing", "Basic motion detection"],
+   322→      ["Scalability", "Easy (network switches)", "Limited by DVR channels"],
+   323→      ["Cost", "Higher initial cost", "More budget-friendly"],
+   324→    ],
+   325→  },
+   326→  {
+   327→    title: "DVR vs NVR",
+   328→    headers: ["Feature", "DVR", "NVR"],
+   329→    rows: [
+   330→      ["Camera Type", "Analog (HD-TVI/CVI/AHD)", "IP (Network) cameras"],
+   331→      ["Cable", "Coaxial (RG59)", "Ethernet (Cat5e/Cat6)"],
+   332→      ["Power to Camera", "Separate power cable", "PoE (single cable)"],
+   333→      ["Audio", "Separate audio cable needed", "Built-in audio over network"],
+   334→      ["Max Resolution", "Up to 8MP (4K)", "4K+ (12MP+)"],
+   335→      ["Smart Analytics", "Limited", "Advanced (AI, face, line cross)"],
+   336→      ["Max Cable Length", "300m (with amplifier)", "100m per segment"],
+   337→      ["Best For", "Budget setups, retrofits", "New installs, high quality"],
+   338→    ],
+   339→  },
+   340→  {
+   341→    title: "WiFi vs Wired",
+   342→    headers: ["Feature", "WiFi Camera", "Wired Camera"],
+   343→    rows: [
+   344→      ["Installation", "Easy DIY, power only", "Requires cable running"],
+   345→      ["Reliability", "Depends on WiFi strength", "Very stable & consistent"],
+   346→      ["Video Quality", "May reduce on weak signal", "Always full quality"],
+   347→      ["Latency", "Slight delay possible", "Near zero latency"],
+   348→      ["Storage", "MicroSD / Cloud", "DVR/NVR HDD"],
+   349→      ["Scalability", "1-4 cameras typically", "4-32+ cameras"],
+   350→      ["Best For", "Apartments, small setups", "Homes, offices, commercial"],
+   351→      ["Cost", "₹1,500 - ₹7,000", "₹8,000 - ₹1,15,000 (system)"],
+   352→    ],
+   353→  },
+   354→];
+   355→
+   356→const popularTopics = [
+   357→  "CCTV Camera Types", "DVR vs NVR", "Hikvision Compatibility", "Mobile App Setup",
+   358→  "WiFi Camera Installation", "Night Vision Comparison", "HDD Storage Calculation",
+   359→  "PTZ Camera Guide", "Budget Setup Under 10K", "ColorVu vs IR"
+   360→];
+   361→
+   362→// ═══════════════════════════════════════════════════════════════
+   363→// HERO SECTION
+   364→// ═══════════════════════════════════════════════════════════════
+   365→
+   366→function HeroSection({ onStartLearning, onBrowseProducts }: { onStartLearning: () => void; onBrowseProducts: () => void }) {
+   367→  return (
+   368→    <section className="relative overflow-hidden py-20 lg:py-28">
+   369→      <div className="absolute inset-0 pointer-events-none">
+   370→        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/50 via-background to-background dark:from-emerald-950/20 dark:via-background dark:to-background" />
+   371→        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-emerald-500/[0.06] rounded-full blur-3xl" />
+   372→        <div className="absolute top-20 right-1/4 w-72 h-72 bg-emerald-400/[0.04] rounded-full blur-3xl" />
+   373→        <div className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]" style={{ backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+   374→      </div>
+   375→      <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center">
+   376→        <motion.div {...fadeUp}>
+   377→          <Badge variant="outline" className="mb-6 px-4 py-1.5 text-sm font-medium border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+   378→            <GraduationCap className="h-4 w-4 mr-1.5" />
+   379→            ConnectZ Learning Center
+   380→          </Badge>
+   381→        </motion.div>
+   382→        <motion.h1 {...fadeUp} transition={{ duration: 0.6, ease: "easeOut" }} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight mb-6">
+   383→          Master CCTV Security{" "}
+   384→          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-emerald-400">Step by Step</span>
+   385→        </motion.h1>
+   386→        <motion.p {...fadeUp} transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }} className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto mb-10">
+   387→          From understanding camera types to choosing the right setup for your budget —
+   388→          become a CCTV expert with our comprehensive, free learning resources. No technical background needed.
+   389→        </motion.p>
+   390→        <motion.div {...fadeUp} transition={{ duration: 0.5, delay: 0.2 }} className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+   391→          <Button size="lg" onClick={onStartLearning} className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-105 transition-all duration-200 rounded-xl px-8 text-base">
+   392→            <BookOpen className="h-5 w-5 mr-2" /> Start Learning
+   393→          </Button>
+   394→          <Button size="lg" variant="outline" onClick={onBrowseProducts} className="rounded-xl px-8 text-base hover:bg-muted/50">
+   395→            Browse Products <ArrowRight className="h-4 w-4 ml-2" />
+   396→          </Button>
+   397→        </motion.div>
+   398→        <motion.div {...staggerContainer} className="flex flex-wrap items-center justify-center gap-3">
+   399→          {[
+   400→            { icon: <Sparkles className="h-4 w-4" />, text: "Beginner Friendly" },
+   401→            { icon: <BookOpen className="h-4 w-4" />, text: "Step-by-Step Tutorials" },
+   402→            { icon: <ShieldCheck className="h-4 w-4" />, text: "Expert Guides" },
+   403→            { icon: <Download className="h-4 w-4" />, text: "Free Resources" },
+   404→          ].map((badge) => (
+   405→            <motion.div key={badge.text} {...staggerItem}>
+   406→              <div className="flex items-center gap-1.5 text-sm text-muted-foreground bg-muted/50 border border-border/40 rounded-full px-3 py-1.5">
+   407→                <span className="text-emerald-500">{badge.icon}</span> {badge.text}
+   408→              </div>
+   409→            </motion.div>
+   410→          ))}
+   411→        </motion.div>
+   412→      </div>
+   413→    </section>
+   414→  );
+   415→}
+   416→
+   417→// ═══════════════════════════════════════════════════════════════
+   418→// SEARCH COMPONENT
+   419→// ═══════════════════════════════════════════════════════════════
+   420→
+   421→function LearningSearch({ value, onChange, onTopicClick }: {
+   422→  value: string; onChange: (v: string) => void; onTopicClick: (t: string) => void;
+   423→}) {
+   424→  const [focused, setFocused] = useState(false);
+   425→  const showSuggestions = focused && value.length > 0;
+   426→  const filtered = popularTopics.filter((t) => t.toLowerCase().includes(value.toLowerCase()));
+   427→
+   428→  return (
+   429→    <motion.div {...fadeUp} className="relative max-w-2xl mx-auto mb-12">
+   430→      <div className={cn(
+   431→        "relative flex items-center rounded-xl border bg-card shadow-sm transition-all duration-200",
+   432→        focused ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-md" : "border-border"
+   433→      )}>
+   434→        <Search className="h-5 w-5 text-muted-foreground ml-4 shrink-0" />
+   435→        <input
+   436→          type="text"
+   437→          placeholder="Search CCTV topics, DVR, NVR, installation..."
+   438→          value={value}
+   439→          onChange={(e) => onChange(e.target.value)}
+   440→          onFocus={() => setFocused(true)}
+   441→          onBlur={() => setTimeout(() => setFocused(false), 200)}
+   442→          className="w-full bg-transparent px-4 py-3.5 text-sm outline-none placeholder:text-muted-foreground/60"
+   443→          aria-label="Search learning topics"
+   444→        />
+   445→        {value && (
+   446→          <button onClick={() => onChange("")} className="mr-3 p-1 rounded-md hover:bg-muted text-muted-foreground">
+   447→            <X className="h-4 w-4" />
+   448→          </button>
+   449→        )}
+   450→      </div>
+   451→      <AnimatePresence>
+   452→        {showSuggestions && filtered.length > 0 && (
+   453→          <motion.div
+   454→            initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }}
+   455→            className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden"
+   456→          >
+   457→            {filtered.slice(0, 5).map((topic) => (
+   458→              <button key={topic} onClick={() => { onChange(""); onTopicClick(topic); }}
+   459→                className="w-full text-left px-4 py-2.5 text-sm hover:bg-emerald-50 dark:hover:bg-emerald-950/30 flex items-center gap-2 transition-colors"
+   460→              >
+   461→                <Search className="h-3.5 w-3.5 text-muted-foreground" /> {topic}
+   462→              </button>
+   463→            ))}
+   464→          </motion.div>
+   465→        )}
+   466→      </AnimatePresence>
+   467→      {!focused && !value && (
+   468→        <div className="mt-3 flex flex-wrap items-center gap-2 justify-center">
+   469→          <span className="text-xs text-muted-foreground mr-1">Popular:</span>
+   470→          {popularTopics.slice(0, 5).map((topic) => (
+   471→            <button key={topic} onClick={() => onTopicClick(topic)}
+   472→              className="text-xs bg-muted/50 hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/30 dark:hover:text-emerald-300 text-muted-foreground border border-border/40 rounded-full px-3 py-1 transition-colors"
+   473→            >{topic}</button>
+   474→          ))}
+   475→        </div>
+   476→      )}
+   477→    </motion.div>
+   478→  );
+   479→}
+   480→
+   481→// ═══════════════════════════════════════════════════════════════
+   482→// LEARNING PROGRESS
+   483→// ═══════════════════════════════════════════════════════════════
+   484→
+   485→function LearningProgress() {
+   486→  const totalLessons = 51;
+   487→  const completedLessons = 22;
+   488→  const progress = Math.round((completedLessons / totalLessons) * 100);
+   489→
+   490→  return (
+   491→    <motion.div {...fadeUp} className="mb-12">
+   492→      <Card className={cn(premiumCard, "bg-gradient-to-r from-emerald-50/80 to-sky-50/50 dark:from-emerald-950/30 dark:to-sky-950/20 border-emerald-200/50")}>
+   493→        <CardContent className="p-6 lg:p-8">
+   494→          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+   495→            <div className="flex-1 space-y-3">
+   496→              <div className="flex items-center gap-3">
+   497→                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+   498→                  <Trophy className="h-5 w-5 text-emerald-600" />
+   499→                </div>
+   500→                <div>
+   501→                  <h3 className="font-bold text-lg">Learning Progress</h3>
+   502→                  <p className="text-sm text-muted-foreground">Track your CCTV knowledge journey</p>
+   503→                </div>
+   504→              </div>
+   505→              <div className="space-y-2">
+   506→                <div className="flex items-center justify-between text-sm">
+   507→                  <span className="text-muted-foreground">Course Completion</span>
+   508→                  <span className="font-semibold text-emerald-600">{completedLessons} / {totalLessons} Lessons</span>
+   509→                </div>
+   510→                <div className="h-3 bg-muted rounded-full overflow-hidden">
+   511→                  <motion.div
+   512→                    initial={{ width: 0 }}
+   513→                    whileInView={{ width: `${progress}%` }}
+   514→                    viewport={{ once: true }}
+   515→                    transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+   516→                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+   517→                  />
+   518→                </div>
+   519→              </div>
+   520→              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+   521→                <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> ~2h remaining</span>
+   522→                <span className="flex items-center gap-1.5"><Target className="h-3.5 w-3.5" /> {progress}% complete</span>
+   523→              </div>
+   524→            </div>
+   525→            <div className="flex flex-col items-start lg:items-end gap-3">
+   526→              <div className="text-4xl font-extrabold text-emerald-600">{progress}%</div>
+   527→              <p className="text-xs text-muted-foreground">Keep going! You are making great progress.</p>
+   528→            </div>
+   529→          </div>
+   530→        </CardContent>
+   531→      </Card>
+   532→    </motion.div>
+   533→  );
+   534→}
+   535→
+   536→// ═══════════════════════════════════════════════════════════════
+   537→// SIDEBAR NAVIGATION
+   538→// ═══════════════════════════════════════════════════════════════
+   539→
+   540→function SidebarNav({
+   541→  learnSection, setLearnSection, mobileOpen, setMobileOpen, router
+   542→}: {
+   543→  learnSection: string; setLearnSection: (s: string) => void;
+   544→  mobileOpen: boolean; setMobileOpen: (o: boolean) => void; router: ReturnType<typeof useRouter>;
+   545→}) {
+   546→  const totalCompleted = learnSections.reduce((a, s) => a + s.completed, 0);
+   547→  const totalLessons = learnSections.reduce((a, s) => a + s.lessons, 0);
+   548→
+   549→  const sidebarContent = (
+   550→    <nav className="space-y-1" role="navigation" aria-label="Learning topics">
+   551→      <div className="px-3 mb-4">
+   552→        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Learning Topics</h3>
+   553→        <p className="text-xs text-muted-foreground/70">{totalCompleted}/{totalLessons} lessons completed</p>
+   554→        <div className="h-1.5 bg-muted rounded-full overflow-hidden mt-2">
+   555→          <div className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+   556→            style={{ width: `${totalLessons > 0 ? (totalCompleted / totalLessons) * 100 : 0}%` }} />
+   557→        </div>
+   558→      </div>
+   559→      {learnSections.map((s) => {
+   560→        const isActive = learnSection === s.id;
+   561→        const isComplete = s.lessons > 0 && s.completed === s.lessons;
+   562→        return (
+   563→          <button key={s.id} onClick={() => { setLearnSection(s.id); setMobileOpen(false); }}
+   564→            className={cn(
+   565→              "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 text-left group",
+   566→              isActive
+   567→                ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800 shadow-sm"
+   568→                : "hover:bg-muted/80 text-muted-foreground hover:text-foreground"
+   569→            )} aria-current={isActive ? "page" : undefined}>
+   570→            <span className={cn("shrink-0", isActive ? "text-emerald-600" : "text-muted-foreground group-hover:text-foreground")}>{s.icon}</span>
+   571→            <span className="flex-1 truncate">{s.label}</span>
+   572→            {s.lessons > 0 && (
+   573→              <span className={cn(
+   574→                "text-[10px] px-1.5 py-0.5 rounded-full shrink-0",
+   575→                isComplete ? "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300" : "bg-muted text-muted-foreground"
+   576→              )}>
+   577→                {isComplete ? <Check className="h-3 w-3" /> : `${s.completed}/${s.lessons}`}
+   578→              </span>
+   579→            )}
+   580→          </button>
+   581→        );
+   582→      })}
+   583→      <Separator className="my-3" />
+   584→      <button onClick={() => { router.push("/products"); setMobileOpen(false); }}
+   585→        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left">
+   586→        <Camera className="h-4 w-4" /> Back to Products
+   587→      </button>
+   588→    </nav>
+   589→  );
+   590→
+   591→  return (
+   592→    <>
+   593→      <aside className="hidden lg:block w-64 shrink-0">
+   594→        <div className="sticky top-24 bg-card border border-border/60 rounded-2xl p-4 shadow-sm">
+   595→          {sidebarContent}
+   596→        </div>
+   597→      </aside>
+   598→      <Button variant="outline" size="sm" className="lg:hidden flex items-center gap-2 mb-4"
+   599→        onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle learning menu">
+   600→        <Menu className="h-4 w-4" /> Topics
+   601→      </Button>
+   602→      <AnimatePresence>
+   603→        {mobileOpen && (
+   604→          <>
+   605→            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+   606→              className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={() => setMobileOpen(false)} />
+   607→            <motion.aside
+   608→              initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
+   609→              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+   610→              className="fixed top-0 left-0 bottom-0 w-72 bg-background border-r z-50 p-4 overflow-y-auto lg:hidden">
+   611→              <div className="flex items-center justify-between mb-4">
+   612→                <h3 className="font-bold text-lg">Topics</h3>
+   613→                <Button variant="ghost" size="icon" onClick={() => setMobileOpen(false)}><X className="h-5 w-5" /></Button>
+   614→              </div>
+   615→              {sidebarContent}
+   616→            </motion.aside>
+   617→          </>
+   618→        )}
+   619→      </AnimatePresence>
+   620→    </>
+   621→  );
+   622→}
+   623→
+   624→// ═══════════════════════════════════════════════════════════════
+   625→// CATEGORY FILTERS
+   626→// ═══════════════════════════════════════════════════════════════
+   627→
+   628→function CategoryFilters({ active, onChange }: { active: string; onChange: (id: string) => void }) {
+   629→  return (
+   630→    <motion.div {...fadeUp} className="flex flex-wrap gap-2 mb-8">
+   631→      {categoryFilters.map((cat) => (
+   632→        <button key={cat.id} onClick={() => onChange(cat.id)}
+   633→          className={cn(
+   634→            "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
+   635→            active === cat.id
+   636→              ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+   637→              : "bg-card text-muted-foreground border-border/60 hover:border-emerald-500/50 hover:text-emerald-600"
+   638→          )}>{cat.label}</button>
+   639→      ))}
+   640→    </motion.div>
+   641→  );
+   642→}
+   643→
+   644→// ═══════════════════════════════════════════════════════════════
+   645→// MODULE CARDS (Overview)
+   646→// ═══════════════════════════════════════════════════════════════
+   647→
+   648→const moduleCards = [
+   649→  { section: "camera-types", title: "Camera Types", desc: "Learn about Dome, Bullet, WiFi, PTZ, and 4G cameras — what they are, where to use them, and their pros & cons.", icon: <Camera className="h-7 w-7" />, bg: "from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20", iconBg: "bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600", time: "12 min", difficulty: "Beginner", lessons: 8, progress: 63, category: "beginner" },
+   650→  { section: "dvr-nvr", title: "DVR vs NVR", desc: "Understand the difference between DVR and NVR recording systems, which cable they use, and which one is right for you.", icon: <MonitorPlay className="h-7 w-7" />, bg: "from-sky-50 to-sky-100/50 dark:from-sky-950/40 dark:to-sky-900/20", iconBg: "bg-sky-100 dark:bg-sky-900/60 text-sky-600", time: "10 min", difficulty: "Beginner", lessons: 5, progress: 60, category: "beginner" },
+   651→  { section: "compatibility", title: "Brand Compatibility", desc: "Critical knowledge: Why Hikvision and Dahua cameras are NOT cross-compatible and how to choose the right combo.", icon: <Cpu className="h-7 w-7" />, bg: "from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20", iconBg: "bg-amber-100 dark:bg-amber-900/60 text-amber-600", time: "8 min", difficulty: "Intermediate", lessons: 4, progress: 50, category: "intermediate" },
+   652→  { section: "mobile-setup", title: "Mobile Viewing", desc: "Step-by-step guide to set up your phone to watch live CCTV footage from anywhere in the world.", icon: <Smartphone className="h-7 w-7" />, bg: "from-violet-50 to-violet-100/50 dark:from-violet-950/40 dark:to-violet-900/20", iconBg: "bg-violet-100 dark:bg-violet-900/60 text-violet-600", time: "15 min", difficulty: "Beginner", lessons: 6, progress: 67, category: "networking" },
+   653→  { section: "budget", title: "Budget Guide", desc: "Find the perfect CCTV setup for your budget — from under \u20b95,000 to enterprise-level installations.", icon: <DollarSign className="h-7 w-7" />, bg: "from-rose-50 to-rose-100/50 dark:from-rose-950/40 dark:to-rose-900/20", iconBg: "bg-rose-100 dark:bg-rose-900/60 text-rose-600", time: "10 min", difficulty: "Beginner", lessons: 6, progress: 17, category: "buying-guide" },
+   654→  { section: "installation", title: "Installation Guide", desc: "Step-by-step installation instructions for wired (DVR/NVR) and wireless (WiFi) camera systems.", icon: <Wrench className="h-7 w-7" />, bg: "from-slate-50 to-slate-100/50 dark:from-slate-800/40 dark:to-slate-800/20", iconBg: "bg-slate-100 dark:bg-slate-800/60 text-slate-600", time: "20 min", difficulty: "Intermediate", lessons: 12, progress: 0, category: "installation" },
+   655→];
+   656→
+   657→function ModuleCards({ setLearnSection, activeCategory }: { setLearnSection: (s: string) => void; activeCategory: string }) {
+   658→  const filtered = activeCategory === "all" ? moduleCards : moduleCards.filter((c) => c.category === activeCategory);
+   659→  if (filtered.length === 0) {
+   660→    return (
+   661→      <div className="text-center py-16">
+   662→        <Search className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+   663→        <p className="text-muted-foreground font-medium">No modules found for this category</p>
+   664→        <p className="text-sm text-muted-foreground/70 mt-1">Try selecting a different filter</p>
+   665→      </div>
+   666→    );
+   667→  }
+   668→  return (
+   669→    <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+   670→      {filtered.map((card) => (
+   671→        <motion.div key={card.section} {...staggerItem}>
+   672→          <Card className={cn(premiumCard, "cursor-pointer group overflow-hidden")} onClick={() => setLearnSection(card.section)}>
+   673→            <div className={cn("h-32 bg-gradient-to-br relative overflow-hidden", card.bg)}>
+   674→              <div className="absolute inset-0 flex items-center justify-center">
+   675→                <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300", card.iconBg)}>
+   676→                  {card.icon}
+   677→                </div>
+   678→              </div>
+   679→              <Badge variant="secondary" className="absolute top-3 right-3 text-[10px]">{card.difficulty}</Badge>
+   680→            </div>
+   681→            <CardContent className="p-5 space-y-3">
+   682→              <h3 className="font-bold text-lg group-hover:text-emerald-600 transition-colors flex items-center gap-1.5">
+   683→                {card.title}
+   684→                <ArrowRight className="h-4 w-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+   685→              </h3>
+   686→              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{card.desc}</p>
+   687→              <div className="flex items-center gap-3 text-xs text-muted-foreground">
+   688→                <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> {card.time}</span>
+   689→                <span className="flex items-center gap-1"><BookOpen className="h-3.5 w-3.5" /> {card.lessons} Lessons</span>
+   690→              </div>
+   691→              {card.progress > 0 && (
+   692→                <div className="space-y-1">
+   693→                  <div className="flex justify-between text-[11px]">
+   694→                    <span className="text-muted-foreground">Progress</span>
+   695→                    <span className="font-medium text-emerald-600">{card.progress}%</span>
+   696→                  </div>
+   697→                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+   698→                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-700" style={{ width: `${card.progress}%` }} />
+   699→                  </div>
+   700→                </div>
+   701→              )}
+   702→              <Button variant={card.progress > 0 ? "outline" : "default"} size="sm"
+   703→                className={cn("w-full mt-1 rounded-lg text-sm", card.progress === 0 && "bg-emerald-600 hover:bg-emerald-700 text-white")}>
+   704→                {card.progress > 0 ? (<><Play className="h-3.5 w-3.5 mr-1.5" /> Continue Learning</>) : (<><BookOpen className="h-3.5 w-3.5 mr-1.5" /> Start Learning</>)}
+   705→              </Button>
+   706→            </CardContent>
+   707→          </Card>
+   708→        </motion.div>
+   709→      ))}
+   710→    </motion.div>
+   711→  );
+   712→}
+   713→
+   714→// ═══════════════════════════════════════════════════════════════
+   715→// INTERACTIVE FLOW DIAGRAM
+   716→// ═══════════════════════════════════════════════════════════════
+   717→
+   718→function InteractiveFlowDiagram() {
+   719→  const [activeStep, setActiveStep] = useState<number | null>(null);
+   720→  const steps = [
+   721→    { icon: <Camera className="h-6 w-6" />, label: "Camera", desc: "Captures video of the surveillance area. Available in Dome, Bullet, WiFi, PTZ, and 4G types. Resolution ranges from 2MP to 8MP (4K).", color: "text-emerald-600", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
+   722→    { icon: <Cable className="h-6 w-6" />, label: "Cable / WiFi", desc: "Coaxial (RG59) for DVR systems or Ethernet (Cat5e/Cat6) for NVR systems. WiFi cameras connect wirelessly. PoE carries both data and power.", color: "text-sky-600", bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800" },
+   723→    { icon: <HardDrive className="h-6 w-6" />, label: "Recorder", desc: "DVR (for analog cameras) or NVR (for IP cameras). Records and stores all video footage on an internal HDD. Supports 4-32 camera channels.", color: "text-violet-600", bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800" },
+   724→    { icon: <Router className="h-6 w-6" />, label: "Router", desc: "Connects your DVR/NVR to the internet for remote viewing. Required for mobile app access and cloud backup. Not needed for local-only viewing.", color: "text-amber-600", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800" },
+   725→    { icon: <Smartphone className="h-6 w-6" />, label: "Your Phone", desc: "View live and recorded footage from anywhere using apps like iVMS-4500 (Hikvision), DMSS (Dahua), or brand-specific WiFi camera apps.", color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800" },
+   726→  ];
+   727→
+   728→  return (
+   729→    <motion.div {...fadeUp}>
+   730→      <Card className={cn(premiumCard, "overflow-hidden")}>
+   731→        <CardHeader className="pb-2">
+   732→          <CardTitle className="flex items-center gap-2 text-xl">
+   733→            <Lightbulb className="h-5 w-5 text-amber-500" /> How Does a CCTV System Work?
+   734→          </CardTitle>
+   735→          <p className="text-sm text-muted-foreground">Hover or tap each component to learn more</p>
+   736→        </CardHeader>
+   737→        <CardContent className="p-6">
+   738→          <div className="hidden md:flex items-center justify-center gap-2">
+   739→            {steps.map((step, i) => (
+   740→              <div key={step.label} className="flex items-center">
+   741→                <motion.div
+   742→                  whileHover={{ scale: 1.05, y: -4 }}
+   743→                  onMouseEnter={() => setActiveStep(i)} onMouseLeave={() => setActiveStep(null)}
+   744→                  onClick={() => setActiveStep(activeStep === i ? null : i)}
+   745→                  className={cn("w-40 p-4 rounded-xl border-2 cursor-pointer text-center transition-all duration-300", step.bg, activeStep === i && "shadow-lg ring-2 ring-emerald-500/30")}>
+   746→                  <div className={cn("flex justify-center mb-2", step.color)}>{step.icon}</div>
+   747→                  <p className="font-semibold text-sm">{step.label}</p>
+   748→                  {activeStep === i && (
+   749→                    <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="text-xs text-muted-foreground mt-2 leading-relaxed">{step.desc}</motion.p>
+   750→                  )}
+   751→                </motion.div>
+   752→                {i < steps.length - 1 && (
+   753→                  <motion.div animate={{ y: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }} className="mx-1">
+   754→                    <ArrowRight className="h-5 w-5 text-muted-300" />
+   755→                  </motion.div>
+   756→                )}
+   757→              </div>
+   758→            ))}
+   759→          </div>
+   760→          <div className="md:hidden space-y-3">
+   761→            {steps.map((step, i) => (
+   762→              <div key={step.label}>
+   763→                <motion.div whileTap={{ scale: 0.98 }} onClick={() => setActiveStep(activeStep === i ? null : i)}
+   764→                  className={cn("flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300", step.bg, activeStep === i && "shadow-lg ring-2 ring-emerald-500/30")}>
+   765→                  <div className={cn("shrink-0", step.color)}>{step.icon}</div>
+   766→                  <div className="flex-1">
+   767→                    <p className="font-semibold text-sm">{step.label}</p>
+   768→                    <AnimatePresence>
+   769→                      {activeStep === i && (
+   770→                        <motion.p initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="text-xs text-muted-foreground mt-1 leading-relaxed">{step.desc}</motion.p>
+   771→                      )}
+   772→                    </AnimatePresence>
+   773→                  </div>
+   774→                  <ChevronDown className={cn("h-4 w-4 text-muted-400 transition-transform duration-200 shrink-0", activeStep === i && "rotate-180")} />
+   775→                </motion.div>
+   776→                {i < steps.length - 1 && <div className="flex justify-center py-0.5"><ArrowDown className="h-4 w-4 text-muted-300" /></div>}
+   777→              </div>
+   778→            ))}
+   779→          </div>
+   780→        </CardContent>
+   781→      </Card>
+   782→    </motion.div>
+   783→  );
+   784→}
+   785→
+   786→// ═══════════════════════════════════════════════════════════════
+   787→// FEATURED ARTICLES
+   788→// ═══════════════════════════════════════════════════════════════
+   789→
+   790→function FeaturedArticles() {
+   791→  return (
+   792→    <motion.section {...fadeUp} className="py-16">
+   793→      <div className="flex items-center justify-between mb-8">
+   794→        <div>
+   795→          <h2 className="text-2xl sm:text-3xl font-bold">Featured Guides</h2>
+   796→          <p className="text-muted-foreground mt-1">In-depth articles to expand your CCTV knowledge</p>
+   797→        </div>
+   798→      </div>
+   799→      <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+   800→        {featuredArticles.map((article) => (
+   801→          <motion.div key={article.title} {...staggerItem}>
+   802→            <Card className={cn(premiumCard, "group cursor-pointer overflow-hidden")}>
+   803→              <div className="h-2 bg-gradient-to-r from-emerald-500 to-sky-500" />
+   804→              <CardContent className="p-5 space-y-3">
+   805→                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   806→                  <Badge variant="outline" className="text-[10px] px-2 py-0">{article.category}</Badge>
+   807→                  <span>{article.readTime}</span><span>·</span><span>{article.difficulty}</span>
+   808→                </div>
+   809→                <h3 className="font-bold leading-snug group-hover:text-emerald-600 transition-colors">{article.title}</h3>
+   810→                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{article.preview}</p>
+   811→                <div className="flex items-center justify-between pt-1">
+   812→                  <span className="text-xs text-muted-foreground">{article.date}</span>
+   813→                  <span className="text-xs text-emerald-600 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+   814→                    Read Article <ArrowRight className="h-3 w-3" />
+   815→                  </span>
+   816→                </div>
+   817→              </CardContent>
+   818→            </Card>
+   819→          </motion.div>
+   820→        ))}
+   821→      </motion.div>
+   822→    </motion.section>
+   823→  );
+   824→}
+   825→
+   826→// ═══════════════════════════════════════════════════════════════
+   827→// VIDEO TUTORIALS
+   828→// ═══════════════════════════════════════════════════════════════
+   829→
+   830→function VideoTutorials() {
+   831→  return (
+   832→    <motion.section {...fadeUp} className="py-16">
+   833→      <div className="flex items-center justify-between mb-8">
+   834→        <div>
+   835→          <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+   836→            <Play className="h-6 w-6 text-emerald-600" /> Watch & Learn
+   837→          </h2>
+   838→          <p className="text-muted-foreground mt-1">Video tutorials to help you get started quickly</p>
+   839→        </div>
+   840→      </div>
+   841→      <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+   842→        {videoTutorials.map((video) => (
+   843→          <motion.div key={video.title} {...staggerItem}>
+   844→            <Card className={cn(premiumCard, "group cursor-pointer overflow-hidden")}>
+   845→              <div className="h-40 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 relative flex items-center justify-center">
+   846→                <div className="w-14 h-14 rounded-full bg-white/90 dark:bg-black/50 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+   847→                  <Play className="h-6 w-6 text-emerald-600 ml-0.5" />
+   848→                </div>
+   849→                <Badge className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px]">{video.duration}</Badge>
+   850→              </div>
+   851→              <CardContent className="p-4 space-y-2">
+   852→                <h3 className="font-semibold text-sm leading-snug line-clamp-2 group-hover:text-emerald-600 transition-colors">{video.title}</h3>
+   853→                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+   854→                  <Badge variant="outline" className="text-[10px] px-2 py-0">{video.category}</Badge>
+   855→                  <span>{video.difficulty}</span><span>·</span><span>{video.views} views</span>
+   856→                </div>
+   857→              </CardContent>
+   858→            </Card>
+   859→          </motion.div>
+   860→        ))}
+   861→      </motion.div>
+   862→    </motion.section>
+   863→  );
+   864→}
+   865→
+   866→// ═══════════════════════════════════════════════════════════════
+   867→// DOWNLOADS SECTION
+   868→// ═══════════════════════════════════════════════════════════════
+   869→
+   870→function DownloadsSection() {
+   871→  return (
+   872→    <motion.section {...fadeUp} className="py-16">
+   873→      <div className="mb-8">
+   874→        <h2 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
+   875→          <Download className="h-6 w-6 text-emerald-600" /> Downloadable Resources
+   876→        </h2>
+   877→        <p className="text-muted-foreground mt-1">Free guides, checklists, and reference materials</p>
+   878→      </div>
+   879→      <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+   880→        {downloadResources.map((res) => (
+   881→          <motion.div key={res.title} {...staggerItem}>
+   882→            <Card className={cn(premiumCard, "group cursor-pointer")}>
+   883→              <CardContent className="p-5 flex items-start gap-4">
+   884→                <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center shrink-0 text-emerald-600 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/60 transition-colors">
+   885→                  {res.icon}
+   886→                </div>
+   887→                <div className="flex-1 min-w-0">
+   888→                  <h3 className="font-semibold text-sm leading-snug group-hover:text-emerald-600 transition-colors">{res.title}</h3>
+   889→                  <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{res.desc}</p>
+   890→                  <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground">
+   891→                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">{res.format}</Badge>
+   892→                    <span>{res.size}</span>
+   893→                  </div>
+   894→                </div>
+   895→              </CardContent>
+   896→            </Card>
+   897→          </motion.div>
+   898→        ))}
+   899→      </motion.div>
+   900→    </motion.section>
+   901→  );
+   902→}
+   903→
+   904→// ═══════════════════════════════════════════════════════════════
+   905→// COMPARISON TABLES
+   906→// ═══════════════════════════════════════════════════════════════
+   907→
+   908→function ComparisonTables() {
+   909→  const [activeTable, setActiveTable] = useState(0);
+   910→  return (
+   911→    <motion.section {...fadeUp} className="py-16">
+   912→      <div className="mb-8">
+   913→        <h2 className="text-2xl sm:text-3xl font-bold">Comparison Tables</h2>
+   914→        <p className="text-muted-foreground mt-1">Side-by-side comparisons to help you decide</p>
+   915→      </div>
+   916→      <div className="flex flex-wrap gap-2 mb-6">
+   917→        {comparisonTables.map((table, i) => (
+   918→          <button key={table.title} onClick={() => setActiveTable(i)}
+   919→            className={cn(
+   920→              "px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 border",
+   921→              activeTable === i ? "bg-emerald-600 text-white border-emerald-600" : "bg-card text-muted-foreground border-border/60 hover:border-emerald-500/50"
+   922→            )}>{table.title}</button>
+   923→        ))}
+   924→      </div>
+   925→      <AnimatePresence mode="wait">
+   926→        <motion.div key={activeTable} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
+   927→          <Card className={cn(premiumCard, "overflow-hidden")}>
+   928→            <div className="overflow-x-auto">
+   929→              <table className="w-full text-sm">
+   930→                <thead>
+   931→                  <tr className="bg-muted/50">
+   932→                    {comparisonTables[activeTable].headers.map((h, i) => (
+   933→                      <th key={i} className={cn("px-4 py-3 text-left font-semibold whitespace-nowrap", i === 0 ? "text-muted-foreground" : "text-foreground")}>{h}</th>
+   934→                    ))}
+   935→                  </tr>
+   936→                </thead>
+   937→                <tbody>
+   938→                  {comparisonTables[activeTable].rows.map((row, ri) => (
+   939→                    <tr key={ri} className={cn("border-t border-border/50", ri % 2 === 0 ? "bg-background" : "bg-muted/20")}>
+   940→                      {row.map((cell, ci) => (
+   941→                        <td key={ci} className={cn("px-4 py-2.5", ci === 0 ? "font-medium text-muted-foreground" : "")}>{cell}</td>
+   942→                      ))}
+   943→                    </tr>
+   944→                  ))}
+   945→                </tbody>
+   946→              </table>
+   947→            </div>
+   948→          </Card>
+   949→        </motion.div>
+   950→      </AnimatePresence>
+   951→    </motion.section>
+   952→  );
+   953→}
+   954→
+   955→// ═══════════════════════════════════════════════════════════════
+   956→// FAQ WITH SEARCH
+   957→// ═══════════════════════════════════════════════════════════════
+   958→
+   959→function FaqSectionWithSearch() {
+   960→  const [search, setSearch] = useState("");
+   961→  const [mounted, setMounted] = useState(false);
+   962→  const filtered = useMemo(() => {
+   963→    if (!search.trim()) return faqData;
+   964→    const q = search.toLowerCase();
+   965→    return faqData.filter((f) => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q));
+   966→  }, [search]);
+   967→
+   968→  // eslint-disable-next-line react-hooks/set-state-in-effect -- mount detection pattern for SSR hydration fix
+   969→  useEffect(() => { setMounted(true); }, []);
+   970→
+   971→  return (
+   972→    <motion.section {...fadeUp} className="py-16">
+   973→      <div className="mb-8">
+   974→        <h2 className="text-2xl sm:text-3xl font-bold">Frequently Asked Questions</h2>
+   975→        <p className="text-muted-foreground mt-1">Common questions about CCTV systems</p>
+   976→      </div>
+   977→      <div className={cn(
+   978→        "relative flex items-center rounded-xl border bg-card shadow-sm mb-6 max-w-lg transition-all duration-200",
+   979→        search ? "border-emerald-500 ring-2 ring-emerald-500/20" : "border-border"
+   980→      )}>
+   981→        <Search className="h-4 w-4 text-muted-foreground ml-4 shrink-0" />
+   982→        <input type="text" placeholder="Search questions..." value={search} onChange={(e) => setSearch(e.target.value)}
+   983→          className="w-full bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-muted-foreground/60" aria-label="Search frequently asked questions" />
+   984→        {search && (
+   985→          <button onClick={() => setSearch("")} className="mr-3 p-1 rounded-md hover:bg-muted text-muted-foreground"><X className="h-3.5 w-3.5" /></button>
+   986→        )}
+   987→      </div>
+   988→      {filtered.length === 0 ? (
+   989→        <div className="text-center py-12 bg-muted/30 rounded-2xl">
+   990→          <HelpCircle className="h-10 w-10 text-muted-foreground/30 mx-auto mb-3" />
+   991→          <p className="text-muted-foreground font-medium">No matching questions found</p>
+   992→          <p className="text-sm text-muted-foreground/70 mt-1">Try a different search term</p>
+   993→        </div>
+   994→      ) : mounted ? (
+   995→        <Accordion type="single" collapsible className="space-y-2">
+   996→          {filtered.map((item, i) => (
+   997→            <AccordionItem key={i} value={`faq-${i}`} className="border rounded-xl px-4 bg-card hover:bg-accent/30 transition-colors">
+   998→              <AccordionTrigger className="text-left font-medium text-sm hover:no-underline py-4">{item.q}</AccordionTrigger>
+   999→              <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">{item.a}</AccordionContent>
+  1000→            </AccordionItem>
+  1001→          ))}
+  1002→        </Accordion>
+  1003→      ) : (
+  1004→        <div className="space-y-2">
+  1005→          {filtered.map((item, i) => (
+  1006→            <div key={i} className="border rounded-xl px-4 bg-card py-4">
+  1007→              <p className="font-medium text-sm">{item.q}</p>
+  1008→            </div>
+  1009→          ))}
+  1010→        </div>
+  1011→      )}
+  1012→    </motion.section>
+  1013→  );
+  1014→}
+  1015→
+  1016→// ═══════════════════════════════════════════════════════════════
+  1017→// CTA SECTION
+  1018→// ═══════════════════════════════════════════════════════════════
+  1019→
+  1020→function CtaSection({ router }: { router: ReturnType<typeof useRouter> }) {
+  1021→  return (
+  1022→    <motion.section {...fadeUp} className="py-16">
+  1023→      <div className="relative rounded-3xl overflow-hidden">
+  1024→        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900" />
+  1025→        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl" />
+  1026→        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl" />
+  1027→        <div className="relative px-8 py-16 lg:px-16 lg:py-20 text-center">
+  1028→          <motion.div {...fadeUp}>
+  1029→            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-4 tracking-tight">Need Help Choosing the Right Setup?</h2>
+  1030→            <p className="text-slate-300 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+  1031→              Talk to our CCTV experts. We will help you pick the perfect cameras, recorder, and accessories for your specific needs and budget.
+  1032→            </p>
+  1033→          </motion.div>
+  1034→          <motion.div {...staggerContainer} className="flex flex-col sm:flex-row items-center justify-center gap-4">
+  1035→            <motion.a {...staggerItem} href="https://wa.me/7809465102" target="_blank" rel="noopener noreferrer">
+  1036→              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl px-8 shadow-lg shadow-emerald-600/25 hover:shadow-emerald-600/40 hover:scale-105 transition-all">
+  1037→                <MessageCircle className="h-5 w-5 mr-2" /> WhatsApp Us
+  1038→              </Button>
+  1039→            </motion.a>
+  1040→            <motion.a {...staggerItem} href="tel:7809465102">
+  1041→              <Button size="lg" variant="outline" className="rounded-xl px-8 border-white/20 text-white hover:bg-white/10">
+  1042→                <Phone className="h-5 w-5 mr-2" /> Call Expert
+  1043→              </Button>
+  1044→            </motion.a>
+  1045→            <motion.div {...staggerItem} onClick={() => router.push("/products")} className="inline-block">
+  1046→              <Button size="lg" variant="outline" className="rounded-xl px-8 border-white/20 text-white hover:bg-white/10">
+  1047→                <Layers className="h-5 w-5 mr-2" /> Build Your Setup
+  1048→              </Button>
+  1049→            </motion.div>
+  1050→          </motion.div>
+  1051→        </div>
+  1052→      </div>
+  1053→    </motion.section>
+  1054→  );
+  1055→}
+  1056→
+  1057→// ═══════════════════════════════════════════════════════════════
+  1058→// ENHANCED INDIVIDUAL SECTIONS
+  1059→// ═══════════════════════════════════════════════════════════════
+  1060→
+  1061→function CameraTypesSection() {
+  1062→  const [selected, setSelected] = useState<string | null>(null);
+  1063→  const cam = cameraTypesData.find((c) => c.id === selected);
+  1064→
+  1065→  return (
+  1066→    <div className="space-y-6">
+  1067→      <motion.div {...fadeUp}>
+  1068→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Understanding CCTV Camera Types</h2>
+  1069→        <p className="text-muted-foreground">Click on any camera type to learn in detail. Each card shows where it works best, advantages, and limitations.</p>
+  1070→      </motion.div>
+  1071→      <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  1072→        {cameraTypesData.map((ct) => (
+  1073→          <motion.div key={ct.id} {...staggerItem}>
+  1074→            <Card
+  1075→              className={cn(
+  1076→                "cursor-pointer transition-all duration-300 border-2",
+  1077→                selected === ct.id ? cn(ct.border, "shadow-lg -translate-y-1") : "hover:shadow-lg hover:-translate-y-1"
+  1078→              )}
+  1079→              onClick={() => setSelected(selected === ct.id ? null : ct.id)}>
+  1080→              <CardContent className="p-5 space-y-3">
+  1081→                <div className="flex items-center gap-3">
+  1082→                  <motion.div whileHover={{ scale: 1.1, rotate: 5 }} className={cn("w-12 h-12 rounded-xl flex items-center justify-center border", ct.bg, ct.color, ct.border)}>
+  1083→                    {ct.icon}
+  1084→                  </motion.div>
+  1085→                  <div>
+  1086→                    <h3 className="font-bold">{ct.name}</h3>
+  1087→                    <p className="text-xs text-muted-foreground">{ct.tagline}</p>
+  1088→                  </div>
+  1089→                </div>
+  1090→                {selected !== ct.id && (
+  1091→                  <p className="text-sm text-muted-foreground line-clamp-2">{ct.description.slice(0, 120)}...</p>
+  1092→                )}
+  1093→              </CardContent>
+  1094→            </Card>
+  1095→          </motion.div>
+  1096→        ))}
+  1097→      </motion.div>
+  1098→      <AnimatePresence>
+  1099→        {cam && (
+  1100→          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}>
+  1101→            <Card className="border-2 overflow-hidden">
+  1102→              <div className={cn(cam.bg, "p-4 flex items-center gap-3 border-b", cam.border)}>
+  1103→                <div className={cn("w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm", cam.color)}>{cam.icon}</div>
+  1104→                <div><h3 className="text-xl font-bold">{cam.name}</h3><p className="text-sm text-muted-foreground">{cam.tagline}</p></div>
+  1105→              </div>
+  1106→              <CardContent className="p-6 space-y-6">
+  1107→                <p className="text-muted-foreground leading-relaxed">{cam.description}</p>
+  1108→                <div>
+  1109→                  <h4 className="font-semibold mb-2 flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500" /> Best For</h4>
+  1110→                  <div className="flex flex-wrap gap-2">
+  1111→                    {cam.bestFor.map((b) => (<Badge key={b} variant="outline" className={cn(cam.border, cam.textColor)}>{b}</Badge>))}
+  1112→                  </div>
+  1113→                </div>
+  1114→                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+  1115→                  <div className="space-y-2">
+  1116→                    <h4 className="font-semibold flex items-center gap-2 text-emerald-600"><CheckCircle2 className="h-4 w-4" /> Advantages</h4>
+  1117→                    <ul className="space-y-1.5">{cam.pros.map((p) => (<li key={p} className="text-sm flex items-start gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" /><span>{p}</span></li>))}</ul>
+  1118→                  </div>
+  1119→                  <div className="space-y-2">
+  1120→                    <h4 className="font-semibold flex items-center gap-2 text-red-600"><XCircle className="h-4 w-4" /> Limitations</h4>
+  1121→                    <ul className="space-y-1.5">{cam.cons.map((c) => (<li key={c} className="text-sm flex items-start gap-2"><XCircle className="h-4 w-4 text-red-400 mt-0.5 shrink-0" /><span>{c}</span></li>))}</ul>
+  1122→                  </div>
+  1123→                </div>
+  1124→                <div>
+  1125→                  <h4 className="font-semibold mb-3 flex items-center gap-2"><Settings className="h-4 w-4" /> Typical Specifications</h4>
+  1126→                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+  1127→                    {Object.entries(cam.specs).map(([key, val]) => (
+  1128→                      <Card key={key} className="bg-muted/50"><CardContent className="p-3"><p className="text-xs text-muted-foreground uppercase tracking-wide">{key.replace(/([A-Z])/g, " $1")}</p><p className="font-medium text-sm mt-1">{val}</p></CardContent></Card>
+  1129→                    ))}
+  1130→                  </div>
+  1131→                </div>
+  1132→              </CardContent>
+  1133→            </Card>
+  1134→          </motion.div>
+  1135→        )}
+  1136→      </AnimatePresence>
+  1137→    </div>
+  1138→  );
+  1139→}
+  1140→
+  1141→function DvrNvrSection() {
+  1142→  const d = dvrNvrData.dvr;
+  1143→  const n = dvrNvrData.nvr;
+  1144→  return (
+  1145→    <div className="space-y-6">
+  1146→      <motion.div {...fadeUp}>
+  1147→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">DVR vs NVR — Which One Do You Need?</h2>
+  1148→        <p className="text-muted-foreground">The recorder is the brain of your CCTV system. Understanding this difference is the most important decision you will make.</p>
+  1149→      </motion.div>
+  1150→      <motion.div {...staggerContainer} className="grid grid-cols-1 md:grid-cols-2 gap-5">
+  1151→        {[d, n].map((item, i) => (
+  1152→          <motion.div key={item.name} {...staggerItem}>
+  1153→            <Card className={cn(premiumCard, "overflow-hidden", i === 0 ? "border-sky-200" : "border-emerald-200")}>
+  1154→              <div className={cn("p-4 border-b flex items-center gap-3", i === 0 ? "bg-sky-50 border-sky-200" : "bg-emerald-50 border-emerald-200")}>
+  1155→                <div className={cn("text-lg", i === 0 ? "text-sky-700" : "text-emerald-700")}>{item.icon}</div>
+  1156→                <h3 className={cn("font-bold", i === 0 ? "text-sky-700" : "text-emerald-700")}>{item.name}</h3>
+  1157→              </div>
+  1158→              <CardContent className="p-5 space-y-4">
+  1159→                <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+  1160→                <div className="space-y-2">
+  1161→                  {[
+  1162→                    { label: "Technology", value: item.technology },
+  1163→                    { label: "Cable", value: item.cable },
+  1164→                    { label: "Max Resolution", value: item.maxResolution },
+  1165→                    { label: "Channels", value: item.channels },
+  1166→                    { label: "Brands", value: item.brands },
+  1167→                    { label: "Price Range", value: item.priceRange },
+  1168→                  ].map((row) => (
+  1169→                    <div key={row.label} className="flex justify-between text-sm py-1.5 border-b border-border/50">
+  1170→                      <span className="text-muted-foreground">{row.label}</span>
+  1171→                      <span className="font-medium text-right max-w-[60%]">{row.value}</span>
+  1172→                    </div>
+  1173→                  ))}
+  1174→                </div>
+  1175→                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+  1176→                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5" /> Compatibility Note</p>
+  1177→                  <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1">{item.compatibility}</p>
+  1178→                </div>
+  1179→              </CardContent>
+  1180→            </Card>
+  1181→          </motion.div>
+  1182→        ))}
+  1183→      </motion.div>
+  1184→    </div>
+  1185→  );
+  1186→}
+  1187→
+  1188→function CompatibilitySection() {
+  1189→  return (
+  1190→    <div className="space-y-6">
+  1191→      <motion.div {...fadeUp}>
+  1192→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Brand Compatibility Guide</h2>
+  1193→        <p className="text-muted-foreground">Understanding which cameras work with which recorders is critical. A wrong combination means your system simply will not work.</p>
+  1194→      </motion.div>
+  1195→      <motion.div {...fadeUp}>
+  1196→        <Card className={cn(premiumCard, "overflow-hidden")}>
+  1197→          <div className="overflow-x-auto">
+  1198→            <table className="w-full text-sm">
+  1199→              <thead>
+  1200→                <tr className="bg-muted/50">
+  1201→                  <th className="px-4 py-3 text-left font-semibold">Camera Brand</th>
+  1202→                  <th className="px-4 py-3 text-left font-semibold">Recorder Brand</th>
+  1203→                  <th className="px-4 py-3 text-left font-semibold">Compatible?</th>
+  1204→                  <th className="px-4 py-3 text-left font-semibold">Technology</th>
+  1205→                  <th className="px-4 py-3 text-left font-semibold">Note</th>
+  1206→                </tr>
+  1207→              </thead>
+  1208→              <tbody>
+  1209→                {compatibilityData.map((row, i) => (
+  1210→                  <tr key={i} className={cn("border-t border-border/50", i % 2 === 0 ? "" : "bg-muted/20")}>
+  1211→                    <td className="px-4 py-2.5 font-medium">{row.brand1}</td>
+  1212→                    <td className="px-4 py-2.5 font-medium">{row.brand2}</td>
+  1213→                    <td className="px-4 py-2.5">
+  1214→                      {row.works ? (
+  1215→                        <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"><CheckCircle2 className="h-3 w-3 mr-1" /> Yes</Badge>
+  1216→                      ) : (
+  1217→                        <Badge variant="destructive"><XCircle className="h-3 w-3 mr-1" /> No</Badge>
+  1218→                      )}
+  1219→                    </td>
+  1220→                    <td className="px-4 py-2.5 text-muted-foreground">{row.tech}</td>
+  1221→                    <td className="px-4 py-2.5 text-xs text-muted-foreground">{row.note}</td>
+  1222→                  </tr>
+  1223→                ))}
+  1224→              </tbody>
+  1225→            </table>
+  1226→          </div>
+  1227→        </Card>
+  1228→      </motion.div>
+  1229→      <motion.div {...fadeUp}>
+  1230→        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-5">
+  1231→          <h3 className="font-bold flex items-center gap-2 text-amber-700 dark:text-amber-400 mb-2"><AlertTriangle className="h-5 w-5" /> Important Rule</h3>
+  1232→          <p className="text-sm text-amber-700/80 dark:text-amber-400/80 leading-relaxed">Always match your camera brand with the same brand recorder for analog systems. For IP/NVR systems, ONVIF protocol provides basic cross-brand compatibility, but advanced smart features (face detection, line crossing) typically only work with same-brand setups.</p>
+  1233→        </div>
+  1234→      </motion.div>
+  1235→    </div>
+  1236→  );
+  1237→}
+  1238→
+  1239→function MobileSetupSection() {
+  1240→  return (
+  1241→    <div className="space-y-8">
+  1242→      <motion.div {...fadeUp}>
+  1243→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Mobile Viewing Setup</h2>
+  1244→        <p className="text-muted-foreground">Watch your CCTV cameras from anywhere in the world using your smartphone. Here are the step-by-step instructions for the most popular apps.</p>
+  1245→      </motion.div>
+  1246→      {mobileAppsData.map((brand) => (
+  1247→        <motion.div key={brand.brand} {...fadeUp}>
+  1248→          <Card className={cn(premiumCard, "overflow-hidden")}>
+  1249→            <div className="p-4 border-b bg-muted/30 flex items-center gap-3">
+  1250→              <Smartphone className="h-5 w-5 text-emerald-600" />
+  1251→              <h3 className="font-bold text-lg">{brand.brand}</h3>
+  1252→            </div>
+  1253→            <CardContent className="p-6 space-y-6">
+  1254→              <div className="flex flex-wrap gap-3">
+  1255→                {brand.apps.map((app) => (
+  1256→                  <Badge key={app.name} variant="outline" className={cn("px-3 py-1.5 text-sm", app.color)}>
+  1257→                    <Smartphone className="h-3.5 w-3.5 mr-1" /> {app.name}
+  1258→                    <span className="ml-2 opacity-70">{app.use}</span>
+  1259→                  </Badge>
+  1260→                ))}
+  1261→              </div>
+  1262→              <div className="space-y-3">
+  1263→                <h4 className="font-semibold">Setup Steps</h4>
+  1264→                {brand.steps.map((step, si) => (
+  1265→                  <div key={si} className="flex gap-3 items-start">
+  1266→                    <div className="w-7 h-7 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0">
+  1267→                      <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">{si + 1}</span>
+  1268→                    </div>
+  1269→                    <p className="text-sm text-muted-foreground leading-relaxed pt-0.5">{step}</p>
+  1270→                  </div>
+  1271→                ))}
+  1272→              </div>
+  1273→            </CardContent>
+  1274→          </Card>
+  1275→        </motion.div>
+  1276→      ))}
+  1277→    </div>
+  1278→  );
+  1279→}
+  1280→
+  1281→function BudgetGuideSection() {
+  1282→  return (
+  1283→    <div className="space-y-8">
+  1284→      <motion.div {...fadeUp}>
+  1285→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Budget Guide — Find Your Perfect Setup</h2>
+  1286→        <p className="text-muted-foreground">Your budget determines the quality, number of cameras, and features you can get. Here are recommended setups for every budget range.</p>
+  1287→      </motion.div>
+  1288→      <motion.div {...staggerContainer} className="space-y-5">
+  1289→        {budgetGuides.map((guide) => (
+  1290→          <motion.div key={guide.range} {...staggerItem}>
+  1291→            <Card className={cn(premiumCard, "overflow-hidden")}>
+  1292→              <div className={cn("p-4 border-b flex items-center gap-3", guide.lightColor, guide.borderColor)}>
+  1293→                <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", guide.color, "text-white")}>{guide.icon}</div>
+  1294→                <div className="flex-1">
+  1295→                  <h3 className={cn("font-bold", guide.textColor)}>{guide.label}</h3>
+  1296→                  <p className="text-sm font-semibold">{guide.range}</p>
+  1297→                </div>
+  1298→              </div>
+  1299→              <CardContent className="p-5 space-y-4">
+  1300→                <p className="text-sm text-muted-foreground leading-relaxed">{guide.description}</p>
+  1301→                <div className="space-y-2">
+  1302→                  <h4 className="font-semibold text-sm">Recommended Setup:</h4>
+  1303→                  {guide.recommended.map((item, i) => (
+  1304→                    <div key={i} className="flex items-start gap-2 text-sm">
+  1305→                      <CheckCircle2 className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+  1306→                      <span className="text-muted-foreground">{item}</span>
+  1307→                    </div>
+  1308→                  ))}
+  1309→                </div>
+  1310→                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+  1311→                  <div className="bg-muted/50 rounded-lg p-3">
+  1312→                    <p className="text-xs text-muted-foreground">Estimated Total</p>
+  1313→                    <p className={cn("font-bold text-lg", guide.textColor)}>{guide.totalCost}</p>
+  1314→                  </div>
+  1315→                  <div className="bg-muted/50 rounded-lg p-3">
+  1316→                    <p className="text-xs text-muted-foreground">WiFi Alternative</p>
+  1317→                    <p className="font-medium text-sm mt-1">{guide.alternative}</p>
+  1318→                  </div>
+  1319→                </div>
+  1320→              </CardContent>
+  1321→            </Card>
+  1322→          </motion.div>
+  1323→        ))}
+  1324→      </motion.div>
+  1325→    </div>
+  1326→  );
+  1327→}
+  1328→
+  1329→function InstallationSection() {
+  1330→  return (
+  1331→    <div className="space-y-8">
+  1332→      <motion.div {...fadeUp}>
+  1333→        <h2 className="text-2xl sm:text-3xl font-bold mb-2">Installation Guide</h2>
+  1334→        <p className="text-muted-foreground">Follow these steps to set up your CCTV system correctly. Whether you are installing a wired DVR/NVR system or a simple WiFi camera, this guide covers everything.</p>
+  1335→      </motion.div>
+  1336→
+  1337→      <motion.div {...staggerContainer} className="space-y-4">
+  1338→        {installSteps.map((item, i) => (
+  1339→          <motion.div key={i} {...staggerItem}>
+  1340→            <Card className={cn(premiumCard, "overflow-hidden")}>
+  1341→              <CardContent className="p-5 flex gap-4">
+  1342→                <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center shrink-0 text-emerald-700 dark:text-emerald-300 font-bold text-lg">
+  1343→                  {i + 1}
+  1344→                </div>
+  1345→                <div className="flex-1 pb-4 border-b border-muted last:border-0 last:pb-0">
+  1346→                  <h4 className="font-semibold text-sm">{item.step}</h4>
+  1347→                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{item.detail}</p>
+  1348→                </div>
+  1349→              </CardContent>
+  1350→            </Card>
+  1351→          </motion.div>
+  1352→        ))}
+  1353→      </motion.div>
+  1354→
+  1355→      <motion.div {...fadeUp}>
+  1356→        <Card className={cn(premiumCard, "bg-slate-50 dark:bg-slate-900/30")}>
+  1357→          <CardHeader><CardTitle className="flex items-center gap-2"><Wrench className="h-5 w-5" /> Tools You Will Need</CardTitle></CardHeader>
+  1358→          <CardContent>
+  1359→            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+  1360→              {[
+  1361→                "Drill machine + drill bits", "Screwdriver set", "RG59 coaxial cable", "BNC connectors / couplers",
+  1362→                "Power cable (2-core)", "Cable clips / ties", "Ethernet cable (Cat5e/Cat6)", "HDMI cable",
+  1363→                "SATA HDD (1TB-2TB)", "Ladder / step stool", "Measuring tape", "Cable tester (optional)",
+  1364→              ].map((tool) => (
+  1365→                <div key={tool} className="flex items-center gap-2 bg-background rounded-lg p-3 border text-sm">
+  1366→                  <Wrench className="h-3.5 w-3.5 text-muted-foreground shrink-0" /> {tool}
+  1367→                </div>
+  1368→              ))}
+  1369→            </div>
+  1370→          </CardContent>
+  1371→        </Card>
+  1372→      </motion.div>
+  1373→    </div>
+  1374→  );
+  1375→}
+  1376→
+  1377→// ═══════════════════════════════════════════════════════════════
+  1378→// OVERVIEW (Dashboard) SECTION
+  1379→// ═══════════════════════════════════════════════════════════════
+  1380→
+  1381→function OverviewSection({ setLearnSection, activeCategory, setActiveCategory }: {
+  1382→  setLearnSection: (s: string) => void; activeCategory: string; setActiveCategory: (c: string) => void;
+  1383→}) {
+  1384→  return (
+  1385→    <div className="space-y-12">
+  1386→      <CategoryFilters active={activeCategory} onChange={setActiveCategory} />
+  1387→      <ModuleCards setLearnSection={setLearnSection} activeCategory={activeCategory} />
+  1388→      <InteractiveFlowDiagram />
+  1389→      <FeaturedArticles />
+  1390→      <VideoTutorials />
+  1391→      <DownloadsSection />
+  1392→      <ComparisonTables />
+  1393→      <FaqSectionWithSearch />
+  1394→    </div>
+  1395→  );
+  1396→}
+  1397→
+  1398→// ═══════════════════════════════════════════════════════════════
+  1399→// MAIN LEARNING SYSTEM
+  1400→// ═══════════════════════════════════════════════════════════════
+  1401→
+  1402→export function LearningSystem() {
+  1403→  const { learnSection, setLearnSection } = useStore();
+  1404→  const router = useRouter();
+  1405→  const [searchQuery, setSearchQuery] = useState("");
+  1406→  const [activeCategory, setActiveCategory] = useState("all");
+  1407→  const [mobileSidebar, setMobileSidebar] = useState(false);
+  1408→
+  1409→  const handleTopicClick = (topic: string) => {
+  1410→    const mapping: Record<string, string> = {
+  1411→      "CCTV Camera Types": "camera-types",
+  1412→      "DVR vs NVR": "dvr-nvr",
+  1413→      "Hikvision Compatibility": "compatibility",
+  1414→      "Mobile App Setup": "mobile-setup",
+  1415→      "WiFi Camera Installation": "camera-types",
+  1416→      "Night Vision Comparison": "camera-types",
+  1417→      "HDD Storage Calculation": "budget",
+  1418→      "PTZ Camera Guide": "camera-types",
+  1419→      "Budget Setup Under 10K": "budget",
+  1420→      "ColorVu vs IR": "camera-types",
+  1421→    };
+  1422→    const section = mapping[topic];
+  1423→    if (section) setLearnSection(section);
+  1424→  };
+  1425→
+  1426→  const handleStartLearning = () => {
+  1427→    setLearnSection("camera-types");
+  1428→    window.scrollTo({ top: 0, behavior: "smooth" });
+  1429→  };
+  1430→
+  1431→  const renderSection = () => {
+  1432→    switch (learnSection) {
+  1433→      case "camera-types": return <CameraTypesSection />;
+  1434→      case "dvr-nvr": return <DvrNvrSection />;
+  1435→      case "compatibility": return <CompatibilitySection />;
+  1436→      case "mobile-setup": return <MobileSetupSection />;
+  1437→      case "budget": return <BudgetGuideSection />;
+  1438→      case "installation": return <InstallationSection />;
+  1439→      case "faq": return <FaqSectionWithSearch />;
+  1440→      default: return <OverviewSection setLearnSection={setLearnSection} activeCategory={activeCategory} setActiveCategory={setActiveCategory} />;
+  1441→    }
+  1442→  };
+  1443→
+  1444→  return (
+  1445→    <div className="min-h-screen">
+  1446→      {/* Hero - only on overview */}
+  1447→      {learnSection === "overview" && (
+  1448→        <HeroSection onStartLearning={handleStartLearning} onBrowseProducts={() => router.push("/products")} />
+  1449→      )}
+  1450→
+  1451→      {/* Search - only on overview */}
+  1452→      {learnSection === "overview" && (
+  1453→        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+  1454→          <LearningSearch value={searchQuery} onChange={setSearchQuery} onTopicClick={handleTopicClick} />
+  1455→        </div>
+  1456→      )}
+  1457→
+  1458→      {/* Main content area */}
+  1459→      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+  1460→        {/* Breadcrumb */}
+  1461→        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+  1462→          <button onClick={() => router.push("/products")} className="hover:text-foreground transition-colors">Catalog</button>
+  1463→          <ChevronRight className="h-3.5 w-3.5" />
+  1464→          <span className="font-medium text-foreground">Learning Center</span>
+  1465→          {learnSection !== "overview" && (
+  1466→            <>
+  1467→              <ChevronRight className="h-3.5 w-3.5" />
+  1468→              <button onClick={() => setLearnSection("overview")} className="hover:text-foreground transition-colors">{learnSections.find((s) => s.id === learnSection)?.label}</button>
+  1469→            </>
+  1470→          )}
+  1471→        </div>
+  1472→
+  1473→        <div className="flex flex-col lg:flex-row gap-8 pb-20">
+  1474→          <SidebarNav
+  1475→            learnSection={learnSection}
+  1476→            setLearnSection={setLearnSection}
+  1477→            mobileOpen={mobileSidebar}
+  1478→            setMobileOpen={setMobileSidebar}
+  1479→            router={router}
+  1480→          />
+  1481→
+  1482→          <div className="flex-1 min-w-0">
+  1483→            {/* Progress - only on overview */}
+  1484→            {learnSection === "overview" && <LearningProgress />}
+  1485→
+  1486→            {/* Section content */}
+  1487→            {renderSection()}
+  1488→
+  1489→            {/* CTA - only on overview */}
+  1490→            {learnSection === "overview" && <CtaSection router={router} />}
+  1491→          </div>
+  1492→        </div>
+  1493→      </div>
+  1494→    </div>
+  1495→  );
+  1496→}
+  1497→

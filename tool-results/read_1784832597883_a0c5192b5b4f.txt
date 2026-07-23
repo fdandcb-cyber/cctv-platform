@@ -1,0 +1,1207 @@
+     1→"use client";
+     2→
+     3→import { useState, useMemo, useCallback } from "react";
+     4→import { motion, AnimatePresence } from "framer-motion";
+     5→import { cn } from "@/lib/utils";
+     6→import { Button } from "@/components/ui/button";
+     7→import { Card, CardContent } from "@/components/ui/card";
+     8→import { Badge } from "@/components/ui/badge";
+     9→import { Input } from "@/components/ui/input";
+    10→import { Label } from "@/components/ui/label";
+    11→import { Separator } from "@/components/ui/separator";
+    12→import {
+    13→  Sheet,
+    14→  SheetContent,
+    15→  SheetHeader,
+    16→  SheetTitle,
+    17→} from "@/components/ui/sheet";
+    18→import {
+    19→  Select,
+    20→  SelectContent,
+    21→  SelectItem,
+    22→  SelectTrigger,
+    23→  SelectValue,
+    24→} from "@/components/ui/select";
+    25→import { useAppStore } from "@/store/app-store";
+    26→import { useStore, type CctvProduct } from "@/store/cctv-store";
+    27→import {
+    28→  Search,
+    29→  Camera,
+    30→  Wifi,
+    31→  Radio,
+    32→  Signal,
+    33→  MonitorPlay,
+    34→  ShoppingCart,
+    35→  Eye,
+    36→  ChevronLeft,
+    37→  ChevronRight,
+    38→  SlidersHorizontal,
+    39→  PackageX,
+    40→  X,
+    41→  Heart,
+    42→  GitCompareArrows,
+    43→  ShieldCheck,
+    44→  Award,
+    45→  Truck,
+    46→  CreditCard,
+    47→  Phone,
+    48→  MessageCircle,
+    49→  Wrench,
+    50→  ArrowRight,
+    51→  CheckCircle2,
+    52→  Home,
+    53→  ChevronDown,
+    54→} from "lucide-react";
+    55→import { toast } from "sonner";
+    56→import { useRouter } from "next/navigation";
+    57→import Link from "next/link";
+    58→
+    59→// ─── Price formatter ───
+    60→const fmt = (n: number) =>
+    61→  new Intl.NumberFormat("en-IN", {
+    62→    style: "currency",
+    63→    currency: "INR",
+    64→    maximumFractionDigits: 0,
+    65→  }).format(n);
+    66→
+    67→// ─── Type config ───
+    68→const typeConfig: Record<string, { icon: React.ReactNode; color: string; bg: string }> = {
+    69→  Dome: { icon: <Camera className="h-4 w-4" />, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800" },
+    70→  Bullet: { icon: <Camera className="h-4 w-4" />, color: "text-sky-600 dark:text-sky-400", bg: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800" },
+    71→  WiFi: { icon: <Wifi className="h-4 w-4" />, color: "text-violet-600 dark:text-violet-400", bg: "bg-violet-50 dark:bg-violet-950/40 border-violet-200 dark:border-violet-800" },
+    72→  PTZ: { icon: <Radio className="h-4 w-4" />, color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800" },
+    73→  "4G": { icon: <Signal className="h-4 w-4" />, color: "text-red-600 dark:text-red-400", bg: "bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-800" },
+    74→  DVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-slate-600 dark:text-slate-400", bg: "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700" },
+    75→  NVR: { icon: <MonitorPlay className="h-4 w-4" />, color: "text-teal-600 dark:text-teal-400", bg: "bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800" },
+    76→};
+    77→
+    78→const quickTypes = ["all", "Dome", "Bullet", "WiFi", "PTZ", "4G", "DVR", "NVR"];
+    79→const ITEMS_PER_PAGE = 12;
+    80→
+    81→const TRUST_ITEMS = [
+    82→  { icon: ShieldCheck, label: "100% Genuine Products", desc: "All products sourced from authorized channels" },
+    83→  { icon: Award, label: "Manufacturer Warranty", desc: "Full warranty on every product" },
+    84→  { icon: Truck, label: "Fast Delivery", desc: "Reliable shipping across India" },
+    85→  { icon: CreditCard, label: "Secure Payments", desc: "Protected by Razorpay" },
+    86→];
+    87→
+    88→// ─── Animation variants ───
+    89→const fadeUp = {
+    90→  initial: { opacity: 0, y: 20 },
+    91→  whileInView: { opacity: 1, y: 0 },
+    92→  viewport: { once: true, margin: "-40px" } as const,
+    93→  transition: { duration: 0.45, ease: "easeOut" },
+    94→};
+    95→
+    96→const staggerContainer = {
+    97→  initial: {},
+    98→  whileInView: { transition: { staggerChildren: 0.06 } },
+    99→  viewport: { once: true, margin: "-40px" } as const,
+   100→};
+   101→
+   102→const staggerItem = {
+   103→  initial: { opacity: 0, y: 16 },
+   104→  whileInView: { opacity: 1, y: 0 },
+   105→  transition: { duration: 0.4, ease: "easeOut" },
+   106→};
+   107→
+   108→// ═══════════════════════════════════════════════════════════════
+   109→// PRODUCT CARD
+   110→// ═══════════════════════════════════════════════════════════════
+   111→
+   112→function ProductCard({ p, index }: { p: CctvProduct; index: number }) {
+   113→  const { addToCart } = useAppStore();
+   114→  const router = useRouter();
+   115→  const { compareList, toggleCompare } = useStore();
+   116→  const [liked, setLiked] = useState(false);
+   117→  const cfg = typeConfig[p.cameraType] || typeConfig.Bullet;
+   118→  const isCompared = compareList.some((c) => c.id === p.id);
+   119→
+   120→  const discountPercent = useMemo(() => {
+   121→    if (p.salePrice && p.salePrice < p.price) {
+   122→      return Math.round(((p.price - p.salePrice) / p.price) * 100);
+   123→    }
+   124→    return 0;
+   125→  }, [p.price, p.salePrice]);
+   126→
+   127→  const savings = p.salePrice && p.salePrice < p.price ? p.price - p.salePrice : 0;
+   128→
+   129→  const specs = [p.resolution, p.nightVision, p.weatherRating].filter(Boolean);
+   130→
+   131→  const handleAddToCart = () => {
+   132→    addToCart({
+   133→      productId: p.id,
+   134→      brand: p.brand,
+   135→      modelName: p.modelName,
+   136→      cameraType: p.cameraType,
+   137→      resolution: p.resolution,
+   138→      price: p.price,
+   139→      salePrice: p.salePrice,
+   140→      imageUrl: p.imageUrl,
+   141→      quantity: 1,
+   142→    });
+   143→    toast.success("Added to cart!");
+   144→  };
+   145→
+   146→  return (
+   147→    <motion.div
+   148→      initial={{ opacity: 0, y: 16 }}
+   149→      animate={{ opacity: 1, y: 0 }}
+   150→      transition={{ duration: 0.35, delay: index * 0.04 }}
+   151→      className="h-full"
+   152→    >
+   153→      <Card
+   154→        className={cn(
+   155→          "h-full overflow-hidden rounded-2xl py-0 gap-0 group",
+   156→          "border border-border/60 shadow-sm",
+   157→          "hover:shadow-xl hover:-translate-y-1",
+   158→          "transition-all duration-300 ease-out",
+   159→          "hover:border-emerald-500/50"
+   160→        )}
+   161→      >
+   162→        {/* ── Image area ── */}
+   163→        <div
+   164→          className={cn(
+   165→            "aspect-[4/3] bg-muted/50 relative overflow-hidden cursor-pointer"
+   166→          )}
+   167→          onClick={() => router.push(`/products/${p.id}`)}
+   168→        >
+   169→          {p.imageUrl ? (
+   170→            <img
+   171→              src={p.imageUrl}
+   172→              alt={p.modelName}
+   173→              className={cn(
+   174→                "w-full h-full object-contain p-5",
+   175→                "group-hover:scale-105 transition-transform duration-500"
+   176→              )}
+   177→              loading="lazy"
+   178→              onError={(e) => {
+   179→                (e.target as HTMLImageElement).style.display = "none";
+   180→              }}
+   181→            />
+   182→          ) : (
+   183→            <div className="w-full h-full flex items-center justify-center">
+   184→              <Camera className="h-14 w-14 text-muted-foreground/20" />
+   185→            </div>
+   186→          )}
+   187→
+   188→          {/* Top left: discount badge */}
+   189→          {discountPercent > 0 && (
+   190→            <Badge className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-lg shadow-sm">
+   191→              {discountPercent}% OFF
+   192→            </Badge>
+   193→          )}
+   194→
+   195→          {/* Top right: action buttons */}
+   196→          <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+   197→            <button
+   198→              onClick={(e) => { e.stopPropagation(); setLiked(!liked); }}
+   199→              aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
+   200→              className={cn(
+   201→                "flex h-8 w-8 items-center justify-center rounded-lg",
+   202→                "bg-background/90 backdrop-blur-sm border border-border/50 shadow-sm",
+   203→                "transition-all duration-200 hover:scale-110",
+   204→                liked ? "text-red-500" : "text-muted-foreground hover:text-red-500"
+   205→              )}
+   206→            >
+   207→              <Heart className={cn("h-4 w-4", liked && "fill-current")} />
+   208→            </button>
+   209→            <button
+   210→              onClick={(e) => { e.stopPropagation(); toggleCompare(p); }}
+   211→              aria-label={isCompared ? "Remove from compare" : "Add to compare"}
+   212→              className={cn(
+   213→                "flex h-8 w-8 items-center justify-center rounded-lg",
+   214→                "bg-background/90 backdrop-blur-sm border border-border/50 shadow-sm",
+   215→                "transition-all duration-200 hover:scale-110",
+   216→                isCompared ? "text-emerald-600 bg-emerald-50" : "text-muted-foreground hover:text-emerald-600"
+   217→              )}
+   218→            >
+   219→              <GitCompareArrows className="h-4 w-4" />
+   220→            </button>
+   221→          </div>
+   222→
+   223→          {/* Brand badge overlay */}
+   224→          <Badge
+   225→            variant="outline"
+   226→            className="absolute bottom-3 left-3 text-[10px] bg-background/80 backdrop-blur-sm font-medium"
+   227→          >
+   228→            {p.brand}
+   229→          </Badge>
+   230→        </div>
+   231→
+   232→        {/* ── Body ── */}
+   233→        <CardContent className="p-4 sm:p-5 flex flex-col gap-3 flex-1">
+   234→          {/* Type + Resolution chips */}
+   235→          <div className="flex items-center gap-1.5 flex-wrap">
+   236→            <Badge
+   237→              variant="outline"
+   238→              className={cn("text-[10px] font-medium", cfg.color, cfg.bg)}
+   239→            >
+   240→              {cfg.icon}
+   241→              {p.cameraType}
+   242→            </Badge>
+   243→            {p.resolution && (
+   244→              <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+   245→                {p.resolution}
+   246→              </span>
+   247→            )}
+   248→          </div>
+   249→
+   250→          {/* Title */}
+   251→          <h3
+   252→            className="font-semibold text-base leading-snug line-clamp-2 cursor-pointer hover:text-emerald-600 transition-colors"
+   253→            onClick={() => router.push(`/products/${p.id}`)}
+   254→          >
+   255→            {p.modelName}
+   256→          </h3>
+   257→
+   258→          {/* Spec chips */}
+   259→          {specs.length > 0 && (
+   260→            <div className="flex flex-wrap gap-1.5">
+   261→              {specs.map((spec, i) => (
+   262→                <span
+   263→                  key={`${spec}-${i}`}
+   264→                  className="text-[10px] text-muted-foreground bg-muted/40 border border-border/30 px-2 py-0.5 rounded-md"
+   265→                >
+   266→                  {spec}
+   267→                </span>
+   268→              ))}
+   269→            </div>
+   270→          )}
+   271→
+   272→          {/* In stock indicator */}
+   273→          <div className="flex items-center gap-1.5">
+   274→            <span className={cn("h-2 w-2 rounded-full", "bg-emerald-500")} />
+   275→            <span className="text-xs text-muted-foreground">In Stock</span>
+   276→          </div>
+   277→
+   278→          {/* Price */}
+   279→          <div className="mt-auto pt-1">
+   280→            {discountPercent > 0 ? (
+   281→              <div className="flex flex-col gap-0.5">
+   282→                <div className="flex items-baseline gap-2">
+   283→                  <span className="text-xl font-bold text-emerald-600">
+   284→                    {fmt(p.salePrice!)}
+   285→                  </span>
+   286→                  <span className="text-sm text-muted-foreground line-through">
+   287→                    {fmt(p.price)}
+   288→                  </span>
+   289→                </div>
+   290→                <span className="text-xs text-emerald-600 font-medium">
+   291→                  You save {fmt(savings)}
+   292→                </span>
+   293→              </div>
+   294→            ) : (
+   295→              <span className="text-xl font-bold">{fmt(p.price)}</span>
+   296→            )}
+   297→          </div>
+   298→
+   299→          {/* Buttons */}
+   300→          <div className="flex gap-2 pt-1">
+   301→            <Button
+   302→              className={cn(
+   303→                "flex-1 gap-2 rounded-xl text-sm h-10",
+   304→                "bg-emerald-600 text-white hover:bg-emerald-700",
+   305→                "shadow-sm shadow-emerald-600/20",
+   306→                "transition-all duration-200 hover:shadow-md hover:scale-[1.02]"
+   307→              )}
+   308→              onClick={handleAddToCart}
+   309→            >
+   310→              <ShoppingCart className="h-4 w-4" />
+   311→              Add to Cart
+   312→            </Button>
+   313→            <Button
+   314→              variant="outline"
+   315→              className="rounded-xl text-sm h-10 px-3 transition-all duration-200 hover:scale-[1.02]"
+   316→              onClick={() => router.push(`/products/${p.id}`)}
+   317→              aria-label="View details"
+   318→            >
+   319→              <Eye className="h-4 w-4" />
+   320→            </Button>
+   321→          </div>
+   322→        </CardContent>
+   323→      </Card>
+   324→    </motion.div>
+   325→  );
+   326→}
+   327→
+   328→// ═══════════════════════════════════════════════════════════════
+   329→// LOADING SKELETON
+   330→// ═══════════════════════════════════════════════════════════════
+   331→
+   332→function LoadingSkeleton() {
+   333→  return (
+   334→    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
+   335→      {Array.from({ length: 8 }).map((_, i) => (
+   336→        <Card key={i} className="overflow-hidden rounded-2xl py-0 gap-0">
+   337→          <div className="aspect-[4/3] bg-muted animate-pulse" />
+   338→          <CardContent className="p-4 sm:p-5 space-y-3">
+   339→            <div className="flex gap-2">
+   340→              <div className="h-5 w-16 bg-muted rounded-full animate-pulse" />
+   341→              <div className="h-5 w-12 bg-muted rounded-full animate-pulse" />
+   342→            </div>
+   343→            <div className="h-4 bg-muted rounded-md animate-pulse w-3/4" />
+   344→            <div className="h-4 bg-muted rounded-md animate-pulse w-1/2" />
+   345→            <div className="h-6 bg-muted rounded-md animate-pulse w-24 mt-2" />
+   346→            <div className="flex gap-2 pt-1">
+   347→              <div className="h-10 flex-1 bg-muted rounded-xl animate-pulse" />
+   348→              <div className="h-10 w-10 bg-muted rounded-xl animate-pulse" />
+   349→            </div>
+   350→          </CardContent>
+   351→        </Card>
+   352→      ))}
+   353→    </div>
+   354→  );
+   355→}
+   356→
+   357→// ═══════════════════════════════════════════════════════════════
+   358→// FILTER SIDEBAR (Desktop)
+   359→// ═══════════════════════════════════════════════════════════════
+   360→
+   361→function FilterSidebar({ filters, setFilter, resetFilters }: {
+   362→  filters: Record<string, string>;
+   363→  setFilter: (k: string, v: string) => void;
+   364→  resetFilters: () => void;
+   365→}) {
+   366→  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+   367→    brand: true,
+   368→    type: true,
+   369→    price: true,
+   370→    sort: true,
+   371→  });
+   372→
+   373→  const toggleSection = (s: string) =>
+   374→    setOpenSections((prev) => ({ ...prev, [s]: !prev[s] }));
+   375→
+   376→  return (
+   377→    <aside className="hidden lg:block w-64 shrink-0">
+   378→      <div className="sticky top-24 space-y-6">
+   379→        {/* Header */}
+   380→        <div className="flex items-center justify-between">
+   381→          <div className="flex items-center gap-2">
+   382→            <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+   383→            <h3 className="font-semibold text-sm">Filters</h3>
+   384→          </div>
+   385→          <Button
+   386→            variant="ghost"
+   387→            size="sm"
+   388→            className="text-xs text-muted-foreground h-7 px-2"
+   389→            onClick={resetFilters}
+   390→          >
+   391→            Reset
+   392→          </Button>
+   393→        </div>
+   394→
+   395→        {/* Brand */}
+   396→        <FilterSection title="Brand" open={openSections.brand} onToggle={() => toggleSection("brand")}>
+   397→          <Select
+   398→            value={filters.brand}
+   399→            onValueChange={(v) => setFilter("brand", v)}
+   400→          >
+   401→            <SelectTrigger className="w-full rounded-xl h-10">
+   402→              <SelectValue placeholder="All Brands" />
+   403→            </SelectTrigger>
+   404→            <SelectContent>
+   405→              <SelectItem value="all">All Brands</SelectItem>
+   406→              <SelectItem value="Hikvision">Hikvision</SelectItem>
+   407→              <SelectItem value="Dahua">Dahua</SelectItem>
+   408→            </SelectContent>
+   409→          </Select>
+   410→        </FilterSection>
+   411→
+   412→        {/* Camera Type */}
+   413→        <FilterSection title="Camera Type" open={openSections.type} onToggle={() => toggleSection("type")}>
+   414→          <div className="grid grid-cols-2 gap-2">
+   415→            {quickTypes.filter((t) => t !== "all").map((t) => {
+   416→              const cfg = typeConfig[t];
+   417→              const active = filters.cameraType === t;
+   418→              return (
+   419→                <button
+   420→                  key={t}
+   421→                  onClick={() => setFilter("cameraType", active ? "all" : t)}
+   422→                  className={cn(
+   423→                    "flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-200",
+   424→                    active
+   425→                      ? "bg-emerald-600 text-white shadow-sm shadow-emerald-600/20 border border-emerald-600"
+   426→                      : "bg-muted/50 border border-border/60 text-muted-foreground hover:border-emerald-500/50 hover:text-foreground"
+   427→                  )}
+   428→                >
+   429→                  {cfg?.icon}
+   430→                  {t}
+   431→                </button>
+   432→              );
+   433→            })}
+   434→          </div>
+   435→        </FilterSection>
+   436→
+   437→        {/* Price Range */}
+   438→        <FilterSection title="Price Range" open={openSections.price} onToggle={() => toggleSection("price")}>
+   439→          <Select
+   440→            value={filters.maxPrice || "all"}
+   441→            onValueChange={(v) => setFilter("maxPrice", v === "all" ? "" : v)}
+   442→          >
+   443→            <SelectTrigger className="w-full rounded-xl h-10">
+   444→              <SelectValue placeholder="Any Price" />
+   445→            </SelectTrigger>
+   446→            <SelectContent>
+   447→              <SelectItem value="all">Any Price</SelectItem>
+   448→              <SelectItem value="3000">Under {fmt(3000)}</SelectItem>
+   449→              <SelectItem value="5000">Under {fmt(5000)}</SelectItem>
+   450→              <SelectItem value="10000">Under {fmt(10000)}</SelectItem>
+   451→              <SelectItem value="20000">Under {fmt(20000)}</SelectItem>
+   452→              <SelectItem value="50000">Under {fmt(50000)}</SelectItem>
+   453→            </SelectContent>
+   454→          </Select>
+   455→        </FilterSection>
+   456→
+   457→        {/* Sort By */}
+   458→        <FilterSection title="Sort By" open={openSections.sort} onToggle={() => toggleSection("sort")}>
+   459→          <Select
+   460→            value={filters.sortBy}
+   461→            onValueChange={(v) => setFilter("sortBy", v)}
+   462→          >
+   463→            <SelectTrigger className="w-full rounded-xl h-10">
+   464→              <SelectValue placeholder="Sort by" />
+   465→            </SelectTrigger>
+   466→            <SelectContent>
+   467→              <SelectItem value="price">Price: Low to High</SelectItem>
+   468→              <SelectItem value="price_desc">Price: High to Low</SelectItem>
+   469→              <SelectItem value="createdAt">Newest First</SelectItem>
+   470→            </SelectContent>
+   471→          </Select>
+   472→        </FilterSection>
+   473→      </div>
+   474→    </aside>
+   475→  );
+   476→}
+   477→
+   478→function FilterSection({ title, open, onToggle, children }: {
+   479→  title: string;
+   480→  open: boolean;
+   481→  onToggle: () => void;
+   482→  children: React.ReactNode;
+   483→}) {
+   484→  return (
+   485→    <div className="space-y-3">
+   486→      <button
+   487→        onClick={onToggle}
+   488→        className="flex items-center justify-between w-full text-sm font-medium group"
+   489→      >
+   490→        {title}
+   491→        <ChevronDown
+   492→          className={cn(
+   493→            "h-4 w-4 text-muted-foreground transition-transform duration-200",
+   494→            open && "rotate-180"
+   495→          )}
+   496→        />
+   497→      </button>
+   498→      <AnimatePresence initial={false}>
+   499→        {open && (
+   500→          <motion.div
+   501→            initial={{ height: 0, opacity: 0 }}
+   502→            animate={{ height: "auto", opacity: 1 }}
+   503→            exit={{ height: 0, opacity: 0 }}
+   504→            transition={{ duration: 0.2 }}
+   505→            className="overflow-hidden"
+   506→          >
+   507→            {children}
+   508→          </motion.div>
+   509→        )}
+   510→      </AnimatePresence>
+   511→    </div>
+   512→  );
+   513→}
+   514→
+   515→// ═══════════════════════════════════════════════════════════════
+   516→// MOBILE FILTER SHEET
+   517→// ═══════════════════════════════════════════════════════════════
+   518→
+   519→function MobileFilterSheet({ filters, setFilter, resetFilters, open, onOpenChange }: {
+   520→  filters: Record<string, string>;
+   521→  setFilter: (k: string, v: string) => void;
+   522→  resetFilters: () => void;
+   523→  open: boolean;
+   524→  onOpenChange: (v: boolean) => void;
+   525→}) {
+   526→  return (
+   527→    <Sheet open={open} onOpenChange={onOpenChange}>
+   528→      <SheetContent side="bottom" className="rounded-t-2xl max-h-[80vh] overflow-y-auto">
+   529→        <SheetHeader>
+   530→          <SheetTitle className="flex items-center gap-2">
+   531→            <SlidersHorizontal className="h-5 w-5" />
+   532→            Filters
+   533→          </SheetTitle>
+   534→        </SheetHeader>
+   535→        <div className="px-6 pb-8 space-y-6 pt-4">
+   536→          {/* Brand */}
+   537→          <div className="space-y-2">
+   538→            <Label className="text-sm font-medium">Brand</Label>
+   539→            <Select value={filters.brand} onValueChange={(v) => setFilter("brand", v)}>
+   540→              <SelectTrigger className="w-full rounded-xl h-11">
+   541→                <SelectValue placeholder="All Brands" />
+   542→              </SelectTrigger>
+   543→              <SelectContent>
+   544→                <SelectItem value="all">All Brands</SelectItem>
+   545→                <SelectItem value="Hikvision">Hikvision</SelectItem>
+   546→                <SelectItem value="Dahua">Dahua</SelectItem>
+   547→              </SelectContent>
+   548→            </Select>
+   549→          </div>
+   550→
+   551→          {/* Camera Type */}
+   552→          <div className="space-y-2">
+   553→            <Label className="text-sm font-medium">Camera Type</Label>
+   554→            <div className="flex flex-wrap gap-2">
+   555→              {quickTypes.map((t) => {
+   556→                const cfg = typeConfig[t];
+   557→                const active = filters.cameraType === t;
+   558→                return (
+   559→                  <button
+   560→                    key={t}
+   561→                    onClick={() => setFilter("cameraType", active ? "all" : t)}
+   562→                    className={cn(
+   563→                      "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-200 border",
+   564→                      active
+   565→                        ? "bg-emerald-600 text-white border-emerald-600 shadow-sm"
+   566→                        : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/50"
+   567→                    )}
+   568→                  >
+   569→                    {cfg?.icon}
+   570→                    {t === "all" ? "All Types" : t}
+   571→                  </button>
+   572→                );
+   573→              })}
+   574→            </div>
+   575→          </div>
+   576→
+   577→          {/* Price */}
+   578→          <div className="space-y-2">
+   579→            <Label className="text-sm font-medium">Price Range</Label>
+   580→            <Select value={filters.maxPrice || "all"} onValueChange={(v) => setFilter("maxPrice", v === "all" ? "" : v)}>
+   581→              <SelectTrigger className="w-full rounded-xl h-11">
+   582→                <SelectValue placeholder="Any Price" />
+   583→              </SelectTrigger>
+   584→              <SelectContent>
+   585→                <SelectItem value="all">Any Price</SelectItem>
+   586→                <SelectItem value="3000">Under {fmt(3000)}</SelectItem>
+   587→                <SelectItem value="5000">Under {fmt(5000)}</SelectItem>
+   588→                <SelectItem value="10000">Under {fmt(10000)}</SelectItem>
+   589→                <SelectItem value="20000">Under {fmt(20000)}</SelectItem>
+   590→                <SelectItem value="50000">Under {fmt(50000)}</SelectItem>
+   591→              </SelectContent>
+   592→            </Select>
+   593→          </div>
+   594→
+   595→          {/* Sort */}
+   596→          <div className="space-y-2">
+   597→            <Label className="text-sm font-medium">Sort By</Label>
+   598→            <Select value={filters.sortBy} onValueChange={(v) => setFilter("sortBy", v)}>
+   599→              <SelectTrigger className="w-full rounded-xl h-11">
+   600→                <SelectValue placeholder="Sort by" />
+   601→              </SelectTrigger>
+   602→              <SelectContent>
+   603→                <SelectItem value="price">Price: Low to High</SelectItem>
+   604→                <SelectItem value="price_desc">Price: High to Low</SelectItem>
+   605→                <SelectItem value="createdAt">Newest First</SelectItem>
+   606→              </SelectContent>
+   607→            </Select>
+   608→          </div>
+   609→
+   610→          {/* Actions */}
+   611→          <div className="flex gap-3 pt-2">
+   612→            <Button
+   613→              variant="outline"
+   614→              className="flex-1 rounded-xl h-11"
+   615→              onClick={resetFilters}
+   616→            >
+   617→              Reset
+   618→            </Button>
+   619→            <Button
+   620→              className={cn(
+   621→                "flex-1 rounded-xl h-11",
+   622→                "bg-emerald-600 text-white hover:bg-emerald-700"
+   623→              )}
+   624→              onClick={() => onOpenChange(false)}
+   625→            >
+   626→              Apply Filters
+   627→            </Button>
+   628→          </div>
+   629→        </div>
+   630→      </SheetContent>
+   631→    </Sheet>
+   632→  );
+   633→}
+   634→
+   635→// ═══════════════════════════════════════════════════════════════
+   636→// COMPARE BAR
+   637→// ═══════════════════════════════════════════════════════════════
+   638→
+   639→function CompareBar({ compareList, clearCompare, onGoToCompare }: {
+   640→  compareList: CctvProduct[];
+   641→  clearCompare: () => void;
+   642→  onGoToCompare: () => void;
+   643→}) {
+   644→  if (compareList.length === 0) return null;
+   645→
+   646→  return (
+   647→    <motion.div
+   648→      initial={{ y: 80, opacity: 0 }}
+   649→      animate={{ y: 0, opacity: 1 }}
+   650→      exit={{ y: 80, opacity: 0 }}
+   651→      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+   652→    >
+   653→      <Card className={cn(
+   654→        "py-0 gap-0 rounded-2xl shadow-2xl",
+   655→        "border border-emerald-500/30 bg-background/95 backdrop-blur-xl"
+   656→      )}>
+   657→        <CardContent className="p-4 flex items-center gap-4">
+   658→          <div className="flex items-center gap-2">
+   659→            <GitCompareArrows className="h-5 w-5 text-emerald-600" />
+   660→            <span className="text-sm font-medium">{compareList.length} selected</span>
+   661→          </div>
+   662→          <div className="flex items-center gap-2">
+   663→            {compareList.map((p) => (
+   664→              <div
+   665→                key={p.id}
+   666→                className="flex items-center gap-1.5 bg-muted/60 rounded-lg px-2.5 py-1.5 text-xs"
+   667→              >
+   668→                <span className="font-medium truncate max-w-[100px]">{p.modelName}</span>
+   669→              </div>
+   670→            ))}
+   671→          </div>
+   672→          <Button
+   673→            size="sm"
+   674→            className={cn(
+   675→              "gap-1.5 rounded-xl",
+   676→              "bg-emerald-600 text-white hover:bg-emerald-700"
+   677→            )}
+   678→            onClick={onGoToCompare}
+   679→            disabled={compareList.length < 2}
+   680→          >
+   681→            Compare ({compareList.length})
+   682→          </Button>
+   683→          <Button
+   684→            variant="ghost"
+   685→            size="sm"
+   686→            className="text-muted-foreground rounded-lg"
+   687→            onClick={clearCompare}
+   688→          >
+   689→            <X className="h-4 w-4" />
+   690→          </Button>
+   691→        </CardContent>
+   692→      </Card>
+   693→    </motion.div>
+   694→  );
+   695→}
+   696→
+   697→// ═══════════════════════════════════════════════════════════════
+   698→// TRUST SECTION
+   699→// ═══════════════════════════════════════════════════════════════
+   700→
+   701→function TrustSection() {
+   702→  return (
+   703→    <section className="py-16 px-6 lg:px-8 bg-muted/30">
+   704→      <div className="max-w-7xl mx-auto">
+   705→        <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+   706→          {TRUST_ITEMS.map((item) => (
+   707→            <motion.div key={item.label} {...staggerItem}>
+   708→              <Card className={cn(
+   709→                "h-full py-0 gap-0 rounded-2xl border border-border/60 shadow-sm",
+   710→                "hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+   711→              )}>
+   712→                <CardContent className="p-5 text-center space-y-3">
+   713→                  <div className={cn(
+   714→                    "flex items-center justify-center w-12 h-12 rounded-xl mx-auto",
+   715→                    "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
+   716→                    "border border-emerald-100 dark:border-emerald-800/60"
+   717→                  )}>
+   718→                    <item.icon className="h-5 w-5" />
+   719→                  </div>
+   720→                  <div>
+   721→                    <p className="font-semibold text-sm">{item.label}</p>
+   722→                    <p className="text-xs text-gray-500 mt-1">{item.desc}</p>
+   723→                  </div>
+   724→                </CardContent>
+   725→              </Card>
+   726→            </motion.div>
+   727→          ))}
+   728→        </motion.div>
+   729→      </div>
+   730→    </section>
+   731→  );
+   732→}
+   733→
+   734→// ═══════════════════════════════════════════════════════════════
+   735→// CONTACT CTA
+   736→// ═══════════════════════════════════════════════════════════════
+   737→
+   738→function ContactCta() {
+   739→  return (
+   740→    <section className="py-16 px-6 lg:px-8">
+   741→      <div className="max-w-4xl mx-auto">
+   742→        <motion.div {...fadeUp}>
+   743→          <div className={cn(
+   744→            "relative overflow-hidden rounded-3xl p-10 sm:p-14",
+   745→            "bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800",
+   746→            "text-white"
+   747→          )}>
+   748→            <div className="absolute top-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+   749→            <div className="absolute bottom-0 left-0 w-56 h-56 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+   750→
+   751→            <div className="relative z-10 text-center space-y-5 max-w-xl mx-auto">
+   752→              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+   753→                Need help choosing the right setup?
+   754→              </h2>
+   755→              <p className="text-gray-300 leading-relaxed">
+   756→                Talk to a CCTV expert who can guide you through camera selection, compatibility, and pricing.
+   757→              </p>
+   758→              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+   759→                <a
+   760→                  href="https://wa.me/917809465102"
+   761→                  target="_blank"
+   762→                  rel="noopener noreferrer"
+   763→                  className={cn(
+   764→                    "inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl",
+   765→                    "bg-emerald-600 text-white hover:bg-emerald-700",
+   766→                    "shadow-lg shadow-emerald-600/20 font-medium",
+   767→                    "transition-all duration-300 hover:shadow-xl hover:scale-[1.03]"
+   768→                  )}
+   769→                >
+   770→                  <MessageCircle className="h-5 w-5" />
+   771→                  WhatsApp
+   772→                </a>
+   773→                <a
+   774→                  href="tel:+917809465102"
+   775→                  className={cn(
+   776→                    "inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl",
+   777→                    "border border-white/20 text-white hover:bg-white/10",
+   778→                    "font-medium transition-all duration-300"
+   779→                  )}
+   780→                >
+   781→                  <Phone className="h-5 w-5" />
+   782→                  Call Now
+   783→                </a>
+   784→                <Link
+   785→                  href="/builder"
+   786→                  className={cn(
+   787→                    "inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl",
+   788→                    "border border-white/20 text-white hover:bg-white/10",
+   789→                    "font-medium transition-all duration-300"
+   790→                  )}
+   791→                >
+   792→                  <Wrench className="h-5 w-5" />
+   793→                  Build Your Setup
+   794→                </Link>
+   795→              </div>
+   796→            </div>
+   797→          </div>
+   798→        </motion.div>
+   799→      </div>
+   800→    </section>
+   801→  );
+   802→}
+   803→
+   804→// ═══════════════════════════════════════════════════════════════
+   805→// MAIN PRODUCTS PAGE
+   806→// ═══════════════════════════════════════════════════════════════
+   807→
+   808→export function ProductsPage() {
+   809→  const { searchQuery, setSearchQuery } = useAppStore();
+   810→  const { products, filters, setFilter, loading, compareList, clearCompare } = useStore();
+   811→  const router = useRouter();
+   812→  const [localSearch, setLocalSearch] = useState(searchQuery);
+   813→  const [currentPage, setCurrentPage] = useState(1);
+   814→  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+   815→
+   816→  // ─── Filtering & sorting ───
+   817→  const filteredProducts = useMemo(() => {
+   818→    let result = [...products];
+   819→
+   820→    if (searchQuery) {
+   821→      const q = searchQuery.toLowerCase();
+   822→      result = result.filter(
+   823→        (p) =>
+   824→          p.brand.toLowerCase().includes(q) ||
+   825→          p.modelName.toLowerCase().includes(q) ||
+   826→          p.cameraType.toLowerCase().includes(q) ||
+   827→          p.resolution.toLowerCase().includes(q)
+   828→      );
+   829→    }
+   830→
+   831→    if (filters.brand && filters.brand !== "all") {
+   832→      result = result.filter((p) => p.brand === filters.brand);
+   833→    }
+   834→
+   835→    if (filters.cameraType && filters.cameraType !== "all") {
+   836→      result = result.filter((p) => p.cameraType === filters.cameraType);
+   837→    }
+   838→
+   839→    if (filters.maxPrice) {
+   840→      const max = Number(filters.maxPrice);
+   841→      if (!isNaN(max)) {
+   842→        result = result.filter((p) => (p.salePrice ?? p.price) <= max);
+   843→      }
+   844→    }
+   845→
+   846→    switch (filters.sortBy) {
+   847→      case "price":
+   848→        result.sort((a, b) => (a.salePrice ?? a.price) - (b.salePrice ?? b.price));
+   849→        break;
+   850→      case "price_desc":
+   851→        result.sort((a, b) => (b.salePrice ?? b.price) - (a.salePrice ?? a.price));
+   852→        break;
+   853→      case "createdAt":
+   854→        result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+   855→        break;
+   856→    }
+   857→
+   858→    return result;
+   859→  }, [products, searchQuery, filters]);
+   860→
+   861→  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+   862→  const safeCurrentPage = Math.min(currentPage, totalPages);
+   863→  const paginatedProducts = filteredProducts.slice(
+   864→    (safeCurrentPage - 1) * ITEMS_PER_PAGE,
+   865→    safeCurrentPage * ITEMS_PER_PAGE
+   866→  );
+   867→
+   868→  const handleSearchSubmit = (e: React.FormEvent) => {
+   869→    e.preventDefault();
+   870→    setSearchQuery(localSearch);
+   871→    setCurrentPage(1);
+   872→  };
+   873→
+   874→  const handleQuickType = (type: string) => {
+   875→    setFilter("cameraType", type);
+   876→    setCurrentPage(1);
+   877→  };
+   878→
+   879→  const resetFilters = useCallback(() => {
+   880→    setSearchQuery("");
+   881→    setLocalSearch("");
+   882→    setFilter("brand", "all");
+   883→    setFilter("cameraType", "all");
+   884→    setFilter("maxPrice", "");
+   885→    setFilter("sortBy", "price");
+   886→    setCurrentPage(1);
+   887→  }, [setFilter, setSearchQuery]);
+   888→
+   889→  return (
+   890→    <div className="min-h-screen bg-background">
+   891→      {/* ── Page Hero ── */}
+   892→      <section className="relative overflow-hidden bg-muted/30 border-b border-border/30">
+   893→        <div className="absolute inset-0 pointer-events-none">
+   894→          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-emerald-500/[0.05] rounded-full blur-3xl" />
+   895→        </div>
+   896→        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 py-10 sm:py-14">
+   897→          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+   898→            {/* Breadcrumb */}
+   899→            <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
+   900→              <Link href="/" className="hover:text-foreground transition-colors flex items-center gap-1">
+   901→                <Home className="h-3.5 w-3.5" />
+   902→                Home
+   903→              </Link>
+   904→              <ChevronRight className="h-3.5 w-3.5" />
+   905→              <span className="text-foreground font-medium">Products</span>
+   906→            </nav>
+   907→
+   908→            {/* Title */}
+   909→            <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   910→              CCTV <span className="text-emerald-600">Products</span>
+   911→            </h1>
+   912→            <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mt-4">
+   913→              Browse our complete range of professional CCTV security cameras, recorders, and accessories from authorized brands.
+   914→            </p>
+   915→
+   916→            {/* Trust badges */}
+   917→            <div className="flex flex-wrap gap-3 mt-6">
+   918→              {["Authorized Dealer", "Genuine Products", "Manufacturer Warranty", "Expert Support"].map((badge) => (
+   919→                <span
+   920→                  key={badge}
+   921→                  className={cn(
+   922→                    "inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400",
+   923→                    "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40",
+   924→                    "rounded-full px-3 py-1.5"
+   925→                  )}
+   926→                >
+   927→                  <CheckCircle2 className="h-3.5 w-3.5" />
+   928→                  {badge}
+   929→                </span>
+   930→              ))}
+   931→            </div>
+   932→          </motion.div>
+   933→        </div>
+   934→      </section>
+   935→
+   936→      {/* ── Search + Filters Bar ── */}
+   937→      <div className="sticky top-18 z-30 bg-background/90 backdrop-blur-xl border-b border-border/30">
+   938→        <div className="max-w-7xl mx-auto px-6 lg:px-8 py-4">
+   939→          <div className="flex flex-col sm:flex-row gap-3">
+   940→            {/* Search */}
+   941→            <form onSubmit={handleSearchSubmit} className="relative flex-1">
+   942→              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+   943→              <Input
+   944→                value={localSearch}
+   945→                onChange={(e) => {
+   946→                  setLocalSearch(e.target.value);
+   947→                  if (e.target.value === "") {
+   948→                    setSearchQuery("");
+   949→                    setCurrentPage(1);
+   950→                  }
+   951→                }}
+   952→                placeholder="Search by brand, model, resolution or product..."
+   953→                className="pl-11 pr-10 h-11 text-sm rounded-xl border-border/60 focus:border-emerald-500/50 shadow-sm"
+   954→              />
+   955→              {localSearch && (
+   956→                <button
+   957→                  type="button"
+   958→                  onClick={() => {
+   959→                    setLocalSearch("");
+   960→                    setSearchQuery("");
+   961→                    setCurrentPage(1);
+   962→                  }}
+   963→                  className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center rounded-full bg-muted hover:bg-muted/80 text-muted-foreground transition-colors"
+   964→                  aria-label="Clear search"
+   965→                >
+   966→                  <X className="h-3.5 w-3.5" />
+   967→                </button>
+   968→              )}
+   969→            </form>
+   970→
+   971→            {/* Mobile filter button */}
+   972→            <Button
+   973→              variant="outline"
+   974→              className="lg:hidden gap-2 rounded-xl h-11 border-border/60"
+   975→              onClick={() => setMobileFiltersOpen(true)}
+   976→            >
+   977→              <SlidersHorizontal className="h-4 w-4" />
+   978→              Filters
+   979→            </Button>
+   980→
+   981→            {/* Desktop sort */}
+   982→            <div className="hidden lg:flex items-center gap-2">
+   983→              <span className="text-xs text-muted-foreground whitespace-nowrap">Sort:</span>
+   984→              <Select
+   985→                value={filters.sortBy}
+   986→                onValueChange={(v) => setFilter("sortBy", v)}
+   987→              >
+   988→                <SelectTrigger className="w-[180px] h-11 rounded-xl">
+   989→                  <SelectValue placeholder="Sort by" />
+   990→                </SelectTrigger>
+   991→                <SelectContent>
+   992→                  <SelectItem value="price">Price: Low to High</SelectItem>
+   993→                  <SelectItem value="price_desc">Price: High to Low</SelectItem>
+   994→                  <SelectItem value="createdAt">Newest First</SelectItem>
+   995→                </SelectContent>
+   996→              </Select>
+   997→            </div>
+   998→          </div>
+   999→
+  1000→          {/* Quick filter chips */}
+  1001→          <div className="flex gap-2 mt-3 overflow-x-auto pb-1 scrollbar-hide">
+  1002→            {quickTypes.map((t) => {
+  1003→              const active = filters.cameraType === t;
+  1004→              const cfg = typeConfig[t];
+  1005→              return (
+  1006→                <button
+  1007→                  key={t}
+  1008→                  onClick={() => handleQuickType(t)}
+  1009→                  className={cn(
+  1010→                    "flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border whitespace-nowrap",
+  1011→                    active
+  1012→                      ? "bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20"
+  1013→                      : "bg-background border-border/60 text-muted-foreground hover:border-emerald-500/50 hover:text-foreground hover:shadow-sm"
+  1014→                  )}
+  1015→                >
+  1016→                  {cfg?.icon || <Camera className="h-3.5 w-3.5" />}
+  1017→                  {t === "all" ? "All Types" : t}
+  1018→                </button>
+  1019→              );
+  1020→            })}
+  1021→          </div>
+  1022→        </div>
+  1023→      </div>
+  1024→
+  1025→      {/* ── Main Content ── */}
+  1026→      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8">
+  1027→        <div className="flex gap-8">
+  1028→          {/* Desktop Sidebar */}
+  1029→          <FilterSidebar
+  1030→            filters={filters}
+  1031→            setFilter={(k, v) => { setFilter(k as keyof typeof filters, v); setCurrentPage(1); }}
+  1032→            resetFilters={resetFilters}
+  1033→          />
+  1034→
+  1035→          {/* Product Grid Area */}
+  1036→          <div className="flex-1 min-w-0">
+  1037→            {/* Result count */}
+  1038→            <div className="flex items-center justify-between mb-6">
+  1039→              <p className="text-sm text-muted-foreground">
+  1040→                Showing{" "}
+  1041→                <span className="font-medium text-foreground">{filteredProducts.length}</span>{" "}
+  1042→                product{filteredProducts.length !== 1 ? "s" : ""}
+  1043→              </p>
+  1044→              {(filters.brand !== "all" || filters.cameraType !== "all" || filters.maxPrice || searchQuery) && (
+  1045→                <Button
+  1046→                  variant="ghost"
+  1047→                  size="sm"
+  1048→                  className="text-xs text-muted-foreground h-8 gap-1"
+  1049→                  onClick={resetFilters}
+  1050→                >
+  1051→                  <X className="h-3 w-3" />
+  1052→                  Clear filters
+  1053→                </Button>
+  1054→              )}
+  1055→            </div>
+  1056→
+  1057→            {loading ? (
+  1058→              <LoadingSkeleton />
+  1059→            ) : filteredProducts.length === 0 ? (
+  1060→              <motion.div
+  1061→                initial={{ opacity: 0, scale: 0.97 }}
+  1062→                animate={{ opacity: 1, scale: 1 }}
+  1063→                className="text-center py-20"
+  1064→              >
+  1065→                <div className="flex justify-center mb-5">
+  1066→                  <div className={cn(
+  1067→                    "flex h-20 w-20 items-center justify-center rounded-2xl",
+  1068→                    "bg-muted/50 border border-border/30"
+  1069→                  )}>
+  1070→                    <PackageX className="h-10 w-10 text-muted-foreground/40" />
+  1071→                  </div>
+  1072→                </div>
+  1073→                <h3 className="text-xl font-semibold">No products found</h3>
+  1074→                <p className="text-gray-500 text-sm mt-2 max-w-md mx-auto">
+  1075→                  We couldn&apos;t find any products matching your current filters. Try adjusting your search or resetting filters.
+  1076→                </p>
+  1077→                <Button
+  1078→                  variant="outline"
+  1079→                  className="mt-6 gap-2 rounded-xl"
+  1080→                  onClick={resetFilters}
+  1081→                >
+  1082→                  <SlidersHorizontal className="h-4 w-4" />
+  1083→                  Reset All Filters
+  1084→                </Button>
+  1085→              </motion.div>
+  1086→            ) : (
+  1087→              <>
+  1088→                <motion.div
+  1089→                  {...staggerContainer}
+  1090→                  className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 sm:gap-6"
+  1091→                >
+  1092→                  {paginatedProducts.map((p, i) => (
+  1093→                    <motion.div key={p.id} {...staggerItem}>
+  1094→                      <ProductCard p={p} index={i} />
+  1095→                    </motion.div>
+  1096→                  ))}
+  1097→                </motion.div>
+  1098→
+  1099→                {/* Pagination */}
+  1100→                {totalPages > 1 && (
+  1101→                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-10 mt-8 border-t border-border/30">
+  1102→                    <p className="text-sm text-muted-foreground">
+  1103→                      Showing{" "}
+  1104→                      <span className="font-medium text-foreground">
+  1105→                        {(safeCurrentPage - 1) * ITEMS_PER_PAGE + 1}
+  1106→                      </span>{" "}
+  1107→                      to{" "}
+  1108→                      <span className="font-medium text-foreground">
+  1109→                        {Math.min(safeCurrentPage * ITEMS_PER_PAGE, filteredProducts.length)}
+  1110→                      </span>{" "}
+  1111→                      of{" "}
+  1112→                      <span className="font-medium text-foreground">{filteredProducts.length}</span>
+  1113→                    </p>
+  1114→                    <div className="flex items-center gap-1.5">
+  1115→                      <Button
+  1116→                        variant="outline"
+  1117→                        size="sm"
+  1118→                        className="rounded-lg h-9"
+  1119→                        disabled={safeCurrentPage <= 1}
+  1120→                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+  1121→                      >
+  1122→                        <ChevronLeft className="h-4 w-4" />
+  1123→                        <span className="hidden sm:inline">Prev</span>
+  1124→                      </Button>
+  1125→                      {Array.from({ length: totalPages }).map((_, i) => {
+  1126→                        const page = i + 1;
+  1127→                        if (
+  1128→                          totalPages > 7 &&
+  1129→                          page > 2 &&
+  1130→                          page < totalPages - 1 &&
+  1131→                          Math.abs(page - safeCurrentPage) > 1
+  1132→                        ) {
+  1133→                          if (page === 3 || page === totalPages - 2) {
+  1134→                            return (
+  1135→                              <span key={`dots-${page}`} className="text-muted-foreground text-sm px-1.5">
+  1136→                                ...
+  1137→                              </span>
+  1138→                            );
+  1139→                          }
+  1140→                          return null;
+  1141→                        }
+  1142→                        return (
+  1143→                          <Button
+  1144→                            key={page}
+  1145→                            variant={safeCurrentPage === page ? "default" : "outline"}
+  1146→                            size="sm"
+  1147→                            className={cn(
+  1148→                              "w-9 h-9 p-0 rounded-lg",
+  1149→                              safeCurrentPage === page && "bg-emerald-600 text-white hover:bg-emerald-700"
+  1150→                            )}
+  1151→                            onClick={() => {
+  1152→                              setCurrentPage(page);
+  1153→                              window.scrollTo({ top: 0, behavior: "smooth" });
+  1154→                            }}
+  1155→                          >
+  1156→                            {page}
+  1157→                          </Button>
+  1158→                        );
+  1159→                      })}
+  1160→                      <Button
+  1161→                        variant="outline"
+  1162→                        size="sm"
+  1163→                        className="rounded-lg h-9"
+  1164→                        disabled={safeCurrentPage >= totalPages}
+  1165→                        onClick={() => {
+  1166→                          setCurrentPage((p) => Math.min(totalPages, p + 1));
+  1167→                          window.scrollTo({ top: 0, behavior: "smooth" });
+  1168→                        }}
+  1169→                      >
+  1170→                        <span className="hidden sm:inline">Next</span>
+  1171→                        <ChevronRight className="h-4 w-4" />
+  1172→                      </Button>
+  1173→                    </div>
+  1174→                  </div>
+  1175→                )}
+  1176→              </>
+  1177→            )}
+  1178→          </div>
+  1179→        </div>
+  1180→      </div>
+  1181→
+  1182→      {/* ── Trust Section ── */}
+  1183→      <TrustSection />
+  1184→
+  1185→      {/* ── Contact CTA ── */}
+  1186→      <ContactCta />
+  1187→
+  1188→      {/* ── Mobile Filter Sheet ── */}
+  1189→      <MobileFilterSheet
+  1190→        filters={filters}
+  1191→        setFilter={(k, v) => { setFilter(k as keyof typeof filters, v); setCurrentPage(1); }}
+  1192→        resetFilters={resetFilters}
+  1193→        open={mobileFiltersOpen}
+  1194→        onOpenChange={setMobileFiltersOpen}
+  1195→      />
+  1196→
+  1197→      {/* ── Compare Bar ── */}
+  1198→      <AnimatePresence>
+  1199→        <CompareBar
+  1200→          compareList={compareList}
+  1201→          clearCompare={clearCompare}
+  1202→          onGoToCompare={() => router.push("/builder")}
+  1203→        />
+  1204→      </AnimatePresence>
+  1205→    </div>
+  1206→  );
+  1207→}
