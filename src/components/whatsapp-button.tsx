@@ -1,11 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { BRAND } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { MessageCircle } from "lucide-react";
-
-const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919876543210";
-const COMPANY_NAME = process.env.NEXT_PUBLIC_COMPANY_NAME || "ConnectZ Sales & Services";
 
 interface WhatsAppShareProps {
   text: string;
@@ -22,7 +20,7 @@ export function WhatsAppShare({
   size = "default",
   className,
 }: WhatsAppShareProps) {
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  const url = `${BRAND.whatsapp}?text=${encodeURIComponent(text)}`;
 
   return (
     <a href={url} target="_blank" rel="noopener noreferrer">
@@ -51,8 +49,8 @@ export function WhatsAppContact({
   className?: string;
   message?: string;
 }) {
-  const defaultMsg = message || `Hi ${COMPANY_NAME}, I'm interested in your CCTV products. Please share more details.`;
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(defaultMsg)}`;
+  const defaultMsg = message || `Hi ${BRAND.name}, I'm interested in your CCTV products. Please share more details.`;
+  const url = `${BRAND.whatsapp}?text=${encodeURIComponent(defaultMsg)}`;
 
   return (
     <a href={url} target="_blank" rel="noopener noreferrer" className={cn("inline-block", className)}>

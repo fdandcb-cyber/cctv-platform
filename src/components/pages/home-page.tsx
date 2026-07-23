@@ -6,6 +6,7 @@ import { useStore, type CctvProduct } from "@/store/cctv-store";
 import { useBuilderStore } from "@/store/builder-store";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { fmt } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -45,14 +46,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-// ─── Price formatter ───
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(n);
 
 // ─── Constants ───
 const BRANDS = [

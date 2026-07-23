@@ -15,10 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
+import { fmt } from "@/lib/format";
 import {
   Plus, Trash2, Pencil, Package, FileText, Settings,
   Camera, Shield, Clock, IndianRupee, ChevronLeft,
-  ClipboardCopy, Download, Trash,
+  ClipboardCopy, Download, Trash, Search, Tag,
 } from "lucide-react";
 
 // ═══════════════════════════════════════════════════════════════
@@ -63,9 +65,9 @@ function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClos
   return (
     <div className="space-y-4 max-h-[85vh] overflow-y-auto pr-2">
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2"><Label>Brand *</Label><Input value={form.brand} onChange={(e) => update("brand", e.target.value)} placeholder="Hikvision / Dahua" /></div>
-        <div className="space-y-2"><Label>Model Number *</Label><Input value={form.modelName} onChange={(e) => update("modelName", e.target.value)} placeholder="DS-2CE56D0T-IRP" /></div>
-        <div className="space-y-2"><Label>Camera Type</Label>
+        <div className="space-y-1.5"><Label>Brand *</Label><Input value={form.brand} onChange={(e) => update("brand", e.target.value)} placeholder="Hikvision / Dahua" /></div>
+        <div className="space-y-1.5"><Label>Model Number *</Label><Input value={form.modelName} onChange={(e) => update("modelName", e.target.value)} placeholder="DS-2CE56D0T-IRP" /></div>
+        <div className="space-y-1.5"><Label>Camera Type</Label>
           <Select value={form.cameraType} onValueChange={(v) => update("cameraType", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -75,7 +77,7 @@ function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClos
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2"><Label>Resolution</Label>
+        <div className="space-y-1.5"><Label>Resolution</Label>
           <Select value={form.resolution} onValueChange={(v) => update("resolution", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -84,7 +86,7 @@ function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClos
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2"><Label>Technology</Label>
+        <div className="space-y-1.5"><Label>Technology</Label>
           <Select value={form.technology} onValueChange={(v) => update("technology", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -94,7 +96,7 @@ function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClos
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2"><Label>Compatible Recorder</Label>
+        <div className="space-y-1.5"><Label>Compatible Recorder</Label>
           <Select value={form.recorderType} onValueChange={(v) => update("recorderType", v)}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
@@ -103,26 +105,26 @@ function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClos
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-2"><Label>Price (INR) *</Label><Input type="number" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="1500" /></div>
-        <div className="space-y-2"><Label>Sale Price (INR)</Label><Input type="number" value={form.salePrice} onChange={(e) => update("salePrice", e.target.value)} placeholder="1299 (optional)" /></div>
-        <div className="space-y-2"><Label>Night Vision</Label><Input value={form.nightVision} onChange={(e) => update("nightVision", e.target.value)} placeholder="IR (20m) / ColorVu / Starlight" /></div>
-        <div className="space-y-2"><Label>Weather Rating</Label><Input value={form.weatherRating} onChange={(e) => update("weatherRating", e.target.value)} placeholder="IP67 / IP66 / Indoor" /></div>
-        <div className="space-y-2"><Label>IR Range</Label><Input value={form.irRange} onChange={(e) => update("irRange", e.target.value)} placeholder="20m / 50m" /></div>
-        <div className="space-y-2"><Label>Field of View</Label><Input value={form.fieldOfView} onChange={(e) => update("fieldOfView", e.target.value)} placeholder="90 degrees / 360 degrees" /></div>
+        <div className="space-y-1.5"><Label>Price (INR) *</Label><Input type="number" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="1500" /></div>
+        <div className="space-y-1.5"><Label>Sale Price (INR)</Label><Input type="number" value={form.salePrice} onChange={(e) => update("salePrice", e.target.value)} placeholder="1299 (optional)" /></div>
+        <div className="space-y-1.5"><Label>Night Vision</Label><Input value={form.nightVision} onChange={(e) => update("nightVision", e.target.value)} placeholder="IR (20m) / ColorVu / Starlight" /></div>
+        <div className="space-y-1.5"><Label>Weather Rating</Label><Input value={form.weatherRating} onChange={(e) => update("weatherRating", e.target.value)} placeholder="IP67 / IP66 / Indoor" /></div>
+        <div className="space-y-1.5"><Label>IR Range</Label><Input value={form.irRange} onChange={(e) => update("irRange", e.target.value)} placeholder="20m / 50m" /></div>
+        <div className="space-y-1.5"><Label>Field of View</Label><Input value={form.fieldOfView} onChange={(e) => update("fieldOfView", e.target.value)} placeholder="90 degrees / 360 degrees" /></div>
       </div>
-      <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Product description..." /></div>
-      <div className="space-y-2"><Label>Features (comma separated)</Label><Textarea value={form.features} onChange={(e) => update("features", e.target.value)} rows={2} placeholder="2MP, IR 20m, IP67, Smart IR" /></div>
-      <div className="space-y-2">
+      <div className="space-y-1.5"><Label>Description</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Product description..." /></div>
+      <div className="space-y-1.5"><Label>Features (comma separated)</Label><Textarea value={form.features} onChange={(e) => update("features", e.target.value)} rows={2} placeholder="2MP, IR 20m, IP67, Smart IR" /></div>
+      <div className="space-y-1.5">
         <Label>Product Image URL</Label>
         <Input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} placeholder="/uploads/image.jpg or external URL" />
         {form.imageUrl && <img src={form.imageUrl} alt="preview" className="w-24 h-24 object-contain rounded border bg-muted mt-1" />}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label>Sample Video URL (YouTube embed)</Label>
         <Input value={form.sampleVideoUrl} onChange={(e) => update("sampleVideoUrl", e.target.value)} placeholder="https://www.youtube.com/embed/..." />
       </div>
       <div className="flex gap-2 pt-2">
-        <Button onClick={handleSubmit} disabled={saving} className="flex-1">{saving ? "Saving..." : editProduct ? "Update Product" : "Add Product"}</Button>
+        <Button onClick={handleSubmit} disabled={saving} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white">{saving ? "Saving..." : editProduct ? "Update Product" : "Add Product"}</Button>
         {editProduct && <Button variant="destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>}
         <Button variant="outline" onClick={onClose}>Cancel</Button>
       </div>
@@ -285,9 +287,9 @@ function QuotesTab() {
       <div className="flex items-center justify-between">
         <div>
           <h3 className="font-semibold">Saved Quotes</h3>
-          <p className="text-xs text-muted-foreground">Save and manage CCTV configuration quotes. Quotes are stored in your browser.</p>
+          <p className="text-xs text-muted-foreground">Save and manage CCTV configuration quotes.</p>
         </div>
-        <Button size="sm" className="gap-1.5" onClick={saveQuote}>
+        <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={saveQuote}>
           <Download className="h-3.5 w-3.5" /> Save Current Config
         </Button>
       </div>
@@ -302,9 +304,9 @@ function QuotesTab() {
           {quotes.map((q) => (
             <div key={q.id} className={cn(
               "flex items-center gap-4 p-4 rounded-xl border-2 transition-all",
-              loadedQuote === q.id ? "border-emerald-400 bg-emerald-50" : "border-muted hover:border-emerald-300"
+              loadedQuote === q.id ? "border-emerald-400 bg-emerald-50 dark:bg-emerald-950/40" : "border-muted hover:border-emerald-300"
             )}>
-              <div className="bg-emerald-100 text-emerald-700 p-2.5 rounded-lg shrink-0">
+              <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-lg shrink-0">
                 <FileText className="h-5 w-5" />
               </div>
               <div className="flex-1 min-w-0">
@@ -375,15 +377,15 @@ function SettingsTab() {
         <h3 className="font-semibold mb-1">Company Information</h3>
         <p className="text-xs text-muted-foreground mb-4">This info appears on printed quotes and invoices.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Company Name</Label>
             <Input value={companyName} onChange={(e) => setSettings(s => ({ ...s, companyName: e.target.value }))} placeholder="Your Company Name" />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Phone Number</Label>
             <Input value={companyPhone} onChange={(e) => setSettings(s => ({ ...s, companyPhone: e.target.value }))} placeholder="+91 98765 43210" />
           </div>
-          <div className="space-y-2 sm:col-span-2">
+          <div className="space-y-1.5 sm:col-span-2">
             <Label>Address</Label>
             <Textarea value={companyAddress} onChange={(e) => setSettings(s => ({ ...s, companyAddress: e.target.value }))} rows={2} placeholder="Shop No. X, Area, City, State - PIN" />
           </div>
@@ -396,7 +398,7 @@ function SettingsTab() {
         <h3 className="font-semibold mb-1">Builder Defaults</h3>
         <p className="text-xs text-muted-foreground mb-4">Default values used when creating new configurations.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             <Label>Default Retention (days)</Label>
             <Select value={defaultRetention} onValueChange={(v) => setSettings(s => ({ ...s, defaultRetention: v }))}>
               <SelectTrigger><SelectValue /></SelectTrigger>
@@ -418,7 +420,7 @@ function SettingsTab() {
         </div>
       </div>
 
-      <Button onClick={saveSettings}>Save Settings</Button>
+      <Button onClick={saveSettings} className="bg-emerald-600 hover:bg-emerald-700 text-white">Save Settings</Button>
     </div>
   );
 }
@@ -514,8 +516,6 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
     return true;
   });
 
-  const fmt = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
-
   // Stats
   const totalProducts = products.length;
   const totalBrands = [...new Set(products.map(p => p.brand))].length;
@@ -531,38 +531,38 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
             <ChevronLeft className="h-4 w-4" /> Back
           </Button>
           <div>
-            <h2 className="text-xl font-bold flex items-center gap-2"><Shield className="h-5 w-5 text-emerald-600" /> Admin Panel</h2>
+            <h1 className="text-2xl font-bold flex items-center gap-2"><Shield className="h-5 w-5 text-emerald-600" /> Admin Panel</h1>
             <p className="text-xs text-muted-foreground">Manage products, quotes, and settings</p>
           </div>
         </div>
       </div>
 
       {/* Dashboard Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <Card className="p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <Card><CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className="bg-emerald-100 text-emerald-700 p-2 rounded-lg"><Package className="h-5 w-5" /></div>
+            <div className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 p-2.5 rounded-lg"><Package className="h-5 w-5" /></div>
             <div><p className="text-2xl font-bold">{totalProducts}</p><p className="text-xs text-muted-foreground">Products</p></div>
           </div>
-        </Card>
-        <Card className="p-4">
+        </CardContent></Card>
+        <Card><CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className="bg-amber-100 text-amber-700 p-2 rounded-lg"><Camera className="h-5 w-5" /></div>
+            <div className="bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 p-2.5 rounded-lg"><Camera className="h-5 w-5" /></div>
             <div><p className="text-2xl font-bold">{totalBrands}</p><p className="text-xs text-muted-foreground">Brands</p></div>
           </div>
-        </Card>
-        <Card className="p-4">
+        </CardContent></Card>
+        <Card><CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className="bg-red-100 text-red-700 p-2 rounded-lg"><Trash2 className="h-5 w-5" /></div>
+            <div className="bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 p-2.5 rounded-lg"><Tag className="h-5 w-5" /></div>
             <div><p className="text-2xl font-bold">{onSale}</p><p className="text-xs text-muted-foreground">On Sale</p></div>
           </div>
-        </Card>
-        <Card className="p-4">
+        </CardContent></Card>
+        <Card><CardContent className="p-5">
           <div className="flex items-center gap-3">
-            <div className="bg-sky-100 text-sky-700 p-2 rounded-lg"><IndianRupee className="h-5 w-5" /></div>
+            <div className="bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 p-2.5 rounded-lg"><IndianRupee className="h-5 w-5" /></div>
             <div><p className="text-2xl font-bold">{fmt(avgPrice)}</p><p className="text-xs text-muted-foreground">Avg Price</p></div>
           </div>
-        </Card>
+        </CardContent></Card>
       </div>
 
       {/* Main Tabs */}
@@ -582,7 +582,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
             <div className="flex items-center gap-2">
               <div className="relative">
                 <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search products..." className="w-60 pl-9 h-9 text-sm" />
-                <Camera className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               </div>
               <Select value={typeFilter} onValueChange={setTypeFilter}>
                 <SelectTrigger className="w-32 h-9 text-sm"><SelectValue placeholder="All Types" /></SelectTrigger>
@@ -599,7 +599,7 @@ export function AdminPanel({ onBack }: { onBack: () => void }) {
               </Select>
             </div>
             <Dialog open={adding} onOpenChange={setAdding}>
-              <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Add Product</Button></DialogTrigger>
+              <DialogTrigger asChild><Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"><Plus className="h-4 w-4" /> Add Product</Button></DialogTrigger>
               <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add New Product</DialogTitle></DialogHeader><AdminForm onClose={handleDialogClose} /></DialogContent>
             </Dialog>
           </div>

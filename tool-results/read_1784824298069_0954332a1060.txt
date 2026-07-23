@@ -1,0 +1,1252 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback } from "react";
+     4→     4→import { useAppStore } from "@/store/app-store";
+     5→     5→import { useStore, type CctvProduct } from "@/store/cctv-store";
+     6→     6→import { useBuilderStore } from "@/store/builder-store";
+     7→     7→import { motion, AnimatePresence } from "framer-motion";
+     8→     8→import { cn } from "@/lib/utils";
+     9→     9→import { Button } from "@/components/ui/button";
+    10→    10→import { Card, CardContent } from "@/components/ui/card";
+    11→    11→import { Badge } from "@/components/ui/badge";
+    12→    12→import { Input } from "@/components/ui/input";
+    13→    13→import {
+    14→    14→  Shield,
+    15→    15→  Camera,
+    16→    16→  Wrench,
+    17→    17→  Phone,
+    18→    18→  Mail,
+    19→    19→  MessageCircle,
+    20→    20→  Eye,
+    21→    21→  Award,
+    22→    22→  IndianRupee,
+    23→    23→  ClipboardCheck,
+    24→    24→  Headphones,
+    25→    25→  ShieldCheck,
+    26→    26→  ChevronRight,
+    27→    27→  ArrowRight,
+    28→    28→  PhoneCall,
+    29→    29→  CheckCircle2,
+    30→    30→  Star,
+    31→    31→  HardDrive,
+    32→    32→  Cable,
+    33→    33→  Quote,
+    34→    34→  GitCompareArrows,
+    35→    35→  BookOpen,
+    36→    36→  ShoppingCart,
+    37→    37→  Heart,
+    38→    38→  MapPin,
+    39→    39→  Clock,
+    40→    40→  Search,
+    41→    41→  ArrowUp,
+    42→    42→  Users,
+    43→    43→  Package,
+    44→    44→  BadgeCheck,
+    45→    45→  ExternalLink,
+    46→    46→} from "lucide-react";
+    47→    47→import { useRouter } from "next/navigation";
+    48→    48→
+    49→    49→// ─── Price formatter ───
+    50→    50→const fmt = (n: number) =>
+    51→    51→  new Intl.NumberFormat("en-IN", {
+    52→    52→    style: "currency",
+    53→    53→    currency: "INR",
+    54→    54→    maximumFractionDigits: 0,
+    55→    55→  }).format(n);
+    56→    56→
+    57→    57→// ─── Constants ───
+    58→    58→const BRANDS = [
+    59→    59→  { name: "Hikvision", color: "bg-red-600 text-white", desc: "World's #1 CCTV brand" },
+    60→    60→  { name: "Dahua", color: "bg-blue-600 text-white", desc: "Professional surveillance" },
+    61→    61→  { name: "Ezviz", color: "bg-sky-500 text-white", desc: "Smart home security" },
+    62→    62→  { name: "Imou", color: "bg-emerald-600 text-white", desc: "Affordable WiFi cameras" },
+    63→    63→  { name: "CP Plus", color: "bg-orange-500 text-white", desc: "Indian security leader" },
+    64→    64→  { name: "Godrej", color: "bg-amber-700 text-white", desc: "Trusted Indian brand" },
+    65→    65→];
+    66→    66→
+    67→    67→const STATS = [
+    68→    68→  { value: "500+", label: "Happy Customers", icon: Users },
+    69→    69→  { value: "15+", label: "Top Brands", icon: BadgeCheck },
+    70→    70→  { value: "1000+", label: "Products", icon: Package },
+    71→    71→  { value: "24/7", label: "Support", icon: Headphones },
+    72→    72→];
+    73→    73→
+    74→    74→const WHY_CHOOSE = [
+    75→    75→  {
+    76→    76→    icon: <Award className="h-6 w-6" />,
+    77→    77→    title: "Genuine Products",
+    78→    78→    desc: "Authorized dealer for Hikvision, Dahua, CP Plus, Ezviz, Imou, and more — 100% genuine with full manufacturer warranty.",
+    79→    79→  },
+    80→    80→  {
+    81→    81→    icon: <IndianRupee className="h-6 w-6" />,
+    82→    82→    title: "Competitive Pricing",
+    83→    83→    desc: "Best-in-market prices with transparent quotations and zero hidden charges across all categories.",
+    84→    84→  },
+    85→    85→  {
+    86→    86→    icon: <GitCompareArrows className="h-6 w-6" />,
+    87→    87→    title: "Compare & Decide",
+    88→    88→    desc: "Use our built-in comparison tool to evaluate cameras side-by-side and pick the right one for your needs.",
+    89→    89→  },
+    90→    90→  {
+    91→    91→    icon: <Wrench className="h-6 w-6" />,
+    92→    92→    title: "CCTV Builder",
+    93→    93→    desc: "Design your complete CCTV setup with our interactive builder and get an instant itemized quote.",
+    94→    94→  },
+    95→    95→  {
+    96→    96→    icon: <BookOpen className="h-6 w-6" />,
+    97→    97→    title: "Learning Center",
+    98→    98→    desc: "Detailed guides on camera types, resolutions, and buying tips to help you make informed decisions.",
+    99→    99→  },
+   100→   100→  {
+   101→   101→    icon: <ShieldCheck className="h-6 w-6" />,
+   102→   102→    title: "Warranty Coverage",
+   103→   103→    desc: "Full manufacturer warranty on all products sourced through authorized distribution channels.",
+   104→   104→  },
+   105→   105→];
+   106→   106→
+   107→   107→const HOW_IT_WORKS = [
+   108→   108→  {
+   109→   109→    icon: <Eye className="h-6 w-6" />,
+   110→   110→    step: "01",
+   111→   111→    title: "Browse Products",
+   112→   112→    desc: "Explore our catalog of CCTV cameras, DVRs, NVRs, and accessories from top brands.",
+   113→   113→  },
+   114→   114→  {
+   115→   115→    icon: <GitCompareArrows className="h-6 w-6" />,
+   116→   116→    step: "02",
+   117→   117→    title: "Compare & Learn",
+   118→   118→    desc: "Use our comparison tool and learning center to pick the right equipment.",
+   119→   119→  },
+   120→   120→  {
+   121→   121→    icon: <Wrench className="h-6 w-6" />,
+   122→   122→    step: "03",
+   123→   123→    title: "Build Your Setup",
+   124→   124→    desc: "Use the CCTV Builder to design your complete system and get an instant quote.",
+   125→   125→  },
+   126→   126→  {
+   127→   127→    icon: <ShoppingCart className="h-6 w-6" />,
+   128→   128→    step: "04",
+   129→   129→    title: "Order & Receive",
+   130→   130→    desc: "Place your order online and get genuine products delivered to your doorstep.",
+   131→   131→  },
+   132→   132→];
+   133→   133→
+   134→   134→const TESTIMONIALS = [
+   135→   135→  {
+   136→   136→    name: "Rajesh M.",
+   137→   137→    role: "Homeowner",
+   138→   138→    city: "Bangalore",
+   139→   139→    rating: 5,
+   140→   140→    product: "Hikvision 4-Camera Kit",
+   141→   141→    text: "Used the ConnectZ builder tool to design a 4-camera setup for my home. The product quality is excellent, everything arrived well-packed, and the learning center helped me set it up myself.",
+   142→   142→  },
+   143→   143→  {
+   144→   144→    name: "Priya S.",
+   145→   145→    role: "Restaurant Owner",
+   146→   146→    city: "Hyderabad",
+   147→   147→    rating: 5,
+   148→   148→    product: "Dahua 16-Camera System",
+   149→   149→    text: "We ordered 16 cameras for our restaurant through ConnectZ. The comparison tool made it easy to pick the right models, and the prices were genuinely the best we found.",
+   150→   150→  },
+   151→   151→  {
+   152→   152→    name: "Amit K.",
+   153→   153→    role: "Warehouse Manager",
+   154→   154→    city: "Chennai",
+   155→   155→    rating: 5,
+   156→   156→    product: "32-Ch NVR System",
+   157→   157→    text: "Got a complete NVR system with 32 cameras for our warehouse. The builder gave us an accurate quote upfront, and all products were genuine with manufacturer warranty.",
+   158→   158→  },
+   159→   159→  {
+   160→   160→    name: "Sneha R.",
+   161→   161→    role: "Boutique Owner",
+   162→   162→    city: "Mumbai",
+   163→   163→    rating: 4,
+   164→   164→    product: "Imou WiFi Camera",
+   165→   165→    text: "Love the WiFi cameras I ordered from ConnectZ. The learning center guided me through the setup process, and the motion detection alerts work great through the app.",
+   166→   166→  },
+   167→   167→];
+   168→   168→
+   169→   169→const FAQS = [
+   170→   170→  {
+   171→   171→    q: "Which CCTV brand is best for home use?",
+   172→   172→    a: "For home use, Hikvision or Dahua are great for wired systems, while Ezviz or Imou are ideal for WiFi cameras. The best choice depends on your specific needs like indoor/outdoor usage, night vision range, and budget. Use our Compare tool and Learning Center to decide.",
+   173→   173→  },
+   174→   174→  {
+   175→   175→    q: "How do I choose the right camera for my property?",
+   176→   176→    a: "Use our CCTV Builder tool — select your property type, number of cameras, and preferred technology. It will recommend a complete setup with compatible recorder, cables, and accessories along with an instant price quote.",
+   177→   177→  },
+   178→   178→  {
+   179→   179→    q: "Can I view my cameras remotely on my phone?",
+   180→   180→    a: "Yes! Most modern CCTV systems support remote viewing via mobile apps (available for both Android and iOS). Our Learning Center has step-by-step guides to set up remote access on Hikvision, Dahua, and other brands.",
+   181→   181→  },
+   182→   182→  {
+   183→   183→    q: "Do products come with warranty?",
+   184→   184→    a: "Yes, all products come with full manufacturer warranty (typically 1-2 years depending on the brand). We only stock genuine products from authorized channels, so your warranty is always valid.",
+   185→   185→  },
+   186→   186→  {
+   187→   187→    q: "Do I need internet for CCTV to work?",
+   188→   188→    a: "CCTV cameras record to a local DVR/NVR and work without internet. However, internet is required for remote viewing via mobile app, cloud backup, and email alerts. A stable broadband connection is recommended for the best experience.",
+   189→   189→  },
+   190→   190→  {
+   191→   191→    q: "What is the difference between DVR and NVR?",
+   192→   192→    a: "DVR (Digital Video Recorder) works with analog cameras via coaxial cable, while NVR (Network Video Recorder) works with IP cameras via Ethernet cable. NVR systems generally offer higher resolution, better compression, and smart features. Check our Learning Center for a detailed comparison.",
+   193→   193→  },
+   194→   194→];
+   195→   195→
+   196→   196→// ─── Animation variants ───
+   197→   197→const fadeUp = {
+   198→   198→  initial: { opacity: 0, y: 24 },
+   199→   199→  whileInView: { opacity: 1, y: 0 },
+   200→   200→  viewport: { once: true, margin: "-60px" } as const,
+   201→   201→  transition: { duration: 0.5, ease: "easeOut" },
+   202→   202→};
+   203→   203→
+   204→   204→const staggerContainer = {
+   205→   205→  initial: {},
+   206→   206→  whileInView: { transition: { staggerChildren: 0.08 } },
+   207→   207→  viewport: { once: true, margin: "-40px" } as const,
+   208→   208→};
+   209→   209→
+   210→   210→const staggerItem = {
+   211→   211→  initial: { opacity: 0, y: 20 },
+   212→   212→  whileInView: { opacity: 1, y: 0 },
+   213→   213→  transition: { duration: 0.45, ease: "easeOut" },
+   214→   214→};
+   215→   215→
+   216→   216→// ─── Reusable premium card class ───
+   217→   217→const premiumCard = cn(
+   218→   218→  "h-full gap-0 py-0 rounded-2xl",
+   219→   219→  "border border-border/60 shadow-sm",
+   220→   220→  "hover:shadow-xl hover:-translate-y-1",
+   221→   221→  "transition-all duration-300 ease-out",
+   222→   222→  "hover:border-emerald-500/50",
+   223→   223→  "outline-none"
+   224→   224→);
+   225→   225→
+   226→   226→// ═══════════════════════════════════════════════════════════════
+   227→   227→// SECTION 1 — Hero
+   228→   228→// ═══════════════════════════════════════════════════════════════
+   229→   229→
+   230→   230→function HeroSection() {
+   231→   231→  const router = useRouter();
+   232→   232→
+   233→   233→  return (
+   234→   234→    <section
+   235→   235→      className={cn(
+   236→   236→        "relative min-h-[90vh] flex flex-col items-center justify-center px-6 lg:px-8 py-24 overflow-hidden"
+   237→   237→      )}
+   238→   238→    >
+   239→   239→      {/* Background effects */}
+   240→   240→      <div className="absolute inset-0 pointer-events-none">
+   241→   241→        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
+   242→   242→        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-3xl" />
+   243→   243→        <div className="absolute top-40 right-1/4 w-64 h-64 bg-emerald-400/[0.05] rounded-full blur-3xl" />
+   244→   244→        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background to-transparent" />
+   245→   245→      </div>
+   246→   246→
+   247→   247→      {/* Decorative grid dots */}
+   248→   248→      <div
+   249→   249→        className="absolute inset-0 pointer-events-none opacity-[0.03]"
+   250→   250→        style={{
+   251→   251→          backgroundImage: "radial-gradient(circle, currentColor 1px, transparent 1px)",
+   252→   252→          backgroundSize: "32px 32px",
+   253→   253→        }}
+   254→   254→      />
+   255→   255→
+   256→   256→      <div className="relative z-10 max-w-4xl mx-auto text-center">
+   257→   257→        {/* Shield icon */}
+   258→   258→        <motion.div
+   259→   259→          initial={{ scale: 0.8, opacity: 0 }}
+   260→   260→          animate={{ scale: 1, opacity: 1 }}
+   261→   261→          transition={{ duration: 0.6, ease: "easeOut" }}
+   262→   262→          className="flex justify-center mb-8"
+   263→   263→        >
+   264→   264→          <div
+   265→   265→            className={cn(
+   266→   266→              "relative p-5 rounded-2xl",
+   267→   267→              "bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/60",
+   268→   268→              "shadow-xl shadow-emerald-500/10"
+   269→   269→            )}
+   270→   270→          >
+   271→   271→            <Shield className="h-16 w-16 text-emerald-600" />
+   272→   272→            <div className="absolute -bottom-1.5 -right-1.5 p-1.5 bg-background rounded-full border border-emerald-200 dark:border-emerald-700 shadow-md">
+   273→   273→              <Camera className="h-5 w-5 text-emerald-500" />
+   274→   274→            </div>
+   275→   275→          </div>
+   276→   276→        </motion.div>
+   277→   277→
+   278→   278→        {/* Badge */}
+   279→   279→        <motion.div
+   280→   280→          initial={{ opacity: 0, y: 10 }}
+   281→   281→          animate={{ opacity: 1, y: 0 }}
+   282→   282→          transition={{ duration: 0.4, delay: 0.1 }}
+   283→   283→          className="flex justify-center mb-6"
+   284→   284→        >
+   285→   285→          <span className={cn(
+   286→   286→            "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium",
+   287→   287→            "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
+   288→   288→            "border border-emerald-200/60 dark:border-emerald-800/60"
+   289→   289→          )}>
+   290→   290→            <ShieldCheck className="h-4 w-4" />
+   291→   291→            Trusted by 500+ customers across India
+   292→   292→          </span>
+   293→   293→        </motion.div>
+   294→   294→
+   295→   295→        {/* Heading */}
+   296→   296→        <motion.h1
+   297→   297→          initial={{ opacity: 0, y: 20 }}
+   298→   298→          animate={{ opacity: 1, y: 0 }}
+   299→   299→          transition={{ duration: 0.5, delay: 0.2 }}
+   300→   300→          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1]"
+   301→   301→        >
+   302→   302→          Secure What Matters{" "}
+   303→   303→          <span className="text-emerald-600">Most</span>
+   304→   304→        </motion.h1>
+   305→   305→
+   306→   306→        {/* Subtitle */}
+   307→   307→        <motion.p
+   308→   308→          initial={{ opacity: 0, y: 20 }}
+   309→   309→          animate={{ opacity: 1, y: 0 }}
+   310→   310→          transition={{ duration: 0.5, delay: 0.35 }}
+   311→   311→          className="text-lg sm:text-xl text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl mx-auto mt-6"
+   312→   312→        >
+   313→   313→          Your one-stop shop for professional CCTV security cameras & accessories.
+   314→   314→          Compare, learn, and build your perfect surveillance setup — all in one place.
+   315→   315→        </motion.p>
+   316→   316→
+   317→   317→        {/* CTA Buttons */}
+   318→   318→        <motion.div
+   319→   319→          initial={{ opacity: 0, y: 20 }}
+   320→   320→          animate={{ opacity: 1, y: 0 }}
+   321→   321→          transition={{ duration: 0.5, delay: 0.5 }}
+   322→   322→          className="flex flex-col sm:flex-row gap-4 justify-center mt-10"
+   323→   323→        >
+   324→   324→          <Button
+   325→   325→            size="lg"
+   326→   326→            onClick={() => router.push("/products")}
+   327→   327→            className={cn(
+   328→   328→              "gap-2.5 text-base px-8 py-6 rounded-xl",
+   329→   329→              "bg-emerald-600 text-white hover:bg-emerald-700",
+   330→   330→              "shadow-lg shadow-emerald-600/20",
+   331→   331→              "transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.03]"
+   332→   332→            )}
+   333→   333→          >
+   334→   334→            Browse Products
+   335→   335→            <ArrowRight className="h-5 w-5" />
+   336→   336→          </Button>
+   337→   337→          <Button
+   338→   338→            size="lg"
+   339→   339→            variant="outline"
+   340→   340→            onClick={() => router.push("/builder")}
+   341→   341→            className={cn(
+   342→   342→              "gap-2.5 text-base px-8 py-6 rounded-xl",
+   343→   343→              "transition-all duration-300 hover:scale-[1.03]"
+   344→   344→            )}
+   345→   345→          >
+   346→   346→            <Wrench className="h-5 w-5" />
+   347→   347→            Build Your Setup
+   348→   348→          </Button>
+   349→   349→        </motion.div>
+   350→   350→
+   351→   351→        {/* Trust badges */}
+   352→   352→        <motion.div
+   353→   353→          initial={{ opacity: 0, y: 20 }}
+   354→   354→          animate={{ opacity: 1, y: 0 }}
+   355→   355→          transition={{ duration: 0.5, delay: 0.65 }}
+   356→   356→          className="flex flex-wrap gap-3 sm:gap-4 justify-center mt-12"
+   357→   357→        >
+   358→   358→          {[
+   359→   359→            { icon: ShieldCheck, label: "Authorized Dealer" },
+   360→   360→            { icon: Award, label: "Genuine Products" },
+   361→   361→            { icon: ClipboardCheck, label: "Installation Support" },
+   362→   362→            { icon: Shield, label: "Manufacturer Warranty" },
+   363→   363→          ].map((badge) => (
+   364→   364→            <div
+   365→   365→              key={badge.label}
+   366→   366→              className={cn(
+   367→   367→                "flex items-center gap-2 text-sm text-muted-foreground",
+   368→   368→                "bg-muted/40 border border-border/40 rounded-full px-4 py-2"
+   369→   369→              )}
+   370→   370→            >
+   371→   371→              <badge.icon className="h-4 w-4 text-emerald-600" />
+   372→   372→              {badge.label}
+   373→   373→            </div>
+   374→   374→          ))}
+   375→   375→        </motion.div>
+   376→   376→      </div>
+   377→   377→    </section>
+   378→   378→  );
+   379→   379→}
+   380→   380→
+   381→   381→// ═══════════════════════════════════════════════════════════════
+   382→   382→// SECTION 2 — Featured Products
+   383→   383→// ═══════════════════════════════════════════════════════════════
+   384→   384→
+   385→   385→function ProductCard({ product }: { product: CctvProduct }) {
+   386→   386→  const router = useRouter();
+   387→   387→  const discount =
+   388→   388→    product.salePrice && product.salePrice < product.price
+   389→   389→      ? Math.round(((product.price - product.salePrice) / product.price) * 100)
+   390→   390→      : 0;
+   391→   391→
+   392→   392→  return (
+   393→   393→    <Card
+   394→   394→      className={cn(
+   395→   395→        "overflow-hidden group py-0 gap-0 rounded-2xl",
+   396→   396→        "border border-border/60 shadow-sm",
+   397→   397→        "hover:shadow-xl hover:-translate-y-1",
+   398→   398→        "transition-all duration-300 ease-out"
+   399→   399→      )}
+   400→   400→    >
+   401→   401→      {/* Image */}
+   402→   402→      <div
+   403→   403→        className={cn(
+   404→   404→          "aspect-[4/3] bg-muted/50 relative overflow-hidden cursor-pointer"
+   405→   405→        )}
+   406→   406→        onClick={() => router.push(`/products/${product.id}`)}
+   407→   407→      >
+   408→   408→        {product.imageUrl ? (
+   409→   409→          <img
+   410→   410→            src={product.imageUrl}
+   411→   411→            alt={product.modelName}
+   412→   412→            className={cn(
+   413→   413→              "w-full h-full object-contain p-5",
+   414→   414→              "group-hover:scale-105 transition-transform duration-500"
+   415→   415→            )}
+   416→   416→            loading="lazy"
+   417→   417→            onError={(e) => {
+   418→   418→              (e.target as HTMLImageElement).style.display = "none";
+   419→   419→            }}
+   420→   420→          />
+   421→   421→        ) : (
+   422→   422→          <div className="w-full h-full flex items-center justify-center">
+   423→   423→            <Camera className="h-12 w-12 text-muted-foreground/30" />
+   424→   424→          </div>
+   425→   425→        )}
+   426→   426→
+   427→   427→        {/* Discount badge */}
+   428→   428→        {discount > 0 && (
+   429→   429→          <Badge className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-lg shadow-sm">
+   430→   430→            {discount}% OFF
+   431→   431→          </Badge>
+   432→   432→        )}
+   433→   433→
+   434→   434→        {/* Brand badge */}
+   435→   435→        <Badge
+   436→   436→          variant="outline"
+   437→   437→          className="absolute top-3 right-3 text-[10px] bg-background/80 backdrop-blur-sm"
+   438→   438→        >
+   439→   439→          {product.brand}
+   440→   440→        </Badge>
+   441→   441→      </div>
+   442→   442→
+   443→   443→      <CardContent className="p-4 space-y-3">
+   444→   444→        {/* Title */}
+   445→   445→        <h3 className="font-semibold text-sm leading-snug line-clamp-2">
+   446→   446→          {product.modelName}
+   447→   447→        </h3>
+   448→   448→
+   449→   449→        {/* Spec badges */}
+   450→   450→        <div className="flex items-center gap-1.5 flex-wrap">
+   451→   451→          {product.resolution && (
+   452→   452→            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+   453→   453→              {product.resolution}
+   454→   454→            </span>
+   455→   455→          )}
+   456→   456→          {product.cameraType && (
+   457→   457→            <span className="text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+   458→   458→              {product.cameraType}
+   459→   459→            </span>
+   460→   460→          )}
+   461→   461→        </div>
+   462→   462→
+   463→   463→        {/* Price row */}
+   464→   464→        <div className="flex items-end justify-between pt-1">
+   465→   465→          <div className="flex items-baseline gap-2">
+   466→   466→            {product.salePrice && product.salePrice < product.price ? (
+   467→   467→              <>
+   468→   468→                <span className="text-lg font-bold text-emerald-600">
+   469→   469→                  {fmt(product.salePrice)}
+   470→   470→                </span>
+   471→   471→                <span className="text-xs text-muted-foreground line-through">
+   472→   472→                  {fmt(product.price)}
+   473→   473→                </span>
+   474→   474→              </>
+   475→   475→            ) : (
+   476→   476→              <span className="text-lg font-bold">{fmt(product.price)}</span>
+   477→   477→            )}
+   478→   478→          </div>
+   479→   479→          <Button
+   480→   480→            size="sm"
+   481→   481→            variant="outline"
+   482→   482→            className="text-xs h-8 gap-1 rounded-lg"
+   483→   483→            onClick={() => router.push(`/products/${product.id}`)}
+   484→   484→          >
+   485→   485→            Details
+   486→   486→            <ChevronRight className="h-3 w-3" />
+   487→   487→          </Button>
+   488→   488→        </div>
+   489→   489→      </CardContent>
+   490→   490→    </Card>
+   491→   491→  );
+   492→   492→}
+   493→   493→
+   494→   494→function FeaturedProducts() {
+   495→   495→  const router = useRouter();
+   496→   496→  const { products } = useStore();
+   497→   497→  const featured = products.slice(0, 8);
+   498→   498→
+   499→   499→  if (featured.length === 0) return null;
+   500→   500→
+   501→   501→  return (
+   502→   502→    <section className="py-24 px-6 lg:px-8">
+   503→   503→      <div className="max-w-7xl mx-auto">
+   504→   504→        <motion.div {...fadeUp} className="text-center mb-12">
+   505→   505→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   506→   506→            Popular <span className="text-emerald-600">Products</span>
+   507→   507→          </h2>
+   508→   508→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   509→   509→            Top-selling CCTV cameras and security equipment from authorized brands
+   510→   510→          </p>
+   511→   511→        </motion.div>
+   512→   512→
+   513→   513→        <motion.div
+   514→   514→          {...staggerContainer}
+   515→   515→          className={cn(
+   516→   516→            "grid gap-5 sm:gap-6",
+   517→   517→            "grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+   518→   518→          )}
+   519→   519→        >
+   520→   520→          {featured.map((product) => (
+   521→   521→            <motion.div key={product.id} {...staggerItem}>
+   522→   522→              <ProductCard product={product} />
+   523→   523→            </motion.div>
+   524→   524→          ))}
+   525→   525→        </motion.div>
+   526→   526→
+   527→   527→        <motion.div {...fadeUp} className="text-center mt-12">
+   528→   528→          <Button
+   529→   529→            variant="outline"
+   530→   530→            size="lg"
+   531→   531→            className={cn(
+   532→   532→              "gap-2 rounded-xl px-8",
+   533→   533→              "transition-all duration-300 hover:scale-[1.02]"
+   534→   534→            )}
+   535→   535→            onClick={() => router.push("/products")}
+   536→   536→          >
+   537→   537→            View All Products
+   538→   538→            <ArrowRight className="h-4 w-4" />
+   539→   539→          </Button>
+   540→   540→        </motion.div>
+   541→   541→      </div>
+   542→   542→    </section>
+   543→   543→  );
+   544→   544→}
+   545→   545→
+   546→   546→// ═══════════════════════════════════════════════════════════════
+   547→   547→// SECTION 3 — How It Works
+   548→   548→// ═══════════════════════════════════════════════════════════════
+   549→   549→
+   550→   550→function HowItWorksSection() {
+   551→   551→  return (
+   552→   552→    <section className="py-24 px-6 lg:px-8 bg-muted/30">
+   553→   553→      <div className="max-w-7xl mx-auto">
+   554→   554→        <motion.div {...fadeUp} className="text-center mb-12">
+   555→   555→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   556→   556→            How It <span className="text-emerald-600">Works</span>
+   557→   557→          </h2>
+   558→   558→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   559→   559→            From browsing to ordering in 4 simple steps
+   560→   560→          </p>
+   561→   561→        </motion.div>
+   562→   562→
+   563→   563→        {/* Connecting line */}
+   564→   564→        <div className="hidden lg:block absolute" />
+   565→   565→
+   566→   566→        <motion.div
+   567→   567→          {...staggerContainer}
+   568→   568→          className={cn(
+   569→   569→            "grid gap-5 sm:gap-6 relative",
+   570→   570→            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+   571→   571→          )}
+   572→   572→        >
+   573→   573→          {/* Connecting line - desktop only */}
+   574→   574→          <div className="hidden lg:block absolute top-14 left-[calc(12.5%+24px)] right-[calc(12.5%+24px)] h-px bg-gradient-to-r from-emerald-300 via-emerald-400 to-emerald-300 opacity-40 z-0" />
+   575→   575→
+   576→   576→          {HOW_IT_WORKS.map((item) => (
+   577→   577→            <motion.div key={item.step} {...staggerItem} className="h-full relative z-10">
+   578→   578→              <Card className={cn(premiumCard, "relative overflow-hidden")}>
+   579→   579→                {/* Step badge */}
+   580→   580→                <span
+   581→   581→                  aria-hidden="true"
+   582→   582→                  className={cn(
+   583→   583→                    "absolute -top-2 -right-1 text-7xl font-extrabold",
+   584→   584→                    "text-emerald-500/[0.06] select-none pointer-events-none leading-none"
+   585→   585→                  )}
+   586→   586→                >
+   587→   587→                  {item.step}
+   588→   588→                </span>
+   589→   589→
+   590→   590→                <CardContent className="p-6 sm:p-7 flex flex-col h-full gap-4 relative z-10">
+   591→   591→                  <div className={cn(
+   592→   592→                    "flex items-center justify-center w-14 h-14 rounded-xl",
+   593→   593→                    "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
+   594→   594→                    "border border-emerald-100 dark:border-emerald-800/60",
+   595→   595→                    "transition-transform duration-300 group-hover:scale-110"
+   596→   596→                  )}>
+   597→   597→                    {item.icon}
+   598→   598→                  </div>
+   599→   599→                  <div className="space-y-2.5 flex-1 flex flex-col justify-end">
+   600→   600→                    <h3 className="text-xl font-semibold leading-snug">
+   601→   601→                      {item.title}
+   602→   602→                    </h3>
+   603→   603→                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-7">
+   604→   604→                      {item.desc}
+   605→   605→                    </p>
+   606→   606→                  </div>
+   607→   607→                </CardContent>
+   608→   608→              </Card>
+   609→   609→            </motion.div>
+   610→   610→          ))}
+   611→   611→        </motion.div>
+   612→   612→      </div>
+   613→   613→    </section>
+   614→   614→  );
+   615→   615→}
+   616→   616→
+   617→   617→// ═══════════════════════════════════════════════════════════════
+   618→   618→// SECTION 4 — Stats
+   619→   619→// ═══════════════════════════════════════════════════════════════
+   620→   620→
+   621→   621→function StatsRow() {
+   622→   622→  return (
+   623→   623→    <section className="py-16 px-6 lg:px-8">
+   624→   624→      <div className="max-w-5xl mx-auto">
+   625→   625→        <motion.div
+   626→   626→          {...staggerContainer}
+   627→   627→          className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8"
+   628→   628→        >
+   629→   629→          {STATS.map((stat) => (
+   630→   630→            <motion.div key={stat.label} {...staggerItem} className="text-center">
+   631→   631→              <div className="flex justify-center mb-3">
+   632→   632→                <div className={cn(
+   633→   633→                  "flex items-center justify-center w-12 h-12 rounded-xl",
+   634→   634→                  "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
+   635→   635→                  "border border-emerald-100 dark:border-emerald-800/60"
+   636→   636→                )}>
+   637→   637→                  <stat.icon className="h-5 w-5" />
+   638→   638→                </div>
+   639→   639→              </div>
+   640→   640→              <p className="text-3xl sm:text-4xl font-extrabold tracking-tight text-foreground">
+   641→   641→                {stat.value}
+   642→   642→              </p>
+   643→   643→              <p className="text-sm text-gray-500 mt-1">{stat.label}</p>
+   644→   644→            </motion.div>
+   645→   645→          ))}
+   646→   646→        </motion.div>
+   647→   647→      </div>
+   648→   648→    </section>
+   649→   649→  );
+   650→   650→}
+   651→   651→
+   652→   652→// ═══════════════════════════════════════════════════════════════
+   653→   653→// SECTION 5 — Why Choose ConnectZ
+   654→   654→// ═══════════════════════════════════════════════════════════════
+   655→   655→
+   656→   656→function WhyChooseSection() {
+   657→   657→  return (
+   658→   658→    <section className="py-24 px-6 lg:px-8">
+   659→   659→      <div className="max-w-7xl mx-auto">
+   660→   660→        <motion.div {...fadeUp} className="text-center mb-12">
+   661→   661→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   662→   662→            Why Choose <span className="text-emerald-600">ConnectZ</span>
+   663→   663→          </h2>
+   664→   664→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   665→   665→            Trusted by hundreds of customers for reliable security solutions
+   666→   666→          </p>
+   667→   667→        </motion.div>
+   668→   668→
+   669→   669→        <motion.div
+   670→   670→          {...staggerContainer}
+   671→   671→          className={cn(
+   672→   672→            "grid gap-5 sm:gap-6",
+   673→   673→            "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+   674→   674→          )}
+   675→   675→        >
+   676→   676→          {WHY_CHOOSE.map((item) => (
+   677→   677→            <motion.div key={item.title} {...staggerItem} className="h-full">
+   678→   678→              <Card className={cn(premiumCard)}>
+   679→   679→                <CardContent className="p-6 sm:p-7 flex flex-col h-full gap-5">
+   680→   680→                  <div className={cn(
+   681→   681→                    "flex items-center justify-center w-14 h-14 rounded-xl",
+   682→   682→                    "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
+   683→   683→                    "border border-emerald-100 dark:border-emerald-800/60",
+   684→   684→                    "transition-transform duration-300 group-hover:scale-110"
+   685→   685→                  )}>
+   686→   686→                    {item.icon}
+   687→   687→                  </div>
+   688→   688→                  <div className="space-y-2.5">
+   689→   689→                    <h3 className="text-xl font-semibold leading-snug">
+   690→   690→                      {item.title}
+   691→   691→                    </h3>
+   692→   692→                    <p className="text-sm text-gray-500 dark:text-gray-400 leading-7 line-clamp-3">
+   693→   693→                      {item.desc}
+   694→   694→                    </p>
+   695→   695→                  </div>
+   696→   696→                </CardContent>
+   697→   697→              </Card>
+   698→   698→            </motion.div>
+   699→   699→          ))}
+   700→   700→        </motion.div>
+   701→   701→      </div>
+   702→   702→    </section>
+   703→   703→  );
+   704→   704→}
+   705→   705→
+   706→   706→// ═══════════════════════════════════════════════════════════════
+   707→   707→// SECTION 6 — Testimonials
+   708→   708→// ═══════════════════════════════════════════════════════════════
+   709→   709→
+   710→   710→function TestimonialsSection() {
+   711→   711→  return (
+   712→   712→    <section className="py-24 px-6 lg:px-8 bg-muted/30">
+   713→   713→      <div className="max-w-7xl mx-auto">
+   714→   714→        <motion.div {...fadeUp} className="text-center mb-12">
+   715→   715→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   716→   716→            What Our <span className="text-emerald-600">Customers</span> Say
+   717→   717→          </h2>
+   718→   718→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   719→   719→            Trusted by hundreds of satisfied customers across India
+   720→   720→          </p>
+   721→   721→        </motion.div>
+   722→   722→
+   723→   723→        <motion.div
+   724→   724→          {...staggerContainer}
+   725→   725→          className="grid gap-5 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4"
+   726→   726→        >
+   727→   727→          {TESTIMONIALS.map((t) => (
+   728→   728→            <motion.div key={t.name} {...staggerItem} className="h-full">
+   729→   729→              <Card className={cn(premiumCard)}>
+   730→   730→                <CardContent className="p-6 flex flex-col h-full gap-4">
+   731→   731→                  {/* Quote icon */}
+   732→   732→                  <Quote className="h-8 w-8 text-emerald-600/20 shrink-0" />
+   733→   733→
+   734→   734→                  {/* Review text */}
+   735→   735→                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-7 flex-1">
+   736→   736→                    {t.text}
+   737→   737→                  </p>
+   738→   738→
+   739→   739→                  {/* Stars */}
+   740→   740→                  <div className="flex gap-0.5">
+   741→   741→                    {Array.from({ length: 5 }).map((_, i) => (
+   742→   742→                      <Star
+   743→   743→                        key={i}
+   744→   744→                        className={cn(
+   745→   745→                          "h-4 w-4",
+   746→   746→                          i < t.rating
+   747→   747→                            ? "text-amber-400 fill-amber-400"
+   748→   748→                            : "text-muted-foreground/20"
+   749→   749→                        )}
+   750→   750→                      />
+   751→   751→                    ))}
+   752→   752→                  </div>
+   753→   753→
+   754→   754→                  {/* Divider */}
+   755→   755→                  <div className="h-px bg-border/50" />
+   756→   756→
+   757→   757→                  {/* Author */}
+   758→   758→                  <div className="flex items-center gap-3">
+   759→   759→                    <div className={cn(
+   760→   760→                      "flex h-10 w-10 shrink-0 items-center justify-center rounded-full",
+   761→   761→                      "bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-400",
+   762→   762→                      "text-sm font-bold"
+   763→   763→                    )}>
+   764→   764→                      {t.name.charAt(0)}
+   765→   765→                    </div>
+   766→   766→                    <div className="min-w-0">
+   767→   767→                      <div className="flex items-center gap-1.5">
+   768→   768→                        <p className="font-semibold text-sm truncate">{t.name}</p>
+   769→   769→                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+   770→   770→                      </div>
+   771→   771→                      <p className="text-xs text-gray-500 truncate">{t.role}, {t.city}</p>
+   772→   772→                    </div>
+   773→   773→                  </div>
+   774→   774→
+   775→   775→                  {/* Product tag */}
+   776→   776→                  <Badge variant="outline" className="w-fit text-[11px] rounded-lg">
+   777→   777→                    <Camera className="h-3 w-3 mr-1" />
+   778→   778→                    {t.product}
+   779→   779→                  </Badge>
+   780→   780→                </CardContent>
+   781→   781→              </Card>
+   782→   782→            </motion.div>
+   783→   783→          ))}
+   784→   784→        </motion.div>
+   785→   785→      </div>
+   786→   786→    </section>
+   787→   787→  );
+   788→   788→}
+   789→   789→
+   790→   790→// ═══════════════════════════════════════════════════════════════
+   791→   791→// SECTION 7 — Brands
+   792→   792→// ═══════════════════════════════════════════════════════════════
+   793→   793→
+   794→   794→function BrandsSection() {
+   795→   795→  return (
+   796→   796→    <section className="py-24 px-6 lg:px-8">
+   797→   797→      <div className="max-w-6xl mx-auto">
+   798→   798→        <motion.div {...fadeUp} className="text-center mb-4">
+   799→   799→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   800→   800→            Authorized <span className="text-emerald-600">Brands</span>
+   801→   801→          </h2>
+   802→   802→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   803→   803→            100% genuine products with full manufacturer warranty
+   804→   804→          </p>
+   805→   805→        </motion.div>
+   806→   806→
+   807→   807→        {/* Trust badges */}
+   808→   808→        <motion.div {...fadeUp} className="flex flex-wrap gap-3 justify-center mb-10">
+   809→   809→          {[
+   810→   810→            "Authorized Dealer",
+   811→   811→            "100% Genuine Products",
+   812→   812→            "Manufacturer Warranty",
+   813→   813→          ].map((label) => (
+   814→   814→            <span
+   815→   815→              key={label}
+   816→   816→              className={cn(
+   817→   817→                "inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400",
+   818→   818→                "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40",
+   819→   819→                "rounded-full px-3 py-1"
+   820→   820→              )}
+   821→   821→            >
+   822→   822→              <ShieldCheck className="h-3 w-3" />
+   823→   823→              {label}
+   824→   824→            </span>
+   825→   825→          ))}
+   826→   826→        </motion.div>
+   827→   827→
+   828→   828→        <motion.div
+   829→   829→          {...staggerContainer}
+   830→   830→          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4"
+   831→   831→        >
+   832→   832→          {BRANDS.map((brand) => (
+   833→   833→            <motion.div key={brand.name} {...staggerItem}>
+   834→   834→              <Card className={cn(
+   835→   835→                "py-0 gap-0 rounded-2xl border border-border/60 shadow-sm",
+   836→   836→                "hover:shadow-lg hover:scale-105 hover:border-emerald-500/50",
+   837→   837→                "transition-all duration-300 cursor-pointer"
+   838→   838→              )}>
+   839→   839→                <CardContent className="p-5 text-center space-y-2.5">
+   840→   840→                  <Badge
+   841→   841→                    className={cn(
+   842→   842→                      "text-sm font-bold px-4 py-1.5 rounded-lg border-0",
+   843→   843→                      brand.color
+   844→   844→                    )}
+   845→   845→                  >
+   846→   846→                    {brand.name}
+   847→   847→                  </Badge>
+   848→   848→                  <p className="text-[11px] text-muted-foreground leading-tight">
+   849→   849→                    {brand.desc}
+   850→   850→                  </p>
+   851→   851→                </CardContent>
+   852→   852→              </Card>
+   853→   853→            </motion.div>
+   854→   854→          ))}
+   855→   855→        </motion.div>
+   856→   856→      </div>
+   857→   857→    </section>
+   858→   858→  );
+   859→   859→}
+   860→   860→
+   861→   861→// ═══════════════════════════════════════════════════════════════
+   862→   862→// SECTION 8 — FAQ
+   863→   863→// ═══════════════════════════════════════════════════════════════
+   864→   864→
+   865→   865→function FaqSection() {
+   866→   866→  const router = useRouter();
+   867→   867→  const [openIndex, setOpenIndex] = useState<number | null>(null);
+   868→   868→  const [search, setSearch] = useState("");
+   869→   869→
+   870→   870→  const filtered = search.trim()
+   871→   871→    ? FAQS.filter(
+   872→   872→        (f) =>
+   873→   873→          f.q.toLowerCase().includes(search.toLowerCase()) ||
+   874→   874→          f.a.toLowerCase().includes(search.toLowerCase())
+   875→   875→      )
+   876→   876→    : FAQS;
+   877→   877→
+   878→   878→  return (
+   879→   879→    <section className="py-24 px-6 lg:px-8 bg-muted/30">
+   880→   880→      <div className="max-w-3xl mx-auto">
+   881→   881→        <motion.div {...fadeUp} className="text-center mb-12">
+   882→   882→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+   883→   883→            Frequently Asked <span className="text-emerald-600">Questions</span>
+   884→   884→          </h2>
+   885→   885→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+   886→   886→            Quick answers to common questions about CCTV systems
+   887→   887→          </p>
+   888→   888→        </motion.div>
+   889→   889→
+   890→   890→        {/* Search */}
+   891→   891→        <motion.div {...fadeUp} className="relative mb-8">
+   892→   892→          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+   893→   893→          <Input
+   894→   894→            type="search"
+   895→   895→            placeholder="Search questions..."
+   896→   896→            value={search}
+   897→   897→            onChange={(e) => { setSearch(e.target.value); setOpenIndex(null); }}
+   898→   898→            className="pl-11 h-12 rounded-xl bg-background border-border/60 focus:border-emerald-500/50"
+   899→   899→          />
+   900→   900→        </motion.div>
+   901→   901→
+   902→   902→        <motion.div {...staggerContainer} className="space-y-3">
+   903→   903→          {filtered.map((faq, i) => {
+   904→   904→            const realIndex = FAQS.indexOf(faq);
+   905→   905→            return (
+   906→   906→              <motion.div key={realIndex} {...staggerItem}>
+   907→   907→                <Card
+   908→   908→                  className={cn(
+   909→   909→                    "py-0 gap-0 cursor-pointer rounded-2xl",
+   910→   910→                    "border border-border/60 shadow-sm",
+   911→   911→                    "hover:shadow-md transition-all duration-300",
+   912→   912→                    openIndex === realIndex && "shadow-md border-emerald-500/30"
+   913→   913→                  )}
+   914→   914→                  onClick={() => setOpenIndex(openIndex === realIndex ? null : realIndex)}
+   915→   915→                  onKeyDown={(e) => e.key === "Enter" && setOpenIndex(openIndex === realIndex ? null : realIndex)}
+   916→   916→                  role="button"
+   917→   917→                  tabIndex={0}
+   918→   918→                  aria-expanded={openIndex === realIndex}
+   919→   919→                >
+   920→   920→                  <CardContent className="p-5 sm:p-6">
+   921→   921→                    <div className="flex items-start justify-between gap-4">
+   922→   922→                      <h3 className="font-semibold text-sm sm:text-base leading-relaxed">
+   923→   923→                        {faq.q}
+   924→   924→                      </h3>
+   925→   925→                      <span
+   926→   926→                        className={cn(
+   927→   927→                          "text-xl text-muted-foreground transition-transform duration-200 shrink-0 mt-0.5",
+   928→   928→                          openIndex === realIndex && "rotate-45"
+   929→   929→                        )}
+   930→   930→                      >
+   931→   931→                        +
+   932→   932→                      </span>
+   933→   933→                    </div>
+   934→   934→                    <AnimatePresence>
+   935→   935→                      {openIndex === realIndex && (
+   936→   936→                        <motion.div
+   937→   937→                          initial={{ opacity: 0, height: 0 }}
+   938→   938→                          animate={{ opacity: 1, height: "auto" }}
+   939→   939→                          exit={{ opacity: 0, height: 0 }}
+   940→   940→                          transition={{ duration: 0.2 }}
+   941→   941→                        >
+   942→   942→                          <div className="pt-4 mt-4 border-t border-border/50">
+   943→   943→                            <p className="text-sm text-gray-500 dark:text-gray-400 leading-7">
+   944→   944→                              {faq.a}
+   945→   945→                            </p>
+   946→   946→                          </div>
+   947→   947→                        </motion.div>
+   948→   948→                      )}
+   949→   949→                    </AnimatePresence>
+   950→   950→                  </CardContent>
+   951→   951→                </Card>
+   952→   952→              </motion.div>
+   953→   953→            );
+   954→   954→          })}
+   955→   955→        </motion.div>
+   956→   956→
+   957→   957→        {filtered.length === 0 && (
+   958→   958→          <p className="text-center text-muted-foreground py-8">
+   959→   959→            No questions match your search. Try a different keyword.
+   960→   960→          </p>
+   961→   961→        )}
+   962→   962→
+   963→   963→        {/* Still have questions */}
+   964→   964→        <motion.div {...fadeUp} className="text-center mt-10">
+   965→   965→          <p className="text-sm text-gray-500 mb-3">Still have questions?</p>
+   966→   966→          <Button
+   967→   967→            variant="outline"
+   968→   968→            className={cn(
+   969→   969→              "gap-2 rounded-xl",
+   970→   970→              "transition-all duration-300 hover:scale-[1.02]"
+   971→   971→            )}
+   972→   972→            onClick={() => router.push("/contact")}
+   973→   973→          >
+   974→   974→            Contact our experts
+   975→   975→            <ArrowRight className="h-4 w-4" />
+   976→   976→          </Button>
+   977→   977→        </motion.div>
+   978→   978→      </div>
+   979→   979→    </section>
+   980→   980→  );
+   981→   981→}
+   982→   982→
+   983→   983→// ═══════════════════════════════════════════════════════════════
+   984→   984→// SECTION 9 — CTA
+   985→   985→// ═══════════════════════════════════════════════════════════════
+   986→   986→
+   987→   987→function BuilderCtaSection() {
+   988→   988→  const router = useRouter();
+   989→   989→
+   990→   990→  return (
+   991→   991→    <section className="py-24 px-6 lg:px-8">
+   992→   992→      <div className="max-w-5xl mx-auto">
+   993→   993→        <motion.div {...fadeUp}>
+   994→   994→          <div className={cn(
+   995→   995→            "relative overflow-hidden rounded-3xl p-10 sm:p-14 lg:p-16",
+   996→   996→            "bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800",
+   997→   997→            "text-white"
+   998→   998→          )}>
+   999→   999→            {/* Decorative blurs */}
+  1000→  1000→            <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+  1001→  1001→            <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+  1002→  1002→            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-400/[0.03] rounded-full blur-3xl pointer-events-none" />
+  1003→  1003→
+  1004→  1004→            <div className="relative z-10 text-center space-y-6 max-w-2xl mx-auto">
+  1005→  1005→              {/* Icon */}
+  1006→  1006→              <div className="flex justify-center">
+  1007→  1007→                <div className={cn(
+  1008→  1008→                  "p-4 rounded-2xl",
+  1009→  1009→                  "bg-white/10 border border-white/10",
+  1010→  1010→                  "shadow-lg"
+  1011→  1011→                )}>
+  1012→  1012→                  <Wrench className="h-12 w-12" />
+  1013→  1013→                </div>
+  1014→  1014→              </div>
+  1015→  1015→
+  1016→  1016→              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+  1017→  1017→                Not sure what you need?
+  1018→  1018→              </h2>
+  1019→  1019→              <p className="text-lg text-gray-300 leading-relaxed">
+  1020→  1020→                Use our intelligent builder to design the perfect CCTV setup
+  1021→  1021→                for your property in minutes. Get an instant, detailed quote.
+  1022→  1022→              </p>
+  1023→  1023→
+  1024→  1024→              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+  1025→  1025→                <Button
+  1026→  1026→                  size="lg"
+  1027→  1027→                  className={cn(
+  1028→  1028→                    "gap-2.5 text-base px-8 py-6 rounded-xl",
+  1029→  1029→                    "bg-emerald-600 text-white hover:bg-emerald-700",
+  1030→  1030→                    "shadow-lg shadow-emerald-600/20",
+  1031→  1031→                    "transition-all duration-300 hover:shadow-xl hover:shadow-emerald-600/30 hover:scale-[1.03]"
+  1032→  1032→                  )}
+  1033→  1033→                  onClick={() => router.push("/builder")}
+  1034→  1034→                >
+  1035→  1035→                  <Wrench className="h-5 w-5" />
+  1036→  1036→                  Build Your Setup
+  1037→  1037→                  <ArrowRight className="h-5 w-5" />
+  1038→  1038→                </Button>
+  1039→  1039→                <Button
+  1040→  1040→                  size="lg"
+  1041→  1041→                  variant="outline"
+  1042→  1042→                  className={cn(
+  1043→  1043→                    "gap-2.5 text-base px-8 py-6 rounded-xl",
+  1044→  1044→                    "border-white/20 text-white hover:bg-white/10",
+  1045→  1045→                    "transition-all duration-300"
+  1046→  1046→                  )}
+  1047→  1047→                  onClick={() => router.push("/contact")}
+  1048→  1048→                >
+  1049→  1049→                  <Phone className="h-5 w-5" />
+  1050→  1050→                  Contact Expert
+  1051→  1051→                </Button>
+  1052→  1052→              </div>
+  1053→  1053→            </div>
+  1054→  1054→          </div>
+  1055→  1055→        </motion.div>
+  1056→  1056→      </div>
+  1057→  1057→    </section>
+  1058→  1058→  );
+  1059→  1059→}
+  1060→  1060→
+  1061→  1061→// ═══════════════════════════════════════════════════════════════
+  1062→  1062→// SECTION 10 — Contact
+  1063→  1063→// ═══════════════════════════════════════════════════════════════
+  1064→  1064→
+  1065→  1065→const CONTACT_CARDS = [
+  1066→  1066→  {
+  1067→  1067→    icon: Phone,
+  1068→  1068→    label: "Phone",
+  1069→  1069→    value: "+91 78094 65102",
+  1070→  1070→    href: "tel:+917809465102",
+  1071→  1071→    color: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400",
+  1072→  1072→  },
+  1073→  1073→  {
+  1074→  1074→    icon: Mail,
+  1075→  1075→    label: "Email",
+  1076→  1076→    value: "connectzsalesandervices@gmail.com",
+  1077→  1077→    href: "mailto:connectzsalesandservices@gmail.com",
+  1078→  1078→    color: "bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400",
+  1079→  1079→  },
+  1080→  1080→  {
+  1081→  1081→    icon: MessageCircle,
+  1082→  1082→    label: "WhatsApp",
+  1083→  1083→    value: "Chat with us",
+  1084→  1084→    href: "https://wa.me/917809465102",
+  1085→  1085→    external: true,
+  1086→  1086→    color: "bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400",
+  1087→  1087→  },
+  1088→  1088→  {
+  1089→  1089→    icon: MapPin,
+  1090→  1090→    label: "Address",
+  1091→  1091→    value: "ConnectZ Sales & Services, India",
+  1092→  1092→    href: undefined,
+  1093→  1093→    color: "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400",
+  1094→  1094→  },
+  1095→  1095→];
+  1096→  1096→
+  1097→  1097→function ContactSection() {
+  1098→  1098→  const router = useRouter();
+  1099→  1099→
+  1100→  1100→  return (
+  1101→  1101→    <section className="py-24 px-6 lg:px-8 bg-muted/30">
+  1102→  1102→      <div className="max-w-6xl mx-auto">
+  1103→  1103→        <motion.div {...fadeUp} className="text-center mb-12">
+  1104→  1104→          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight">
+  1105→  1105→            Get In <span className="text-emerald-600">Touch</span>
+  1106→  1106→          </h2>
+  1107→  1107→          <p className="text-lg text-gray-500 leading-relaxed max-w-2xl mx-auto mt-4">
+  1108→  1108→            Have questions? Reach out to us directly — we&apos;re here to help.
+  1109→  1109→          </p>
+  1110→  1110→        </motion.div>
+  1111→  1111→
+  1112→  1112→        <motion.div
+  1113→  1113→          {...staggerContainer}
+  1114→  1114→          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+  1115→  1115→        >
+  1116→  1116→          {CONTACT_CARDS.map((card) => {
+  1117→  1117→            const Wrapper = card.href ? (card.external ? "a" : "a") : "div";
+  1118→  1118→            const props = card.href
+  1119→  1119→              ? {
+  1120→  1120→                  href: card.href,
+  1121→  1121→                  target: card.external ? "_blank" : undefined,
+  1122→  1122→                  rel: card.external ? "noopener noreferrer" : undefined,
+  1123→  1123→                }
+  1124→  1124→              : {};
+  1125→  1125→
+  1126→  1126→            return (
+  1127→  1127→              <motion.div key={card.label} {...staggerItem}>
+  1128→  1128→                <Wrapper
+  1129→  1129→                  {...props}
+  1130→  1130→                  className="block h-full"
+  1131→  1131→                >
+  1132→  1132→                  <Card className={cn(premiumCard, "h-full")}>
+  1133→  1133→                    <CardContent className="p-6 text-center space-y-4">
+  1134→  1134→                      <div className="flex justify-center">
+  1135→  1135→                        <div className={cn(
+  1136→  1136→                          "p-3.5 rounded-xl",
+  1137→  1137→                          card.color,
+  1138→  1138→                          "border border-border/30"
+  1139→  1139→                        )}>
+  1140→  1140→                          <card.icon className="h-6 w-6" />
+  1141→  1141→                        </div>
+  1142→  1142→                      </div>
+  1143→  1143→                      <div>
+  1144→  1144→                        <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium mb-1">
+  1145→  1145→                          {card.label}
+  1146→  1146→                        </p>
+  1147→  1147→                        <p className={cn(
+  1148→  1148→                          "font-semibold text-sm",
+  1149→  1149→                          card.label === "Email" && "break-all"
+  1150→  1150→                        )}>
+  1151→  1151→                          {card.value}
+  1152→  1152→                          {card.external && (
+  1153→  1153→                            <ExternalLink className="inline h-3 w-3 ml-1.5 opacity-50" />
+  1154→  1154→                          )}
+  1155→  1155→                        </p>
+  1156→  1156→                      </div>
+  1157→  1157→                    </CardContent>
+  1158→  1158→                  </Card>
+  1159→  1159→                </Wrapper>
+  1160→  1160→              </motion.div>
+  1161→  1161→            );
+  1162→  1162→          })}
+  1163→  1163→        </motion.div>
+  1164→  1164→
+  1165→  1165→        {/* Business hours + response time */}
+  1166→  1166→        <motion.div
+  1167→  1167→          {...fadeUp}
+  1168→  1168→          className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-10"
+  1169→  1169→        >
+  1170→  1170→          <div className={cn(
+  1171→  1171→            "flex items-center gap-2 text-sm text-muted-foreground",
+  1172→  1172→            "bg-background border border-border/60 rounded-xl px-5 py-3 shadow-sm"
+  1173→  1173→          )}>
+  1174→  1174→            <Clock className="h-4 w-4 text-emerald-600" />
+  1175→  1175→            Mon – Sat: 9 AM – 7 PM
+  1176→  1176→          </div>
+  1177→  1177→          <div className={cn(
+  1178→  1178→            "flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-400",
+  1179→  1179→            "bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/40",
+  1180→  1180→            "rounded-xl px-5 py-3"
+  1181→  1181→          )}>
+  1182→  1182→            <Headphones className="h-4 w-4" />
+  1183→  1183→            Avg. response: under 30 minutes
+  1184→  1184→          </div>
+  1185→  1185→        </motion.div>
+  1186→  1186→      </div>
+  1187→  1187→    </section>
+  1188→  1188→  );
+  1189→  1189→}
+  1190→  1190→
+  1191→  1191→// ═══════════════════════════════════════════════════════════════
+  1192→  1192→// BACK TO TOP
+  1193→  1193→// ═══════════════════════════════════════════════════════════════
+  1194→  1194→
+  1195→  1195→function BackToTop() {
+  1196→  1196→  const [visible, setVisible] = useState(false);
+  1197→  1197→
+  1198→  1198→  const handleScroll = useCallback(() => {
+  1199→  1199→    setVisible(window.scrollY > 600);
+  1200→  1200→  }, []);
+  1201→  1201→
+  1202→  1202→  useEffect(() => {
+  1203→  1203→    window.addEventListener("scroll", handleScroll, { passive: true });
+  1204→  1204→    return () => window.removeEventListener("scroll", handleScroll);
+  1205→  1205→  }, [handleScroll]);
+  1206→  1206→
+  1207→  1207→  return (
+  1208→  1208→    <AnimatePresence>
+  1209→  1209→      {visible && (
+  1210→  1210→        <motion.button
+  1211→  1211→          initial={{ opacity: 0, scale: 0.8 }}
+  1212→  1212→          animate={{ opacity: 1, scale: 1 }}
+  1213→  1213→          exit={{ opacity: 0, scale: 0.8 }}
+  1214→  1214→          transition={{ duration: 0.2 }}
+  1215→  1215→          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+  1216→  1216→          aria-label="Back to top"
+  1217→  1217→          className={cn(
+  1218→  1218→            "fixed bottom-24 right-6 z-40",
+  1219→  1219→            "flex h-11 w-11 items-center justify-center rounded-xl",
+  1220→  1220→            "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20",
+  1221→  1221→            "hover:bg-emerald-700 hover:shadow-xl hover:scale-110",
+  1222→  1222→            "transition-all duration-200"
+  1223→  1223→          )}
+  1224→  1224→        >
+  1225→  1225→          <ArrowUp className="h-5 w-5" />
+  1226→  1226→        </motion.button>
+  1227→  1227→      )}
+  1228→  1228→    </AnimatePresence>
+  1229→  1229→  );
+  1230→  1230→}
+  1231→  1231→
+  1232→  1232→// ═══════════════════════════════════════════════════════════════
+  1233→  1233→// MAIN — HomePage
+  1234→  1234→// ═══════════════════════════════════════════════════════════════
+  1235→  1235→
+  1236→  1236→export function HomePage() {
+  1237→  1237→  return (
+  1238→  1238→    <div className="min-h-screen bg-background">
+  1239→  1239→      <HeroSection />
+  1240→  1240→      <FeaturedProducts />
+  1241→  1241→      <HowItWorksSection />
+  1242→  1242→      <StatsRow />
+  1243→  1243→      <WhyChooseSection />
+  1244→  1244→      <TestimonialsSection />
+  1245→  1245→      <BrandsSection />
+  1246→  1246→      <FaqSection />
+  1247→  1247→      <BuilderCtaSection />
+  1248→  1248→      <ContactSection />
+  1249→  1249→      <BackToTop />
+  1250→  1250→    </div>
+  1251→  1251→  );
+  1252→  1252→}

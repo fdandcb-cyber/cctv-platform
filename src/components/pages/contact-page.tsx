@@ -2,7 +2,9 @@
 
 import { useState, type FormEvent } from "react";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,28 +49,6 @@ import {
 import { useRouter } from "next/navigation";
 
 /* ------------------------------------------------------------------ */
-/*  Animation helpers                                                  */
-/* ------------------------------------------------------------------ */
-const fadeUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true } as const,
-  transition: { duration: 0.5 },
-};
-
-const staggerContainer = {
-  initial: {},
-  whileInView: { transition: { staggerChildren: 0.08 } },
-  viewport: { once: true } as const,
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 16 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.4 },
-};
-
-/* ------------------------------------------------------------------ */
 /*  Data                                                               */
 /* ------------------------------------------------------------------ */
 const SUBJECT_OPTIONS = [
@@ -83,16 +63,16 @@ const CONTACT_CARDS = [
   {
     icon: <Phone className="h-5 w-5" />,      
     title: "Phone",
-    detail: "7809465102",    
-    href: "tel:7809465102",    
+    detail: BRAND.phone,
+    href: `tel:${BRAND.phoneRaw}`,    
     color: "emerald",    
     response: "Instant during business hours",
   },
   {
     icon: <Mail className="h-5 w-5" />,       
     title: "Email",
-    detail: "connectzsalesandservices@gmail.com",
-    href: "mailto:connectzsalesandservices@gmail.com",
+    detail: BRAND.email,
+    href: `mailto:${BRAND.email}`,
     color: "sky",
     response: "Response within 2 hours",
   },
@@ -100,7 +80,7 @@ const CONTACT_CARDS = [
     icon: <MessageCircle className="h-5 w-5" />,
     title: "WhatsApp",
     detail: "Chat with us instantly",
-    href: "https://wa.me/917809465102",
+    href: BRAND.whatsapp,
     color: "green",
     response: "Average reply: 5 minutes",
     external: true,
@@ -252,7 +232,7 @@ export function ContactPage() {
             {...fadeUp}
             className="grid grid-cols-1 sm:grid-cols-3 gap-4"
           >
-            <a href="tel:7809465102">
+            <a href={`tel:${BRAND.phoneRaw}`}>
               <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
@@ -260,14 +240,14 @@ export function ContactPage() {
                   </div>
                   <div>
                     <p className="font-semibold">Call Now</p>
-                    <p className="text-sm text-muted-foreground">7809465102</p>
+                    <p className="text-sm text-muted-foreground">{BRAND.phone}</p>
                   </div>
                 </CardContent>
               </Card>
             </a>
 
             <a
-              href="https://wa.me/917809465102"
+              href={BRAND.whatsapp}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -284,7 +264,7 @@ export function ContactPage() {
               </Card>
             </a>
 
-            <a href="mailto:connectzsalesandservices@gmail.com">
+            <a href={`mailto:${BRAND.email}`}>
               <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-xl bg-sky-50 dark:bg-sky-950/40 flex items-center justify-center text-sky-600 dark:text-sky-400">

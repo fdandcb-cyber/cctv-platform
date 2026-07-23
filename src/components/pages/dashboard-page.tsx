@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { cardVariants } from "@/lib/motion";
+import { fmt } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,22 +29,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-
-const fmt = (n: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0
-  }).format(n);
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, delay: i * 0.1 }
-  })
-};
 
 export function DashboardPage() {
   const { user, cart, logout } =
@@ -76,7 +62,7 @@ export function DashboardPage() {
           <p className="text-muted-foreground">
             You need to be logged in to view your dashboard.
           </p>
-          <Button className="gap-2" onClick={() => router.push("/auth")}>
+          <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => router.push("/auth")}>
             <User className="h-4 w-4" />
             Login
           </Button>
@@ -127,7 +113,7 @@ export function DashboardPage() {
                   <ShoppingCart className="h-5 w-5 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cart Items</p>
+                  <p className="text-xs text-muted-foreground">Cart Items</p>
                   <p className="text-2xl font-bold">{cartCount}</p>
                 </div>
               </div>
@@ -143,7 +129,7 @@ export function DashboardPage() {
                   <IndianRupee className="h-5 w-5 text-sky-600 dark:text-sky-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Cart Value</p>
+                  <p className="text-xs text-muted-foreground">Cart Value</p>
                   <p className="text-2xl font-bold">{fmt(cartTotal)}</p>
                 </div>
               </div>
@@ -159,7 +145,7 @@ export function DashboardPage() {
                   <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Orders</p>
+                  <p className="text-xs text-muted-foreground">Orders</p>
                   <p className="text-2xl font-bold">0</p>
                 </div>
               </div>
@@ -175,8 +161,8 @@ export function DashboardPage() {
                   <Package className="h-5 w-5 text-rose-600 dark:text-rose-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Products</p>
-                  <p className="text-2xl font-bold">{cartCount}</p>
+                  <p className="text-xs text-muted-foreground">Wishlist</p>
+                  <p className="text-2xl font-bold">0</p>
                 </div>
               </div>
             </CardContent>
@@ -215,7 +201,7 @@ export function DashboardPage() {
                   </Button>
                   <Button
                     size="sm"
-                    className="gap-1.5"
+                    className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
                     onClick={handleSaveProfile}
                   >
                     <Check className="h-3.5 w-3.5" />
@@ -263,8 +249,8 @@ export function DashboardPage() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className={cn("flex items-center justify-center h-10 w-10 rounded-full bg-emerald-100 dark:bg-emerald-900/60")}>
-                      <User className="h-5 w-5 text-emerald-700 dark:text-emerald-400" />
+                    <div className={cn("flex items-center justify-center h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-950/40")}>
+                      <User className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                     </div>
                     <div>
                       <p className="font-semibold">{user.name}</p>
@@ -319,7 +305,7 @@ export function DashboardPage() {
                 <p className="text-sm text-muted-foreground mb-6">
                   When you place an order, it will appear here.
                 </p>
-                <Button className="gap-2" onClick={() => router.push("/products")}>
+                <Button className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => router.push("/products")}>
                   Browse Products
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -353,7 +339,7 @@ export function DashboardPage() {
             <Package className="h-4 w-4" />
             Browse Products
           </Button>
-          <Button variant="destructive" className="gap-2" onClick={handleLogout}>
+          <Button variant="ghost" className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
