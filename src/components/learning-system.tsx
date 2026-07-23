@@ -25,29 +25,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-
-// ═══════════════════════════════════════════════════════════════
-// ANIMATION VARIANTS
-// ═══════════════════════════════════════════════════════════════
-
-const fadeUp = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-60px" } as const,
-  transition: { duration: 0.5, ease: "easeOut" },
-};
-
-const staggerContainer = {
-  initial: {},
-  whileInView: { transition: { staggerChildren: 0.07 } },
-  viewport: { once: true, margin: "-40px" } as const,
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, ease: "easeOut" },
-};
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion";
 
 const premiumCard = cn(
   "h-full gap-0 py-0 rounded-2xl",

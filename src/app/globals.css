@@ -148,3 +148,95 @@
     background: oklch(0.72 0.17 160 / 30%);
   }
 }
+
+/* ═══ ConnectZ Enterprise Design Tokens ═══ */
+:root {
+  /* Spacing Scale */
+  --space-xs: 0.25rem;  /* 4px */
+  --space-sm: 0.5rem;   /* 8px */
+  --space-md: 0.75rem;  /* 12px */
+  --space-lg: 1rem;     /* 16px */
+  --space-xl: 1.25rem;  /* 20px */
+  --space-2xl: 1.5rem;  /* 24px */
+  --space-3xl: 2rem;    /* 32px */
+  --space-4xl: 2.5rem;  /* 40px */
+  --space-5xl: 3rem;    /* 48px */
+  --space-6xl: 4rem;    /* 64px */
+  --space-7xl: 5rem;    /* 80px */
+  --space-8xl: 6rem;    /* 96px */
+
+  /* Shadow Levels */
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.06), 0 1px 2px oklch(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.06), 0 2px 4px -2px oklch(0 0 0 / 0.04);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.06), 0 4px 6px -4px oklch(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.06), 0 8px 10px -6px oklch(0 0 0 / 0.04);
+
+  /* Emerald Brand Tokens */
+  --emerald-50: oklch(0.97 0.02 160);
+  --emerald-100: oklch(0.94 0.04 160);
+  --emerald-500: oklch(0.72 0.17 160);
+  --emerald-600: oklch(0.65 0.19 160);
+  --emerald-700: oklch(0.58 0.17 160);
+  --emerald-900: oklch(0.35 0.10 160);
+  --emerald-950: oklch(0.25 0.07 160);
+}
+
+.dark {
+  --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-sm: 0 1px 3px oklch(0 0 0 / 0.3), 0 1px 2px oklch(0 0 0 / 0.2);
+  --shadow-md: 0 4px 6px -1px oklch(0 0 0 / 0.3), 0 2px 4px -2px oklch(0 0 0 / 0.2);
+  --shadow-lg: 0 10px 15px -3px oklch(0 0 0 / 0.3), 0 4px 6px -4px oklch(0 0 0 / 0.2);
+  --shadow-xl: 0 20px 25px -5px oklch(0 0 0 / 0.3), 0 8px 10px -6px oklch(0 0 0 / 0.2);
+}
+
+@layer utilities {
+  /* ConnectZ Brand Button */
+  .btn-brand {
+    @apply bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 transition-all duration-200 hover:shadow-md hover:shadow-emerald-600/30 active:scale-[0.98];
+  }
+  .dark .btn-brand {
+    @apply bg-emerald-600 text-white hover:bg-emerald-700;
+  }
+
+  /* ConnectZ Section Alternating */
+  .section-white { @apply bg-background; }
+  .section-muted { @apply bg-muted/50; }
+  .section-tinted { @apply bg-emerald-50/50 dark:bg-emerald-950/20; }
+  .section-dark { @apply bg-foreground text-background; }
+
+  /* Container */
+  .container-site { @apply mx-auto max-w-7xl px-6 lg:px-8; }
+
+  /* Section spacing */
+  .section-padding { @apply py-20 md:py-24; }
+
+  /* Page transition */
+  .page-enter {
+    animation: pageIn 0.4s ease-out;
+  }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Premium skeleton shimmer */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, oklch(0.94 0 0) 25%, oklch(0.97 0 0) 50%, oklch(0.94 0 0) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+  .dark .skeleton-shimmer {
+    background: linear-gradient(90deg, oklch(0.28 0 0) 25%, oklch(0.32 0 0) 50%, oklch(0.28 0 0) 75%);
+    background-size: 200% 100%;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Focus visible ring for accessibility */
+  .focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}

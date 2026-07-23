@@ -53,8 +53,8 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
     <div className="min-h-[60vh] flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center space-y-2">
-          <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-            <Shield className="h-8 w-8 text-emerald-600" />
+          <div className="mx-auto w-16 h-16 bg-emerald-50 dark:bg-emerald-950/40 rounded-full flex items-center justify-center">
+            <Shield className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
           </div>
           <CardTitle className="text-xl">Admin Login</CardTitle>
           <CardDescription>ConnectZ Sales & Services — Control Panel</CardDescription>
@@ -90,7 +90,7 @@ export function AdminLogin({ onLogin, onBack }: AdminLoginProps) {
                 </button>
               </div>
             </div>
-            <Button type="submit" className="w-full gap-2" disabled={loading}>
+            <Button type="submit" className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
               {loading ? "Signing in..." : "Sign In"}
             </Button>

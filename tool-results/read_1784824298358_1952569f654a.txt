@@ -1,0 +1,808 @@
+     1→     1→"use client";
+     2→     2→
+     3→     3→import { useState, useMemo, useCallback } from "react";
+     4→     4→import { motion, AnimatePresence } from "framer-motion";
+     5→     5→import { cn } from "@/lib/utils";
+     6→     6→import { Button } from "@/components/ui/button";
+     7→     7→import { Card, CardContent } from "@/components/ui/card";
+     8→     8→import { Badge } from "@/components/ui/badge";
+     9→     9→import { Separator } from "@/components/ui/separator";
+    10→    10→import { Input } from "@/components/ui/input";
+    11→    11→import { useAppStore, type CartItem } from "@/store/app-store";
+    12→    12→import {
+    13→    13→  ShoppingBag,
+    14→    14→  Trash2,
+    15→    15→  Minus,
+    16→    16→  Plus,
+    17→    17→  ArrowRight,
+    18→    18→  ArrowLeft,
+    19→    19→  MessageCircle,
+    20→    20→  ShieldCheck,
+    21→    21→  Heart,
+    22→    22→  Wrench,
+    23→    23→  Truck,
+    24→    24→  Package,
+    25→    25→  Star,
+    26→    26→  Tag,
+    27→    27→  Download,
+    28→    28→  Share2,
+    29→    29→  HardDrive,
+    30→    30→  BatteryCharging,
+    31→    31→  Cable,
+    32→    32→  MonitorPlay,
+    33→    33→  CheckCircle2,
+    34→    34→  Clock,
+    35→    35→  RotateCcw,
+    36→    36→} from "lucide-react";
+    37→    37→import { toast } from "sonner";
+    38→    38→import { useRouter } from "next/navigation";
+    39→    39→
+    40→    40→/* ------------------------------------------------------------------ */
+    41→    41→/*  Helpers                                                            */
+    42→    42→/* ------------------------------------------------------------------ */
+    43→    43→const fmt = (n: number) =>
+    44→    44→  new Intl.NumberFormat("en-IN", {
+    45→    45→    style: "currency",
+    46→    46→    currency: "INR",
+    47→    47→    maximumFractionDigits: 0,
+    48→    48→  }).format(n);
+    49→    49→
+    50→    50→const GST_RATE = 0.18;
+    51→    51→const SHIPPING_THRESHOLD = 5000;
+    52→    52→
+    53→    53→/* ------------------------------------------------------------------ */
+    54→    54→/*  Recommended Accessories Data                                       */
+    55→    55→/* ------------------------------------------------------------------ */
+    56→    56→const ACCESSORIES = [
+    57→    57→  {
+    58→    58→    id: "hdd-1tb",
+    59→    59→    name: "1TB Surveillance HDD",
+    60→    60→    price: 2999,
+    61→    61→    icon: <HardDrive className="h-5 w-5" />,
+    62→    62→    category: "Storage",
+    63→    63→  },
+    64→    64→  {
+    65→    65→    id: "ups-600va",
+    66→    66→    name: "600VA UPS Backup",
+    67→    67→    price: 1899,
+    68→    68→    icon: <BatteryCharging className="h-5 w-5" />,
+    69→    69→    category: "Power",
+    70→    70→  },
+    71→    71→  {
+    72→    72→    id: "mount-kit",
+    73→    73→    name: "Universal Mounting Kit",
+    74→    74→    price: 499,
+    75→    75→    icon: <Wrench className="h-5 w-5" />,
+    76→    76→    category: "Mounting",
+    77→    77→  },
+    78→    78→  {
+    79→    79→    id: "cable-20m",
+    80→    80→    name: "20m CCTV Cable Pack",
+    81→    81→    price: 599,
+    82→    82→    icon: <Cable className="h-5 w-5" />,
+    83→    83→    category: "Cables",
+    84→    84→  },
+    85→    85→  {
+    86→    86→    id: "install-service",
+    87→    87→    name: "Professional Installation",
+    88→    88→    price: 1499,
+    89→    89→    icon: <MonitorPlay className="h-5 w-5" />,
+    90→    90→    category: "Service",
+    91→    91→  },
+    92→    92→];
+    93→    93→
+    94→    94→/* ------------------------------------------------------------------ */
+    95→    95→/*  Trust Badges Data                                                  */
+    96→    96→/* ------------------------------------------------------------------ */
+    97→    97→const TRUST_BADGES = [
+    98→    98→  {
+    99→    99→    icon: <ShieldCheck className="h-4 w-4" />,
+   100→   100→    label: "100% Genuine Products",
+   101→   101→  },
+   102→   102→  {
+   103→   103→    icon: <RotateCcw className="h-4 w-4" />,
+   104→   104→    label: "Manufacturer Warranty",
+   105→   105→  },
+   106→   106→  {
+   107→   107→    icon: <ShieldCheck className="h-4 w-4" />,
+   108→   108→    label: "Secure Payments",
+   109→   109→  },
+   110→   110→  {
+   111→   111→    icon: <MessageCircle className="h-4 w-4" />,
+   112→   112→    label: "Expert Support",
+   113→   113→  },
+   114→   114→];
+   115→   115→
+   116→   116→/* ------------------------------------------------------------------ */
+   117→   117→/*  Animation Variants                                                */
+   118→   118→/* ------------------------------------------------------------------ */
+   119→   119→const fadeUp = {
+   120→   120→  initial: { opacity: 0, y: 16 },
+   121→   121→  animate: { opacity: 1, y: 0 },
+   122→   122→  transition: { duration: 0.4 },
+   123→   123→};
+   124→   124→
+   125→   125→const staggerContainer = {
+   126→   126→  animate: { transition: { staggerChildren: 0.06 } },
+   127→   127→};
+   128→   128→
+   129→   129→const staggerItem = {
+   130→   130→  initial: { opacity: 0, y: 12 },
+   131→   131→  animate: { opacity: 1, y: 0 },
+   132→   132→  transition: { duration: 0.35 },
+   133→   133→};
+   134→   134→
+   135→   135→/* ------------------------------------------------------------------ */
+   136→   136→/*  Cart Item Row                                                      */
+   137→   137→/* ------------------------------------------------------------------ */
+   138→   138→function CartItemRow({ item, index }: { item: CartItem; index: number }) {
+   139→   139→  const { updateQuantity, removeFromCart, addToCart } = useAppStore();
+   140→   140→  const router = useRouter();
+   141→   141→  const unitPrice = item.salePrice ?? item.price;
+   142→   142→  const lineTotal = unitPrice * item.quantity;
+   143→   143→  const hasDiscount = item.salePrice && item.salePrice < item.price;
+   144→   144→  const savings = hasDiscount ? (item.price - item.salePrice!) * item.quantity : 0;
+   145→   145→
+   146→   146→  const handleRemove = () => {
+   147→   147→    removeFromCart(item.productId);
+   148→   148→    toast.success("Item removed from cart");
+   149→   149→  };
+   150→   150→
+   151→   151→  return (
+   152→   152→    <motion.div
+   153→   153→      layout
+   154→   154→      initial={{ opacity: 0, x: -10 }}
+   155→   155→      animate={{ opacity: 1, x: 0 }}
+   156→   156→      exit={{ opacity: 0, x: 20, height: 0, marginBottom: 0 }}
+   157→   157→      transition={{ duration: 0.3, delay: index * 0.04 }}
+   158→   158→      className="group relative"
+   159→   159→    >
+   160→   160→      <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+   161→   161→        <CardContent className="p-4 sm:p-5">
+   162→   162→          <div className="flex gap-4 sm:gap-5">
+   163→   163→            {/* Product Image */}
+   164→   164→            <div
+   165→   165→              className={cn(
+   166→   166→                "h-24 w-24 sm:h-28 sm:w-28 rounded-xl bg-muted/50 flex-shrink-0 overflow-hidden border",
+   167→   167→                "flex items-center justify-center"
+   168→   168→              )}
+   169→   169→            >
+   170→   170→              {item.imageUrl ? (
+   171→   171→                <img
+   172→   172→                  src={item.imageUrl}
+   173→   173→                  alt={`${item.brand} ${item.modelName}`}
+   174→   174→                  className="w-full h-full object-contain p-2"
+   175→   175→                  loading="lazy"
+   176→   176→                  onError={(e) => {
+   177→   177→                    (e.target as HTMLImageElement).style.display = "none";
+   178→   178→                  }}
+   179→   179→                />
+   180→   180→              ) : (
+   181→   181→                <Package className="h-8 w-8 text-muted-foreground/40" />
+   182→   182→              )}
+   183→   183→            </div>
+   184→   184→
+   185→   185→            {/* Product Info */}
+   186→   186→            <div className="flex-1 min-w-0">
+   187→   187→              <div className="flex items-start justify-between gap-2">
+   188→   188→                <div className="min-w-0">
+   189→   189→                  <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+   190→   190→                    {item.brand}
+   191→   191→                  </p>
+   192→   192→                  <h3 className="font-semibold text-sm sm:text-base mt-0.5 truncate">
+   193→   193→                    {item.modelName}
+   194→   194→                  </h3>
+   195→   195→                </div>
+   196→   196→                <Button
+   197→   197→                  variant="ghost"
+   198→   198→                  size="icon"
+   199→   199→                  className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+   200→   200→                  onClick={handleRemove}
+   201→   201→                  aria-label={`Remove ${item.modelName} from cart`}
+   202→   202→                >
+   203→   203→                  <Trash2 className="h-4 w-4" />
+   204→   204→                </Button>
+   205→   205→              </div>
+   206→   206→
+   207→   207→              {/* Specifications Row */}
+   208→   208→              <div className="flex flex-wrap gap-1.5 mt-2">
+   209→   209→                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+   210→   210→                  {item.cameraType}
+   211→   211→                </Badge>
+   212→   212→                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+   213→   213→                  {item.resolution}
+   214→   214→                </Badge>
+   215→   215→                <Badge
+   216→   216→                  variant="secondary"
+   217→   217→                  className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+   218→   218→                >
+   219→   219→                  <Star className="h-2.5 w-2.5 mr-0.5 fill-current" />
+   220→   220→                  4.5
+   221→   221→                </Badge>
+   222→   222→                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+   223→   223→                  <Clock className="h-2.5 w-2.5 mr-0.5" />
+   224→   224→                  3-5 Days
+   225→   225→                </Badge>
+   226→   226→              </div>
+   227→   227→
+   228→   228→              {/* Warranty & Stock */}
+   229→   229→              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+   230→   230→                <span className="flex items-center gap-1">
+   231→   231→                  <ShieldCheck className="h-3 w-3 text-emerald-500" />
+   232→   232→                  2yr Warranty
+   233→   233→                </span>
+   234→   234→                <span className="flex items-center gap-1">
+   235→   235→                  <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+   236→   236→                  In Stock
+   237→   237→                </span>
+   238→   238→              </div>
+   239→   239→
+   240→   240→              {/* Price + Quantity Row */}
+   241→   241→              <div className="flex items-end justify-between mt-3 gap-3">
+   242→   242→                {/* Prices */}
+   243→   243→                <div>
+   244→   244→                  <p className="text-lg sm:text-xl font-bold">{fmt(lineTotal)}</p>
+   245→   245→                  {hasDiscount && (
+   246→   246→                    <div className="flex items-center gap-2 mt-0.5">
+   247→   247→                      <span className="text-xs text-muted-foreground line-through">
+   248→   248→                        {fmt(item.price * item.quantity)}
+   249→   249→                      </span>
+   250→   250→                      <Badge className="text-[10px] px-1.5 py-0 bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border-0">
+   251→   251→                        Save {fmt(savings)}
+   252→   252→                      </Badge>
+   253→   253→                    </div>
+   254→   254→                  )}
+   255→   255→                  {item.quantity > 1 && !hasDiscount && (
+   256→   256→                    <p className="text-xs text-muted-foreground mt-0.5">
+   257→   257→                      {fmt(unitPrice)} each
+   258→   258→                    </p>
+   259→   259→                  )}
+   260→   260→                </div>
+   261→   261→
+   262→   262→                {/* Quantity Controls */}
+   263→   263→                <div className="flex items-center gap-1">
+   264→   264→                  {/* Wishlist */}
+   265→   265→                  <Button
+   266→   266→                    variant="ghost"
+   267→   267→                    size="icon"
+   268→   268→                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+   269→   269→                    onClick={() => toast.info("Added to wishlist")}
+   270→   270→                    aria-label="Add to wishlist"
+   271→   271→                  >
+   272→   272→                    <Heart className="h-3.5 w-3.5" />
+   273→   273→                  </Button>
+   274→   274→                  {/* Move to Builder */}
+   275→   275→                  <Button
+   276→   276→                    variant="ghost"
+   277→   277→                    size="icon"
+   278→   278→                    className="h-8 w-8 text-muted-foreground hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+   279→   279→                    onClick={() => {
+   280→   280→                      removeFromCart(item.productId);
+   281→   281→                      router.push("/builder");
+   282→   282→                      toast.info("Opening CCTV Builder");
+   283→   283→                    }}
+   284→   284→                    aria-label="Move to Builder"
+   285→   285→                  >
+   286→   286→                    <Wrench className="h-3.5 w-3.5" />
+   287→   287→                  </Button>
+   288→   288→                  {/* Qty - */}
+   289→   289→                  <motion.button
+   290→   290→                    whileTap={{ scale: 0.9 }}
+   291→   291→                    className={cn(
+   292→   292→                      "h-8 w-8 rounded-l-lg border flex items-center justify-center",
+   293→   293→                      "text-muted-foreground hover:bg-muted transition-colors"
+   294→   294→                    )}
+   295→   295→                    onClick={() => {
+   296→   296→                      if (item.quantity <= 1) {
+   297→   297→                        handleRemove();
+   298→   298→                      } else {
+   299→   299→                        updateQuantity(item.productId, item.quantity - 1);
+   300→   300→                      }
+   301→   301→                    }}
+   302→   302→                    aria-label="Decrease quantity"
+   303→   303→                  >
+   304→   304→                    <Minus className="h-3 w-3" />
+   305→   305→                  </motion.button>
+   306→   306→                  <div className="h-8 w-10 flex items-center justify-center border-y text-sm font-semibold bg-muted/30">
+   307→   307→                    {item.quantity}
+   308→   308→                  </div>
+   309→   309→                  {/* Qty + */}
+   310→   310→                  <motion.button
+   311→   311→                    whileTap={{ scale: 0.9 }}
+   312→   312→                    className={cn(
+   313→   313→                      "h-8 w-8 rounded-r-lg border flex items-center justify-center",
+   314→   314→                      "text-muted-foreground hover:bg-muted transition-colors"
+   315→   315→                    )}
+   316→   316→                    onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+   317→   317→                    aria-label="Increase quantity"
+   318→   318→                  >
+   319→   319→                    <Plus className="h-3 w-3" />
+   320→   320→                  </motion.button>
+   321→   321→                </div>
+   322→   322→              </div>
+   323→   323→            </div>
+   324→   324→          </div>
+   325→   325→        </CardContent>
+   326→   326→      </Card>
+   327→   327→    </motion.div>
+   328→   328→  );
+   329→   329→}
+   330→   330→
+   331→   331→/* ------------------------------------------------------------------ */
+   332→   332→/*  Empty Cart State                                                   */
+   333→   333→/* ------------------------------------------------------------------ */
+   334→   334→function EmptyCartState() {
+   335→   335→  const router = useRouter();
+   336→   336→  return (
+   337→   337→    <motion.div
+   338→   338→      initial={{ opacity: 0, scale: 0.95 }}
+   339→   339→      animate={{ opacity: 1, scale: 1 }}
+   340→   340→      transition={{ duration: 0.4 }}
+   341→   341→      className="flex flex-col items-center justify-center py-20 px-4"
+   342→   342→    >
+   343→   343→      {/* Illustration */}
+   344→   344→      <div className="relative mb-8">
+   345→   345→        <div className="h-32 w-32 rounded-full bg-muted/60 flex items-center justify-center">
+   346→   346→          <ShoppingBag className="h-16 w-16 text-muted-foreground/50" />
+   347→   347→        </div>
+   348→   348→        <motion.div
+   349→   349→          animate={{ y: [0, -6, 0] }}
+   350→   350→          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+   351→   351→          className="absolute -bottom-2 left-1/2 -translate-x-1/2"
+   352→   352→        >
+   353→   353→          <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center">
+   354→   354→            <ArrowRight className="h-4 w-4 text-emerald-600 dark:text-emerald-400 rotate-[-90deg]" />
+   355→   355→          </div>
+   356→   356→        </motion.div>
+   357→   357→      </div>
+   358→   358→
+   359→   359→      <h2 className="text-2xl sm:text-3xl font-bold mb-3">Your cart is empty</h2>
+   360→   360→      <p className="text-muted-foreground text-center max-w-md mb-8 leading-relaxed">
+   361→   361→        Looks like you haven&apos;t added any products yet. Explore our range of
+   362→   362→        professional CCTV security solutions.
+   363→   363→      </p>
+   364→   364→      <div className="flex flex-col sm:flex-row gap-3">
+   365→   365→        <Button
+   366→   366→          size="lg"
+   367→   367→          className="gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/20"
+   368→   368→          onClick={() => router.push("/products")}
+   369→   369→        >
+   370→   370→          <ShoppingBag className="h-4 w-4" />
+   371→   371→          Browse Products
+   372→   372→        </Button>
+   373→   373→        <Button
+   374→   374→          size="lg"
+   375→   375→          variant="outline"
+   376→   376→          className="gap-2 rounded-xl"
+   377→   377→          onClick={() => router.push("/builder")}
+   378→   378→        >
+   379→   379→          <Wrench className="h-4 w-4" />
+   380→   380→          Use CCTV Builder
+   381→   381→        </Button>
+   382→   382→      </div>
+   383→   383→    </motion.div>
+   384→   384→  );
+   385→   385→}
+   386→   386→
+   387→   387→/* ------------------------------------------------------------------ */
+   388→   388→/*  Main Cart Page                                                     */
+   389→   389→/* ------------------------------------------------------------------ */
+   390→   390→export function CartPage() {
+   391→   391→  const { cart, clearCart } = useAppStore();
+   392→   392→  const router = useRouter();
+   393→   393→  const [couponCode, setCouponCode] = useState("");
+   394→   394→  const [couponApplied, setCouponApplied] = useState(false);
+   395→   395→  const [couponDiscount, setCouponDiscount] = useState(0);
+   396→   396→
+   397→   397→  const cartSubtotal = cart.reduce(
+   398→   398→    (sum, item) => sum + (item.salePrice || item.price) * item.quantity,
+   399→   399→    0
+   400→   400→  );
+   401→   401→  const originalTotal = cart.reduce(
+   402→   402→    (sum, item) => sum + item.price * item.quantity,
+   403→   403→    0
+   404→   404→  );
+   405→   405→  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+   406→   406→  const totalSavings = originalTotal - cartSubtotal;
+   407→   407→  const gst = Math.round(cartSubtotal * GST_RATE);
+   408→   408→  const shipping = cartSubtotal >= SHIPPING_THRESHOLD ? 0 : 149;
+   409→   409→  const grandTotal = cartSubtotal + gst + shipping - couponDiscount;
+   410→   410→
+   411→   411→  const handleApplyCoupon = useCallback(() => {
+   412→   412→    if (couponCode.trim().toUpperCase() === "CONNECTZ10") {
+   413→   413→      const discount = Math.round(cartSubtotal * 0.1);
+   414→   414→      setCouponDiscount(discount);
+   415→   415→      setCouponApplied(true);
+   416→   416→      toast.success(`Coupon applied! You save ${fmt(discount)}`);
+   417→   417→    } else if (couponCode.trim()) {
+   418→   418→      toast.error("Invalid coupon code. Try CONNECTZ10");
+   419→   419→    }
+   420→   420→  }, [couponCode, cartSubtotal]);
+   421→   421→
+   422→   422→  const handleClearCart = () => {
+   423→   423→    clearCart();
+   424→   424→    toast.success("Cart cleared");
+   425→   425→  };
+   426→   426→
+   427→   427→  const whatsappText = useMemo(() => {
+   428→   428→    if (cart.length === 0) return "";
+   429→   429→    const lines = cart.map((item) => {
+   430→   430→      const price = item.salePrice ?? item.price;
+   431→   431→      return [
+   432→   432→        "• ",
+   433→   433→        item.brand,
+   434→   434→        " ",
+   435→   435→        item.modelName,
+   436→   436→        " (",
+   437→   437→        item.cameraType,
+   438→   438→        ") x",
+   439→   439→        item.quantity,
+   440→   440→        " — ",
+   441→   441→        fmt(price * item.quantity),
+   442→   442→      ].join("");
+   443→   443→    });
+   444→   444→    lines.push("", `Total: ${fmt(grandTotal)}`);
+   445→   445→    return encodeURIComponent(lines.join("\n"));
+   446→   446→  }, [cart, grandTotal]);
+   447→   447→
+   448→   448→  const handleWhatsApp = () => {
+   449→   449→    window.open("https://wa.me/917809465102?text=" + whatsappText, "_blank");
+   450→   450→  };
+   451→   451→
+   452→   452→  const handleShareCart = async () => {
+   453→   453→    if (navigator.share) {
+   454→   454→      try {
+   455→   455→        await navigator.share({
+   456→   456→          title: "My ConnectZ Cart",
+   457→   457→          text: decodeURIComponent(whatsappText),
+   458→   458→          url: window.location.href,
+   459→   459→        });
+   460→   460→      } catch {
+   461→   461→        /* user cancelled */
+   462→   462→      }
+   463→   463→    } else {
+   464→   464→      navigator.clipboard.writeText(decodeURIComponent(whatsappText));
+   465→   465→      toast.success("Cart details copied to clipboard");
+   466→   466→    }
+   467→   467→  };
+   468→   468→
+   469→   469→  const handleDownloadQuote = () => {
+   470→   470→    const lines = [
+   471→   471→      "CONNECTZ SALES & SERVICES",
+   472→   472→      "Quotation / Cart Summary",
+   473→   473→      "=".repeat(45),
+   474→   474→      `Date: ${new Date().toLocaleDateString("en-IN")}`,
+   475→   475→      "",
+   476→   476→    ];
+   477→   477→    cart.forEach((item, i) => {
+   478→   478→      const price = item.salePrice ?? item.price;
+   479→   479→      lines.push(`${i + 1}. ${item.brand} ${item.modelName}`);
+   480→   480→      lines.push(`   ${item.cameraType} | ${item.resolution} | Qty: ${item.quantity}`);
+   481→   481→      lines.push(`   Price: ${fmt(price * item.quantity)}`);
+   482→   482→      lines.push("");
+   483→   483→    });
+   484→   484→    lines.push("-".repeat(45));
+   485→   485→    lines.push(`Subtotal:  ${fmt(cartSubtotal)}`);
+   486→   486→    if (totalSavings > 0) lines.push(`Savings:    ${fmt(totalSavings)}`);
+   487→   487→    lines.push(`GST (18%):  ${fmt(gst)}`);
+   488→   488→    lines.push(`Shipping:   ${shipping === 0 ? "FREE" : fmt(shipping)}`);
+   489→   489→    if (couponDiscount > 0) lines.push(`Coupon:     -${fmt(couponDiscount)}`);
+   490→   490→    lines.push("=".repeat(45));
+   491→   491→    lines.push(`GRAND TOTAL: ${fmt(grandTotal)}`);
+   492→   492→    lines.push("", "Contact: 7809465102 | connectzsalesandservices@gmail.com");
+   493→   493→
+   494→   494→    const blob = new Blob([lines.join("\n")], { type: "text/plain" });
+   495→   495→    const url = URL.createObjectURL(blob);
+   496→   496→    const a = document.createElement("a");
+   497→   497→    a.href = url;
+   498→   498→    a.download = "ConnectZ_Quote.txt";
+   499→   499→    a.click();
+   500→   500→    URL.revokeObjectURL(url);
+   501→   501→    toast.success("Quote downloaded");
+   502→   502→  };
+   503→   503→
+   504→   504→  /* Empty state */
+   505→   505→  if (cart.length === 0) return <EmptyCartState />;
+   506→   506→
+   507→   507→  return (
+   508→   508→    <motion.div
+   509→   509→      initial={{ opacity: 0, y: 10 }}
+   510→   510→      animate={{ opacity: 1, y: 0 }}
+   511→   511→      transition={{ duration: 0.4 }}
+   512→   512→      className="space-y-8"
+   513→   513→    >
+   514→   514→      {/* ── Header ── */}
+   515→   515→      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+   516→   516→        <div>
+   517→   517→          <div className="flex items-center gap-3">
+   518→   518→            <h1 className="text-3xl font-extrabold tracking-tight">Shopping Cart</h1>
+   519→   519→            <Badge
+   520→   520→              variant="secondary"
+   521→   521→              className="text-sm px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+   522→   522→            >
+   523→   523→              {cartCount} item{cartCount !== 1 ? "s" : ""}
+   524→   524→            </Badge>
+   525→   525→          </div>
+   526→   526→          <p className="text-muted-foreground text-sm mt-1">
+   527→   527→            {cartCount} product{cartCount !== 1 ? "s" : ""} in your cart
+   528→   528→          </p>
+   529→   529→        </div>
+   530→   530→        <div className="flex items-center gap-2">
+   531→   531→          <Button
+   532→   532→            variant="outline"
+   533→   533→            size="sm"
+   534→   534→            className="gap-1.5 rounded-xl"
+   535→   535→            onClick={handleDownloadQuote}
+   536→   536→          >
+   537→   537→            <Download className="h-3.5 w-3.5" />
+   538→   538→            Download Quote
+   539→   539→          </Button>
+   540→   540→          <Button
+   541→   541→            variant="outline"
+   542→   542→            size="sm"
+   543→   543→            className="gap-1.5 rounded-xl"
+   544→   544→            onClick={handleShareCart}
+   545→   545→          >
+   546→   546→            <Share2 className="h-3.5 w-3.5" />
+   547→   547→            Share
+   548→   548→          </Button>
+   549→   549→          <Button
+   550→   550→            variant="outline"
+   551→   551→            size="sm"
+   552→   552→            className="text-destructive hover:text-destructive gap-1.5 rounded-xl"
+   553→   553→            onClick={handleClearCart}
+   554→   554→          >
+   555→   555→            <Trash2 className="h-3.5 w-3.5" />
+   556→   556→            Clear All
+   557→   557→          </Button>
+   558→   558→        </div>
+   559→   559→      </div>
+   560→   560→
+   561→   561→      {/* ── Main Grid ── */}
+   562→   562→      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+   563→   563→        {/* ── Left: Cart Items ── */}
+   564→   564→        <div className="lg:col-span-2">
+   565→   565→          <AnimatePresence mode="popLayout">
+   566→   566→            <motion.div
+   567→   567→              {...staggerContainer}
+   568→   568→              className="space-y-4"
+   569→   569→            >
+   570→   570→              {cart.map((item, i) => (
+   571→   571→                <motion.div key={item.productId} {...staggerItem}>
+   572→   572→                  <CartItemRow item={item} index={i} />
+   573→   573→                </motion.div>
+   574→   574→              ))}
+   575→   575→            </motion.div>
+   576→   576→          </AnimatePresence>
+   577→   577→
+   578→   578→          {/* ── Recommended Accessories ── */}
+   579→   579→          <motion.div {...fadeUp} className="mt-10">
+   580→   580→            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+   581→   581→              <Package className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+   582→   582→              Recommended Accessories
+   583→   583→            </h3>
+   584→   584→            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+   585→   585→              {ACCESSORIES.map((acc) => (
+   586→   586→                <motion.div
+   587→   587→                  key={acc.id}
+   588→   588→                  whileHover={{ y: -2 }}
+   589→   589→                  transition={{ duration: 0.2 }}
+   590→   590→                >
+   591→   591→                  <Card className="rounded-xl border shadow-sm transition-all duration-300 hover:shadow-md cursor-pointer group">
+   592→   592→                    <CardContent className="p-4 flex items-center gap-3">
+   593→   593→                      <div className="h-10 w-10 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-emerald-50 group-hover:text-emerald-600 dark:group-hover:bg-emerald-950/40 dark:group-hover:text-emerald-400 transition-colors">
+   594→   594→                        {acc.icon}
+   595→   595→                      </div>
+   596→   596→                      <div className="flex-1 min-w-0">
+   597→   597→                        <p className="text-sm font-medium truncate">{acc.name}</p>
+   598→   598→                        <p className="text-xs text-muted-foreground">{acc.category}</p>
+   599→   599→                      </div>
+   600→   600→                      <div className="text-right flex-shrink-0">
+   601→   601→                        <p className="text-sm font-bold">{fmt(acc.price)}</p>
+   602→   602→                        <Button
+   603→   603→                          size="sm"
+   604→   604→                          variant="ghost"
+   605→   605→                          className="h-6 text-xs text-emerald-600 hover:text-emerald-700 p-0"
+   606→   606→                          onClick={() =>
+   607→   607→                            toast.info(`${acc.name} added to cart`)
+   608→   608→                          }
+   609→   609→                        >
+   610→   610→                          Add
+   611→   611→                        </Button>
+   612→   612→                      </div>
+   613→   613→                    </CardContent>
+   614→   614→                  </Card>
+   615→   615→                </motion.div>
+   616→   616→              ))}
+   617→   617→            </div>
+   618→   618→          </motion.div>
+   619→   619→        </div>
+   620→   620→
+   621→   621→        {/* ── Right: Sticky Order Summary ── */}
+   622→   622→        <div className="lg:col-span-1">
+   623→   623→          <div className="lg:sticky lg:top-24">
+   624→   624→            <Card className="rounded-2xl border shadow-sm">
+   625→   625→              <CardContent className="p-6 space-y-5">
+   626→   626→                <h2 className="text-lg font-bold">Order Summary</h2>
+   627→   627→
+   628→   628→                {/* Line items */}
+   629→   629→                <div className="space-y-3 text-sm">
+   630→   630→                  <div className="flex items-center justify-between">
+   631→   631→                    <span className="text-muted-foreground">
+   632→   632→                      Subtotal ({cartCount} item{cartCount !== 1 ? "s" : ""})
+   633→   633→                    </span>
+   634→   634→                    <span className="font-medium">{fmt(cartSubtotal)}</span>
+   635→   635→                  </div>
+   636→   636→
+   637→   637→                  {totalSavings > 0 && (
+   638→   638→                    <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+   639→   639→                      <span className="flex items-center gap-1">
+   640→   640→                        <Tag className="h-3.5 w-3.5" />
+   641→   641→                        Discount
+   642→   642→                      </span>
+   643→   643→                      <span className="font-medium">-{fmt(totalSavings)}</span>
+   644→   644→                    </div>
+   645→   645→                  )}
+   646→   646→
+   647→   647→                  {couponDiscount > 0 && (
+   648→   648→                    <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+   649→   649→                      <span className="flex items-center gap-1">
+   650→   650→                        <Tag className="h-3.5 w-3.5" />
+   651→   651→                        Coupon (CONNECTZ10)
+   652→   652→                      </span>
+   653→   653→                      <span className="font-medium">-{fmt(couponDiscount)}</span>
+   654→   654→                    </div>
+   655→   655→                  )}
+   656→   656→
+   657→   657→                  <div className="flex items-center justify-between">
+   658→   658→                    <span className="text-muted-foreground">GST (18%)</span>
+   659→   659→                    <span className="font-medium">{fmt(gst)}</span>
+   660→   660→                  </div>
+   661→   661→
+   662→   662→                  <div className="flex items-center justify-between">
+   663→   663→                    <span className="text-muted-foreground flex items-center gap-1">
+   664→   664→                      <Truck className="h-3.5 w-3.5" />
+   665→   665→                      Shipping
+   666→   666→                    </span>
+   667→   667→                    {shipping === 0 ? (
+   668→   668→                      <span className="font-medium text-emerald-600 dark:text-emerald-400">
+   669→   669→                        FREE
+   670→   670→                      </span>
+   671→   671→                    ) : (
+   672→   672→                      <span className="font-medium">{fmt(shipping)}</span>
+   673→   673→                    )}
+   674→   674→                  </div>
+   675→   675→
+   676→   676→                  {shipping > 0 && (
+   677→   677→                    <p className="text-xs text-muted-foreground">
+   678→   678→                      Add {fmt(SHIPPING_THRESHOLD - cartSubtotal)} more for free shipping
+   679→   679→                    </p>
+   680→   680→                  )}
+   681→   681→                </div>
+   682→   682→
+   683→   683→                <Separator />
+   684→   684→
+   685→   685→                {/* Total */}
+   686→   686→                <div className="flex items-center justify-between">
+   687→   687→                  <span className="text-lg font-bold">Grand Total</span>
+   688→   688→                  <span className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400">
+   689→   689→                    {fmt(grandTotal)}
+   690→   690→                  </span>
+   691→   691→                </div>
+   692→   692→
+   693→   693→                {totalSavings + couponDiscount > 0 && (
+   694→   694→                  <div className="flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-3">
+   695→   695→                    <Tag className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+   696→   696→                    <p className="text-sm text-emerald-700 dark:text-emerald-300">
+   697→   697→                      You save <strong>{fmt(totalSavings + couponDiscount)}</strong> on this order
+   698→   698→                    </p>
+   699→   699→                  </div>
+   700→   700→                )}
+   701→   701→
+   702→   702→                {/* Coupon Code */}
+   703→   703→                {!couponApplied && (
+   704→   704→                  <div className="flex gap-2">
+   705→   705→                    <Input
+   706→   706→                      placeholder="Coupon code"
+   707→   707→                      value={couponCode}
+   708→   708→                      onChange={(e) => setCouponCode(e.target.value)}
+   709→   709→                      className="rounded-xl h-10"
+   710→   710→                      onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
+   711→   711→                    />
+   712→   712→                    <Button
+   713→   713→                      variant="outline"
+   714→   714→                      className="rounded-xl h-10 px-4 shrink-0"
+   715→   715→                      onClick={handleApplyCoupon}
+   716→   716→                      disabled={!couponCode.trim()}
+   717→   717→                    >
+   718→   718→                      Apply
+   719→   719→                    </Button>
+   720→   720→                  </div>
+   721→   721→                )}
+   722→   722→                {couponApplied && (
+   723→   723→                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 dark:bg-emerald-950/30 p-3">
+   724→   724→                    <span className="text-sm text-emerald-700 dark:text-emerald-300 font-medium flex items-center gap-1.5">
+   725→   725→                      <CheckCircle2 className="h-4 w-4" />
+   726→   726→                      CONNECTZ10 applied
+   727→   727→                    </span>
+   728→   728→                    <Button
+   729→   729→                      variant="ghost"
+   730→   730→                      size="sm"
+   731→   731→                      className="h-7 text-xs text-muted-foreground"
+   732→   732→                      onClick={() => {
+   733→   733→                        setCouponApplied(false);
+   734→   734→                        setCouponDiscount(0);
+   735→   735→                        setCouponCode("");
+   736→   736→                      }}
+   737→   737→                    >
+   738→   738→                      Remove
+   739→   739→                    </Button>
+   740→   740→                  </div>
+   741→   741→                )}
+   742→   742→
+   743→   743→                {/* Delivery Estimate */}
+   744→   744→                <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-xl p-3">
+   745→   745→                  <Truck className="h-4 w-4 flex-shrink-0" />
+   746→   746→                  <span>Estimated delivery: 3-5 business days</span>
+   747→   747→                </div>
+   748→   748→
+   749→   749→                {/* Action Buttons */}
+   750→   750→                <div className="space-y-2.5">
+   751→   751→                  <Button
+   752→   752→                    className="w-full h-12 text-base gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+   753→   753→                    onClick={() => router.push("/checkout")}
+   754→   754→                  >
+   755→   755→                    Proceed to Checkout
+   756→   756→                    <ArrowRight className="h-4 w-4" />
+   757→   757→                  </Button>
+   758→   758→                  <Button
+   759→   759→                    variant="outline"
+   760→   760→                    className="w-full gap-2 rounded-xl"
+   761→   761→                    onClick={() => router.push("/products")}
+   762→   762→                  >
+   763→   763→                    <ArrowLeft className="h-4 w-4" />
+   764→   764→                    Continue Shopping
+   765→   765→                  </Button>
+   766→   766→                </div>
+   767→   767→
+   768→   768→                <Separator />
+   769→   769→
+   770→   770→                {/* WhatsApp Share */}
+   771→   771→                <Button
+   772→   772→                  variant="outline"
+   773→   773→                  className="w-full gap-2 rounded-xl"
+   774→   774→                  onClick={handleWhatsApp}
+   775→   775→                >
+   776→   776→                  <MessageCircle className="h-4 w-4 text-green-600" />
+   777→   777→                  Share Cart via WhatsApp
+   778→   778→                </Button>
+   779→   779→
+   780→   780→                {/* Secure Payment Badge */}
+   781→   781→                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground py-1">
+   782→   782→                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
+   783→   783→                  <span>Secure checkout powered by Razorpay</span>
+   784→   784→                </div>
+   785→   785→              </CardContent>
+   786→   786→            </Card>
+   787→   787→
+   788→   788→            {/* Trust Badges */}
+   789→   789→            <div className="mt-4 grid grid-cols-2 gap-3">
+   790→   790→              {TRUST_BADGES.map((badge) => (
+   791→   791→                <div
+   792→   792→                  key={badge.label}
+   793→   793→                  className="flex items-center gap-2 rounded-xl border bg-card p-3 text-xs text-muted-foreground"
+   794→   794→                >
+   795→   795→                  <span className="text-emerald-600 dark:text-emerald-400">
+   796→   796→                    {badge.icon}
+   797→   797→                  </span>
+   798→   798→                  {badge.label}
+   799→   799→                </div>
+   800→   800→              ))}
+   801→   801→            </div>
+   802→   802→          </div>
+   803→   803→        </div>
+   804→   804→      </div>
+   805→   805→    </motion.div>
+   806→   806→  );
+   807→   807→}
+   808→   808→

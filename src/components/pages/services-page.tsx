@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 import { useAppStore } from "@/store/app-store";
 import { motion } from "framer-motion";
+import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -22,25 +23,6 @@ import {
   Network
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-const fadeUp = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true } as const,
-  transition: { duration: 0.5 }
-};
-
-const staggerContainer = {
-  initial: {},
-  whileInView: { transition: { staggerChildren: 0.08 } },
-  viewport: { once: true } as const
-};
-
-const staggerItem = {
-  initial: { opacity: 0, y: 20 },
-  whileInView: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
 
 const SERVICES = [
   {

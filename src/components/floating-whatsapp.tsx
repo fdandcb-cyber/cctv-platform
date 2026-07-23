@@ -1,8 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X } from "lucide-react";
+
 import { useState, useEffect } from "react";
 
 export function FloatingWhatsApp() {
@@ -74,14 +76,14 @@ export function FloatingWhatsApp() {
 
           {/* WhatsApp Button */}
           <a
-            href="https://wa.me/917809465102?text=Hi%2C%20I%20am%20interested%20in%20CCTV%20solutions"
+            href={`${BRAND.whatsapp}?text=${encodeURIComponent("Hi, I am interested in CCTV solutions")}`}
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
               "flex items-center justify-center",
               "h-14 w-14 rounded-full",
-              "bg-green-500 text-white shadow-lg shadow-green-500/30",
-              "hover:bg-green-600 hover:shadow-xl hover:shadow-green-500/40",
+              "bg-emerald-500 text-white shadow-lg shadow-emerald-500/30",
+              "hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/40",
               "active:scale-95",
               "transition-all duration-200"
             )}

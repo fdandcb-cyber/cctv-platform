@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { AdminPanel } from "@/components/admin-panel";
 import { AdminLogin } from "@/components/admin-login";
+import { BRAND } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,8 +48,8 @@ export function AdminClient() {
       <div className="border-b bg-background/80 backdrop-blur-lg sticky top-0 z-50">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
           <Link href="/" className={cn("flex items-center gap-2")}>
-            <img src="/logo.svg" alt="ConnectZ" className={cn("h-8 w-8")} />
-            <span className={cn("text-lg font-bold")}>ConnectZ</span>
+            <img src="/logo.svg" alt={BRAND.name} className={cn("h-8 w-8")} />
+            <span className={cn("text-lg font-bold")}>{BRAND.name}</span>
           </Link>
           {adminAuth && (
             <div className="flex items-center gap-3">

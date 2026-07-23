@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/constants";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -96,7 +97,7 @@ const SOCIAL_LINKS = [
   { label: "Instagram", href: "https://instagram.com/connectz", icon: InstagramIcon, color: "hover:bg-pink-600" },
   { label: "LinkedIn", href: "https://linkedin.com/company/connectz", icon: LinkedinIcon, color: "hover:bg-blue-700" },
   { label: "YouTube", href: "https://youtube.com/@connectz", icon: YoutubeIcon, color: "hover:bg-red-600" },
-  { label: "WhatsApp", href: "https://wa.me/917809465102", icon: WhatsAppIcon, color: "hover:bg-green-600" },
+  { label: "WhatsApp", href: BRAND.whatsapp, icon: WhatsAppIcon, color: "hover:bg-green-600" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -251,7 +252,7 @@ export function SiteFooter() {
             <ul className={cn("space-y-4")}>
               <li>
                 <a
-                  href="tel:+917809465102"
+                  href={`tel:${BRAND.phoneRaw}`}
                   className={cn(
                     "inline-flex items-center gap-3 text-sm text-gray-400",
                     "transition-colors duration-200 hover:text-white"
@@ -262,13 +263,13 @@ export function SiteFooter() {
                   )}>
                     <Phone className={cn("h-4 w-4")} />
                   </span>
-                  +91 78094 65102
+                  {BRAND.phone}
                 </a>
               </li>
 
               <li>
                 <a
-                  href="mailto:connectzsalesandservices@gmail.com"
+                  href={`mailto:${BRAND.email}`}
                   className={cn(
                     "inline-flex items-start gap-3 text-sm text-gray-400",
                     "transition-colors duration-200 hover:text-white"
@@ -280,14 +281,14 @@ export function SiteFooter() {
                     <Mail className={cn("h-4 w-4")} />
                   </span>
                   <span className={cn("break-all")}>
-                    connectzsalesandservices@gmail.com
+                    {BRAND.email}
                   </span>
                 </a>
               </li>
 
               <li>
                 <a
-                  href="https://wa.me/917809465102"
+                  href={BRAND.whatsapp}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={cn(

@@ -4,6 +4,7 @@ import { useState, useSyncExternalStore, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { BRAND } from "@/lib/constants";
 import { useAppStore } from "@/store/app-store";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -95,8 +96,8 @@ export function SiteHeader() {
       <div className={cn("mx-auto flex h-18 max-w-7xl items-center justify-between px-6 lg:px-8")}>
         {/* Logo */}
         <Link href="/" className={cn("flex items-center gap-2.5")} onClick={handleNavClick}>
-          <img src="/logo.svg" alt="ConnectZ" className={cn("h-9 w-9")} />
-          <span className={cn("text-xl font-bold tracking-tight")}>ConnectZ</span>
+          <img src="/logo.svg" alt={BRAND.name} className={cn("h-9 w-9")} />
+          <span className={cn("text-xl font-bold tracking-tight")}>{BRAND.name}</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -166,7 +167,7 @@ export function SiteHeader() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className={cn("rounded-xl")}
+                  className={cn("rounded-lg")}
                   onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
                   aria-label="Close search"
                 >
@@ -290,8 +291,8 @@ export function SiteHeader() {
         <SheetContent side={"right"} className={cn("w-full sm:max-w-sm")}>
           <SheetHeader>
             <SheetTitle className={cn("flex items-center gap-2.5")}>
-              <img src="/logo.svg" alt="ConnectZ" className={cn("h-8 w-8")} />
-              ConnectZ
+              <img src="/logo.svg" alt={BRAND.name} className={cn("h-8 w-8")} />
+              {BRAND.name}
             </SheetTitle>
           </SheetHeader>
 
