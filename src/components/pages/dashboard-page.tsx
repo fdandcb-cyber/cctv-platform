@@ -339,7 +339,7 @@ export function DashboardPage() {
             <Package className="h-4 w-4" />
             Browse Products
           </Button>
-          <Button variant="ghost" className="gap-2 text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+          <Button variant="ghost" className="gap-2 text-muted-foreground hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
