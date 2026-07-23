@@ -1,0 +1,674 @@
+     1→"use client";
+     2→
+     3→import { useState, useCallback, useEffect } from "react";
+     4→import { useStore, type CctvProduct } from "@/store/cctv-store";
+     5→import { useBuilderStore } from "@/store/builder-store";
+     6→import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+     7→import { Badge } from "@/components/ui/badge";
+     8→import { Button } from "@/components/ui/button";
+     9→import { Input } from "@/components/ui/input";
+    10→import { Label } from "@/components/ui/label";
+    11→import { Textarea } from "@/components/ui/textarea";
+    12→import { Separator } from "@/components/ui/separator";
+    13→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+    14→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+    15→import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+    16→import { cn } from "@/lib/utils";
+    17→import { toast } from "sonner";
+    18→import {
+    19→  Plus, Trash2, Pencil, Package, FileText, Settings,
+    20→  Camera, Shield, Clock, IndianRupee, ChevronLeft,
+    21→  ClipboardCopy, Download, Trash,
+    22→} from "lucide-react";
+    23→
+    24→// ═══════════════════════════════════════════════════════════════
+    25→// PRODUCT FORM (Add/Edit)
+    26→// ═══════════════════════════════════════════════════════════════
+    27→
+    28→function AdminForm({ editProduct, onClose }: { editProduct?: CctvProduct; onClose: () => void }) {
+    29→  const [form, setForm] = useState(
+    30→    editProduct
+    31→      ? { ...editProduct, price: String(editProduct.price), salePrice: editProduct.salePrice ? String(editProduct.salePrice) : "", videoUrl: editProduct.videoUrl || "", sampleVideoUrl: editProduct.sampleVideoUrl || "", imageUrl: editProduct.imageUrl || "" }
+    32→      : { brand: "", modelName: "", cameraType: "Bullet", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "", salePrice: "", description: "", features: "", imageUrl: "", videoUrl: "", sampleVideoUrl: "", irRange: "", fieldOfView: "" }
+    33→  );
+    34→  const [saving, setSaving] = useState(false);
+    35→
+    36→  const update = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
+    37→
+    38→  const handleSubmit = async () => {
+    39→    if (!form.brand || !form.modelName || !form.price) { toast.error("Brand, Model, and Price are required"); return; }
+    40→    setSaving(true);
+    41→    try {
+    42→      const url = editProduct ? `/api/products/${editProduct.id}` : "/api/products";
+    43→      const method = editProduct ? "PUT" : "POST";
+    44→      const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+    45→      const data = await res.json();
+    46→      if (data.success) {
+    47→        toast.success(editProduct ? "Product updated!" : "Product added!");
+    48→        onClose();
+    49→      } else toast.error(data.error || "Failed");
+    50→    } catch { toast.error("Network error"); }
+    51→    setSaving(false);
+    52→  };
+    53→
+    54→  const handleDelete = async () => {
+    55→    if (!editProduct) return;
+    56→    if (!confirm("Delete this product?")) return;
+    57→    const res = await fetch(`/api/products/${editProduct.id}`, { method: "DELETE" });
+    58→    const data = await res.json();
+    59→    if (data.success) { toast.success("Deleted"); onClose(); }
+    60→    else toast.error("Failed to delete");
+    61→  };
+    62→
+    63→  return (
+    64→    <div className="space-y-4 max-h-[85vh] overflow-y-auto pr-2">
+    65→      <div className="grid grid-cols-2 gap-4">
+    66→        <div className="space-y-2"><Label>Brand *</Label><Input value={form.brand} onChange={(e) => update("brand", e.target.value)} placeholder="Hikvision / Dahua" /></div>
+    67→        <div className="space-y-2"><Label>Model Number *</Label><Input value={form.modelName} onChange={(e) => update("modelName", e.target.value)} placeholder="DS-2CE56D0T-IRP" /></div>
+    68→        <div className="space-y-2"><Label>Camera Type</Label>
+    69→          <Select value={form.cameraType} onValueChange={(v) => update("cameraType", v)}>
+    70→            <SelectTrigger><SelectValue /></SelectTrigger>
+    71→            <SelectContent>
+    72→              <SelectItem value="Dome">Dome</SelectItem><SelectItem value="Bullet">Bullet</SelectItem>
+    73→              <SelectItem value="WiFi">WiFi</SelectItem><SelectItem value="PTZ">PTZ</SelectItem>
+    74→              <SelectItem value="4G">4G</SelectItem><SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem>
+    75→            </SelectContent>
+    76→          </Select>
+    77→        </div>
+    78→        <div className="space-y-2"><Label>Resolution</Label>
+    79→          <Select value={form.resolution} onValueChange={(v) => update("resolution", v)}>
+    80→            <SelectTrigger><SelectValue /></SelectTrigger>
+    81→            <SelectContent>
+    82→              <SelectItem value="1MP">1MP (720p)</SelectItem><SelectItem value="2MP">2MP (1080p)</SelectItem>
+    83→              <SelectItem value="4MP">4MP (1440p)</SelectItem><SelectItem value="5MP">5MP</SelectItem><SelectItem value="4K">4K (8MP)</SelectItem>
+    84→            </SelectContent>
+    85→          </Select>
+    86→        </div>
+    87→        <div className="space-y-2"><Label>Technology</Label>
+    88→          <Select value={form.technology} onValueChange={(v) => update("technology", v)}>
+    89→            <SelectTrigger><SelectValue /></SelectTrigger>
+    90→            <SelectContent>
+    91→              <SelectItem value="HD-TVI">HD-TVI (Hikvision)</SelectItem><SelectItem value="HD-CVI">HD-CVI (Dahua)</SelectItem>
+    92→              <SelectItem value="IP">IP</SelectItem><SelectItem value="WiFi IP">WiFi IP</SelectItem>
+    93→              <SelectItem value="4G LTE">4G LTE</SelectItem><SelectItem value="AHD">AHD</SelectItem>
+    94→            </SelectContent>
+    95→          </Select>
+    96→        </div>
+    97→        <div className="space-y-2"><Label>Compatible Recorder</Label>
+    98→          <Select value={form.recorderType} onValueChange={(v) => update("recorderType", v)}>
+    99→            <SelectTrigger><SelectValue /></SelectTrigger>
+   100→            <SelectContent>
+   101→              <SelectItem value="DVR">DVR</SelectItem><SelectItem value="NVR">NVR</SelectItem>
+   102→              <SelectItem value="Cloud/NVR">Cloud / NVR</SelectItem><SelectItem value="Cloud/SD Card">Cloud / SD Card</SelectItem>
+   103→            </SelectContent>
+   104→          </Select>
+   105→        </div>
+   106→        <div className="space-y-2"><Label>Price (INR) *</Label><Input type="number" value={form.price} onChange={(e) => update("price", e.target.value)} placeholder="1500" /></div>
+   107→        <div className="space-y-2"><Label>Sale Price (INR)</Label><Input type="number" value={form.salePrice} onChange={(e) => update("salePrice", e.target.value)} placeholder="1299 (optional)" /></div>
+   108→        <div className="space-y-2"><Label>Night Vision</Label><Input value={form.nightVision} onChange={(e) => update("nightVision", e.target.value)} placeholder="IR (20m) / ColorVu / Starlight" /></div>
+   109→        <div className="space-y-2"><Label>Weather Rating</Label><Input value={form.weatherRating} onChange={(e) => update("weatherRating", e.target.value)} placeholder="IP67 / IP66 / Indoor" /></div>
+   110→        <div className="space-y-2"><Label>IR Range</Label><Input value={form.irRange} onChange={(e) => update("irRange", e.target.value)} placeholder="20m / 50m" /></div>
+   111→        <div className="space-y-2"><Label>Field of View</Label><Input value={form.fieldOfView} onChange={(e) => update("fieldOfView", e.target.value)} placeholder="90 degrees / 360 degrees" /></div>
+   112→      </div>
+   113→      <div className="space-y-2"><Label>Description</Label><Textarea value={form.description} onChange={(e) => update("description", e.target.value)} rows={3} placeholder="Product description..." /></div>
+   114→      <div className="space-y-2"><Label>Features (comma separated)</Label><Textarea value={form.features} onChange={(e) => update("features", e.target.value)} rows={2} placeholder="2MP, IR 20m, IP67, Smart IR" /></div>
+   115→      <div className="space-y-2">
+   116→        <Label>Product Image URL</Label>
+   117→        <Input value={form.imageUrl} onChange={(e) => update("imageUrl", e.target.value)} placeholder="/uploads/image.jpg or external URL" />
+   118→        {form.imageUrl && <img src={form.imageUrl} alt="preview" className="w-24 h-24 object-contain rounded border bg-muted mt-1" />}
+   119→      </div>
+   120→      <div className="space-y-2">
+   121→        <Label>Sample Video URL (YouTube embed)</Label>
+   122→        <Input value={form.sampleVideoUrl} onChange={(e) => update("sampleVideoUrl", e.target.value)} placeholder="https://www.youtube.com/embed/..." />
+   123→      </div>
+   124→      <div className="flex gap-2 pt-2">
+   125→        <Button onClick={handleSubmit} disabled={saving} className="flex-1">{saving ? "Saving..." : editProduct ? "Update Product" : "Add Product"}</Button>
+   126→        {editProduct && <Button variant="destructive" onClick={handleDelete}><Trash2 className="h-4 w-4" /></Button>}
+   127→        <Button variant="outline" onClick={onClose}>Cancel</Button>
+   128→      </div>
+   129→    </div>
+   130→  );
+   131→}
+   132→
+   133→// ═══════════════════════════════════════════════════════════════
+   134→// SAVED QUOTES MANAGEMENT
+   135→// ═══════════════════════════════════════════════════════════════
+   136→
+   137→interface SavedQuote {
+   138→  id: string;
+   139→  name: string;
+   140→  date: string;
+   141→  data: string; // JSON string of builder state
+   142→  summary: string;
+   143→}
+   144→
+   145→function QuotesTab() {
+   146→  const [quotes, setQuotes] = useState<SavedQuote[]>(() => {
+   147→    if (typeof window === "undefined") return [];
+   148→    try {
+   149→      const stored = localStorage.getItem("cctv_saved_quotes");
+   150→      return stored ? JSON.parse(stored) : [];
+   151→    } catch { return []; }
+   152→  });
+   153→  const [loadedQuote, setLoadedQuote] = useState<string | null>(null);
+   154→
+   155→  const saveQuote = () => {
+   156→    const state = useBuilderStore.getState();
+   157→    const totalCams = state.cameraSelections.reduce((s, c) => s + c.qty, 0);
+   158→    if (totalCams === 0) {
+   159→      toast.error("No cameras configured. Build a setup first!");
+   160→      return;
+   161→    }
+   162→    const name = prompt("Quote name (e.g., Customer Name - Site):") || "Untitled Quote";
+   163→    const quote: SavedQuote = {
+   164→      id: Date.now().toString(),
+   165→      name,
+   166→      date: new Date().toLocaleDateString("en-IN"),
+   167→      data: JSON.stringify({
+   168→        propertyType: state.propertyType,
+   169→        areaSqft: state.areaSqft,
+   170→        cameraSystem: state.cameraSystem,
+   171→        cameraTechs: state.cameraTechs,
+   172→        cameraSelections: state.cameraSelections,
+   173→        recorderUnits: state.recorderUnits,
+   174→        powerUnits: state.powerUnits,
+   175→        retentionDays: state.retentionDays,
+   176→        hddSuggestion: state.hddSuggestion,
+   177→        cableLengthPerCamera: state.cableLengthPerCamera,
+   178→        cableSelection: state.cableSelection,
+   179→        junctionBox4x4: state.junctionBox4x4,
+   180→        junctionBox5x5: state.junctionBox5x5,
+   181→        dcConnector: state.dcConnector,
+   182→        bncConnector: state.bncConnector,
+   183→        rj45Connector: state.rj45Connector,
+   184→        networkingRack: state.networkingRack,
+   185→        monitor: state.monitor,
+   186→        monitorSize: state.monitorSize,
+   187→        extensionBoard: state.extensionBoard,
+   188→        wirelessMouse: state.wirelessMouse,
+   189→        wirelessKeyboard: state.wirelessKeyboard,
+   190→        ups: state.ups,
+   191→      }),
+   192→      summary: `${totalCams} cameras | ${state.cameraSystem.toUpperCase()} | ${state.areaSqft} sq ft`,
+   193→    };
+   194→    const updated = [quote, ...quotes];
+   195→    setQuotes(updated);
+   196→    localStorage.setItem("cctv_saved_quotes", JSON.stringify(updated));
+   197→    toast.success("Quote saved!");
+   198→  };
+   199→
+   200→  const deleteQuote = (id: string) => {
+   201→    if (!confirm("Delete this saved quote?")) return;
+   202→    const updated = quotes.filter(q => q.id !== id);
+   203→    setQuotes(updated);
+   204→    localStorage.setItem("cctv_saved_quotes", JSON.stringify(updated));
+   205→    toast.success("Quote deleted");
+   206→  };
+   207→
+   208→  const loadQuote = (quote: SavedQuote) => {
+   209→    try {
+   210→      const data = JSON.parse(quote.data);
+   211→      const store = useBuilderStore.getState();
+   212→      Object.keys(data).forEach((key) => {
+   213→        const actionKey = "set" + key.charAt(0).toUpperCase() + key.slice(1) as keyof typeof store;
+   214→        if (typeof store[actionKey] === "function") {
+   215→          (store[actionKey] as (v: unknown) => void)(data[key]);
+   216→        }
+   217→      });
+   218→      setLoadedQuote(quote.id);
+   219→      toast.success("Quote loaded! Go to Builder tab to view.");
+   220→      setTimeout(() => setLoadedQuote(null), 3000);
+   221→    } catch {
+   222→      toast.error("Failed to load quote");
+   223→    }
+   224→  };
+   225→
+   226→  const copyQuoteText = (quote: SavedQuote) => {
+   227→    try {
+   228→      const data = JSON.parse(quote.data);
+   229→      const lines: string[] = [];
+   230→      lines.push("=== CCTV QUOTE ===");
+   231→      lines.push("Name: " + quote.name);
+   232→      lines.push("Date: " + quote.date);
+   233→      lines.push("Property: " + data.propertyType);
+   234→      lines.push("Area: " + data.areaSqft + " sq ft");
+   235→      lines.push("System: " + (data.cameraSystem || "").toUpperCase());
+   236→      lines.push("");
+   237→      if (data.cameraSelections) {
+   238→        lines.push("--- CAMERAS ---");
+   239→        let total = 0;
+   240→        for (const cam of data.cameraSelections) {
+   241→          lines.push(cam.qty + "x " + cam.mp + " " + cam.form);
+   242→          total += cam.qty;
+   243→        }
+   244→        lines.push("Total: " + total + " cameras");
+   245→      }
+   246→      if (data.recorderUnits && data.recorderUnits.length > 0) {
+   247→        lines.push("");
+   248→        lines.push("--- RECORDER ---");
+   249→        for (const u of data.recorderUnits) {
+   250→          lines.push(u.channels + "-Channel " + u.type + " (" + u.usedPorts + " used)");
+   251→        }
+   252→      }
+   253→      if (data.powerUnits && data.powerUnits.length > 0) {
+   254→        lines.push("");
+   255→        lines.push("--- POWER ---");
+   256→        for (const u of data.powerUnits) {
+   257→          lines.push(u.ports + "-" + (u.type.includes("SMPS") ? "Channel SMPS" : "Port PoE") + " (" + u.usedPorts + " used)");
+   258→        }
+   259→      }
+   260→      if (data.hddSuggestion) {
+   261→        lines.push("");
+   262→        lines.push("--- STORAGE ---");
+   263→        lines.push("HDD: " + data.hddSuggestion);
+   264→        lines.push("Retention: " + data.retentionDays + " days");
+   265→      }
+   266→      lines.push("");
+   267→      lines.push("--- ACCESSORIES ---");
+   268→      if (data.junctionBox4x4 > 0) lines.push("Junction Box 4x4: " + data.junctionBox4x4);
+   269→      if (data.junctionBox5x5 > 0) lines.push("Junction Box 5x5: " + data.junctionBox5x5);
+   270→      if (data.dcConnector > 0) lines.push("DC Connector: " + data.dcConnector);
+   271→      if (data.bncConnector > 0) lines.push("BNC Connector: " + data.bncConnector);
+   272→      if (data.rj45Connector > 0) lines.push("RJ45 Connector: " + data.rj45Connector);
+   273→      if (data.networkingRack > 0) lines.push("Networking Rack: " + data.networkingRack);
+   274→      if (data.monitor > 0) lines.push("Monitor: " + data.monitor + "x " + data.monitorSize);
+   275→      if (data.extensionBoard > 0) lines.push("Extension Board: " + data.extensionBoard);
+   276→      if (data.wirelessMouse > 0) lines.push("Wireless Mouse: " + data.wirelessMouse);
+   277→      if (data.ups > 0) lines.push("UPS: " + data.ups);
+   278→
+   279→      navigator.clipboard.writeText(lines.join("\n")).then(() => toast.success("Quote copied!")).catch(() => toast.error("Copy failed"));
+   280→    } catch { toast.error("Failed to read quote data"); }
+   281→  };
+   282→
+   283→  return (
+   284→    <div className="space-y-4">
+   285→      <div className="flex items-center justify-between">
+   286→        <div>
+   287→          <h3 className="font-semibold">Saved Quotes</h3>
+   288→          <p className="text-xs text-muted-foreground">Save and manage CCTV configuration quotes. Quotes are stored in your browser.</p>
+   289→        </div>
+   290→        <Button size="sm" className="gap-1.5" onClick={saveQuote}>
+   291→          <Download className="h-3.5 w-3.5" /> Save Current Config
+   292→        </Button>
+   293→      </div>
+   294→
+   295→      {quotes.length === 0 ? (
+   296→        <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed">
+   297→          <FileText className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+   298→          <p className="text-sm text-muted-foreground">No saved quotes yet. Configure a setup in the Builder tab, then save it here.</p>
+   299→        </div>
+   300→      ) : (
+   301→        <div className="space-y-2">
+   302→          {quotes.map((q) => (
+   303→            <div key={q.id} className={cn(
+   304→              "flex items-center gap-4 p-4 rounded-xl border-2 transition-all",
+   305→              loadedQuote === q.id ? "border-emerald-400 bg-emerald-50" : "border-muted hover:border-emerald-300"
+   306→            )}>
+   307→              <div className="bg-emerald-100 text-emerald-700 p-2.5 rounded-lg shrink-0">
+   308→                <FileText className="h-5 w-5" />
+   309→              </div>
+   310→              <div className="flex-1 min-w-0">
+   311→                <p className="font-semibold text-sm truncate">{q.name}</p>
+   312→                <p className="text-xs text-muted-foreground">{q.summary}</p>
+   313→                <p className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1">
+   314→                  <Clock className="h-3 w-3" /> {q.date}
+   315→                </p>
+   316→              </div>
+   317→              <div className="flex items-center gap-1.5 shrink-0">
+   318→                <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => loadQuote(q)}>
+   319→                  <Download className="h-3 w-3" /> Load
+   320→                </Button>
+   321→                <Button size="sm" variant="outline" className="gap-1 text-xs h-8" onClick={() => copyQuoteText(q)}>
+   322→                  <ClipboardCopy className="h-3 w-3" /> Copy
+   323→                </Button>
+   324→                <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 h-8 w-8 p-0" onClick={() => deleteQuote(q.id)}>
+   325→                  <Trash className="h-3.5 w-3.5" />
+   326→                </Button>
+   327→              </div>
+   328→            </div>
+   329→          ))}
+   330→        </div>
+   331→      )}
+   332→    </div>
+   333→  );
+   334→}
+   335→
+   336→// ═══════════════════════════════════════════════════════════════
+   337→// SETTINGS TAB
+   338→// ═══════════════════════════════════════════════════════════════
+   339→
+   340→function loadSettings() {
+   341→  if (typeof window === "undefined") return { companyName: "", companyPhone: "", companyAddress: "", defaultRetention: "15", defaultCableLength: "25" };
+   342→  try {
+   343→    const s = localStorage.getItem("cctv_admin_settings");
+   344→    if (s) {
+   345→      const d = JSON.parse(s);
+   346→      return {
+   347→        companyName: d.companyName || "",
+   348→        companyPhone: d.companyPhone || "",
+   349→        companyAddress: d.companyAddress || "",
+   350→        defaultRetention: d.defaultRetention || "15",
+   351→        defaultCableLength: d.defaultCableLength || "25",
+   352→      };
+   353→    }
+   354→  } catch { /* empty */ }
+   355→  return { companyName: "", companyPhone: "", companyAddress: "", defaultRetention: "15", defaultCableLength: "25" };
+   356→}
+   357→
+   358→function SettingsTab() {
+   359→  const [settings, setSettings] = useState(loadSettings);
+   360→  const companyName = settings.companyName;
+   361→  const companyPhone = settings.companyPhone;
+   362→  const companyAddress = settings.companyAddress;
+   363→  const defaultRetention = settings.defaultRetention;
+   364→  const defaultCableLength = settings.defaultCableLength;
+   365→
+   366→  const saveSettings = () => {
+   367→    const data = { companyName, companyPhone, companyAddress, defaultRetention, defaultCableLength };
+   368→    localStorage.setItem("cctv_admin_settings", JSON.stringify(data));
+   369→    toast.success("Settings saved!");
+   370→  };
+   371→
+   372→  return (
+   373→    <div className="space-y-6">
+   374→      <div>
+   375→        <h3 className="font-semibold mb-1">Company Information</h3>
+   376→        <p className="text-xs text-muted-foreground mb-4">This info appears on printed quotes and invoices.</p>
+   377→        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   378→          <div className="space-y-2">
+   379→            <Label>Company Name</Label>
+   380→            <Input value={companyName} onChange={(e) => setSettings(s => ({ ...s, companyName: e.target.value }))} placeholder="Your Company Name" />
+   381→          </div>
+   382→          <div className="space-y-2">
+   383→            <Label>Phone Number</Label>
+   384→            <Input value={companyPhone} onChange={(e) => setSettings(s => ({ ...s, companyPhone: e.target.value }))} placeholder="+91 98765 43210" />
+   385→          </div>
+   386→          <div className="space-y-2 sm:col-span-2">
+   387→            <Label>Address</Label>
+   388→            <Textarea value={companyAddress} onChange={(e) => setSettings(s => ({ ...s, companyAddress: e.target.value }))} rows={2} placeholder="Shop No. X, Area, City, State - PIN" />
+   389→          </div>
+   390→        </div>
+   391→      </div>
+   392→
+   393→      <Separator />
+   394→
+   395→      <div>
+   396→        <h3 className="font-semibold mb-1">Builder Defaults</h3>
+   397→        <p className="text-xs text-muted-foreground mb-4">Default values used when creating new configurations.</p>
+   398→        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+   399→          <div className="space-y-2">
+   400→            <Label>Default Retention (days)</Label>
+   401→            <Select value={defaultRetention} onValueChange={(v) => setSettings(s => ({ ...s, defaultRetention: v }))}>
+   402→              <SelectTrigger><SelectValue /></SelectTrigger>
+   403→              <SelectContent>
+   404→                <SelectItem value="7">7 days</SelectItem>
+   405→                <SelectItem value="10">10 days</SelectItem>
+   406→                <SelectItem value="15">15 days</SelectItem>
+   407→                <SelectItem value="30">30 days</SelectItem>
+   408→                <SelectItem value="45">45 days</SelectItem>
+   409→                <SelectItem value="60">60 days</SelectItem>
+   410→                <SelectItem value="90">90 days</SelectItem>
+   411→              </SelectContent>
+   412→            </Select>
+   413→          </div>
+   414→          <div className="space-y-2">
+   415→            <Label>Default Cable Length (meters/camera)</Label>
+   416→            <Input type="number" value={defaultCableLength} onChange={(e) => setSettings(s => ({ ...s, defaultCableLength: e.target.value }))} placeholder="25" min="1" max="300" />
+   417→          </div>
+   418→        </div>
+   419→      </div>
+   420→
+   421→      <Button onClick={saveSettings}>Save Settings</Button>
+   422→    </div>
+   423→  );
+   424→}
+   425→
+   426→// ═══════════════════════════════════════════════════════════════
+   427→// SEED SAMPLE DATA BUTTON
+   428→// ═══════════════════════════════════════════════════════════════
+   429→
+   430→const SEED_PRODUCTS = [
+   431→  // ANALOG - Hikvision HD-TVI
+   432→  { brand: "Hikvision", modelName: "DS-2CE56D0T-IRP", cameraType: "Bullet", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (20m)", weatherRating: "IP67", price: "1499", salePrice: "1299", description: "2MP HD-TVI bullet camera with IR night vision, 20m range, IP67 weatherproof.", features: "2MP, IR 20m, IP67, Smart IR, HD-TVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "20m", fieldOfView: "90 degrees" },
+   433→  { brand: "Hikvision", modelName: "DS-2CE5AD0T-IRP", cameraType: "Dome", resolution: "2MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (20m)", weatherRating: "IP67", price: "1399", salePrice: "1199", description: "2MP HD-TVI dome camera with IR night vision, vandal-proof, IP67.", features: "2MP, IR 20m, IP67, Vandal-proof, HD-TVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "20m", fieldOfView: "100 degrees" },
+   434→  { brand: "Hikvision", modelName: "DS-2CE56D5T-IRP", cameraType: "Bullet", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "2199", salePrice: "", description: "4MP HD-TVI bullet camera with 30m IR range, IP67 weatherproof.", features: "4MP, IR 30m, IP67, Smart IR, HD-TVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "87 degrees" },
+   435→  { brand: "Hikvision", modelName: "DS-2CE7AD3T-IRP", cameraType: "Dome", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "2499", salePrice: "", description: "4MP HD-TVI dome camera with 30m IR, vandal-proof housing.", features: "4MP, IR 30m, IP67, Vandal-proof, HD-TVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+   436→  // ANALOG - Dahua HD-CVI
+   437→  { brand: "Dahua", modelName: "HFW-B2421T-ZAS", cameraType: "Bullet", resolution: "2MP", technology: "HD-CVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "1350", salePrice: "1150", description: "2MP HD-CVI bullet with 30m IR, IP67, built-in mic.", features: "2MP, IR 30m, IP67, Built-in Mic, HD-CVI", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "90 degrees" },
+   438→  { brand: "Dahua", modelName: "HDBW-2421R-ZAS", cameraType: "Dome", resolution: "2MP", technology: "HD-CVI", recorderType: "DVR", nightVision: "IR (30m)", weatherRating: "IP67", price: "1450", salePrice: "", description: "2MP HD-CVI dome with 30m IR, vandal-proof, built-in mic.", features: "2MP, IR 30m, IP67, Vandal-proof, HD-CVI", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+   439→  // IP - Hikvision
+   440→  { brand: "Hikvision", modelName: "DS-2CD2143G2-I", cameraType: "Bullet", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "ColorVu (30m)", weatherRating: "IP67", price: "3999", salePrice: "3499", description: "4MP IP bullet with ColorVu technology, full color night vision, IP67.", features: "4MP, ColorVu, IP67, PoE, AcuSense, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "30m", fieldOfView: "87 degrees" },
+   441→  { brand: "Hikvision", modelName: "DS-2CD2343G2-I", cameraType: "Dome", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "ColorVu (30m)", weatherRating: "IP67", price: "4299", salePrice: "", description: "4MP IP dome with ColorVu, vandal-proof, built-in mic.", features: "4MP, ColorVu, IP67, Vandal-proof, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "30m", fieldOfView: "100 degrees" },
+   442→  { brand: "Hikvision", modelName: "DS-2CD2T86G2-4", cameraType: "Bullet", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "7999", salePrice: "6999", description: "8MP (4K) IP bullet with 40m IR, AcuSense AI, IP67.", features: "4K 8MP, IR 40m, IP67, AcuSense AI, PoE, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "40m", fieldOfView: "97 degrees" },
+   443→  { brand: "Hikvision", modelName: "DS-2CD2T87G2-4", cameraType: "Dome", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "8499", salePrice: "", description: "8MP (4K) IP dome with 40m IR, AcuSense AI, vandal-proof.", features: "4K 8MP, IR 40m, IP67, AcuSense AI, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "40m", fieldOfView: "105 degrees" },
+   444→  { brand: "Hikvision", modelName: "DS-2DE4A425IW-DE", cameraType: "PTZ", resolution: "4MP", technology: "IP", recorderType: "NVR", nightVision: "IR (150m)", weatherRating: "IP67", price: "35000", salePrice: "", description: "4MP IP PTZ with 25x zoom, 150m IR, auto-tracking, IP67.", features: "4MP, 25x Zoom, IR 150m, Auto-Tracking, PoE, IP67", imageUrl: "/cctv-guide-images/ptz-camera.png", irRange: "150m", fieldOfView: "360 degrees" },
+   445→  // IP - Dahua
+   446→  { brand: "Dahua", modelName: "IPC-HFW2831T-ZAS-S2", cameraType: "Bullet", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (50m)", weatherRating: "IP67", price: "6999", salePrice: "5999", description: "8MP (4K) IP bullet with 50m IR, SMD 4.0 AI, IP67.", features: "4K 8MP, IR 50m, IP67, SMD 4.0 AI, PoE, H.265+", imageUrl: "/cctv-guide-images/bullet-camera.png", irRange: "50m", fieldOfView: "100 degrees" },
+   447→  { brand: "Dahua", modelName: "IPC-HDBW2831E-S-S2", cameraType: "Dome", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "IR (40m)", weatherRating: "IP67", price: "7499", salePrice: "", description: "8MP (4K) IP dome with 40m IR, SMD 4.0 AI, vandal-proof.", features: "4K 8MP, IR 40m, IP67, SMD 4.0 AI, PoE, H.265+", imageUrl: "/cctv-guide-images/dome-camera.png", irRange: "40m", fieldOfView: "105 degrees" },
+   448→  // WiFi
+   449→  { brand: "TP-Link", modelName: "Tapo C200", cameraType: "WiFi", resolution: "2MP", technology: "WiFi IP", recorderType: "Cloud/SD Card", nightVision: "IR (9m)", weatherRating: "Indoor", price: "2999", salePrice: "2499", description: "2MP WiFi indoor camera with IR night vision, two-way audio, SD card slot.", features: "2MP, WiFi, IR 9m, Two-Way Audio, SD Card, Motion Detection", imageUrl: "/cctv-guide-images/wifi-camera.png", irRange: "9m", fieldOfView: "110 degrees" },
+   450→  { brand: "TP-Link", modelName: "Tapo C320WS", cameraType: "WiFi", resolution: "2MP", technology: "WiFi IP", recorderType: "Cloud/SD Card", nightVision: "Color (30m)", weatherRating: "IP66", price: "4999", salePrice: "", description: "2MP WiFi outdoor camera with color night vision, spotlights, IP66.", features: "2MP, WiFi, Color Night, Spotlights, IP66, SD Card", imageUrl: "/cctv-guide-images/wifi-camera.png", irRange: "30m", fieldOfView: "120 degrees" },
+   451→  // DVR / NVR recorders
+   452→  { brand: "Hikvision", modelName: "DS-7204HGHI-F1", cameraType: "DVR", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "4999", salePrice: "4499", description: "4-channel 4MP HD-TVI DVR with H.265+, 1 SATA, HDMI output.", features: "4CH, 4MP, HD-TVI, H.265+, 1x SATA, HDMI", imageUrl: "", irRange: "", fieldOfView: "" },
+   453→  { brand: "Hikvision", modelName: "DS-7216HGHI-F2", cameraType: "DVR", resolution: "4MP", technology: "HD-TVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "8999", salePrice: "", description: "16-channel 4MP HD-TVI DVR with H.265+, 2 SATA, HDMI.", features: "16CH, 4MP, HD-TVI, H.265+, 2x SATA, HDMI", imageUrl: "", irRange: "", fieldOfView: "" },
+   454→  { brand: "Hikvision", modelName: "DS-7608NI-K2", cameraType: "NVR", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "", weatherRating: "", price: "7999", salePrice: "6999", description: "8-channel 4K NVR with PoE (4 ports), 2 SATA, H.265+.", features: "8CH, 4K, PoE 4-port, H.265+, 2x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+   455→  { brand: "Hikvision", modelName: "DS-7616NI-K2", cameraType: "NVR", resolution: "4K", technology: "IP", recorderType: "NVR", nightVision: "", weatherRating: "", price: "12999", salePrice: "", description: "16-channel 4K NVR with PoE (8 ports), 2 SATA, H.265+.", features: "16CH, 4K, PoE 8-port, H.265+, 2x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+   456→  { brand: "Dahua", modelName: "XVR5108HS-4KL", cameraType: "DVR", resolution: "4K", technology: "HD-CVI", recorderType: "DVR", nightVision: "", weatherRating: "", price: "6999", salePrice: "", description: "8-channel 4K HD-CVI DVR with AI coding, 1 SATA, HDMI.", features: "8CH, 4K, HD-CVI/AHD/TVI/CVI, H.265+, 1x SATA", imageUrl: "", irRange: "", fieldOfView: "" },
+   457→];
+   458→
+   459→function SeedDataButton({ onDone }: { onDone: () => void }) {
+   460→  const [seeding, setSeeding] = useState(false);
+   461→  const handleSeed = async () => {
+   462→    if (!confirm("This will add 20 sample CCTV products (cameras, DVRs, NVRs) to the database. Continue?")) return;
+   463→    setSeeding(true);
+   464→    try {
+   465→      for (const p of SEED_PRODUCTS) {
+   466→        await fetch("/api/products", {
+   467→          method: "POST",
+   468→          headers: { "Content-Type": "application/json" },
+   469→          body: JSON.stringify(p),
+   470→        });
+   471→      }
+   472→      toast.success("20 sample products added successfully!");
+   473→      onDone();
+   474→    } catch {
+   475→      toast.error("Failed to seed data");
+   476→    }
+   477→    setSeeding(false);
+   478→  };
+   479→  return (
+   480→    <Button size="sm" variant="outline" className="gap-1.5 text-xs" onClick={handleSeed} disabled={seeding}>
+   481→      <Package className="h-3.5 w-3.5" /> {seeding ? "Adding..." : "Seed Sample Data"}
+   482→    </Button>
+   483→  );
+   484→}
+   485→
+   486→// ═══════════════════════════════════════════════════════════════
+   487→// MAIN ADMIN PANEL
+   488→// ═══════════════════════════════════════════════════════════════
+   489→
+   490→export function AdminPanel({ onBack }: { onBack: () => void }) {
+   491→  const { products, setProducts } = useStore();
+   492→  const [editing, setEditing] = useState<CctvProduct | undefined>();
+   493→  const [adding, setAdding] = useState(false);
+   494→  const [searchTerm, setSearchTerm] = useState("");
+   495→  const [typeFilter, setTypeFilter] = useState("all");
+   496→
+   497→  const refresh = useCallback(async () => {
+   498→    const res = await fetch("/api/products");
+   499→    const data = await res.json();
+   500→    if (data.success) setProducts(data.data);
+   501→  }, [setProducts]);
+   502→
+   503→  useEffect(() => { refresh(); }, [refresh]);
+   504→
+   505→  const handleDialogClose = () => { setEditing(undefined); setAdding(false); refresh(); };
+   506→
+   507→  // Filter products for admin table
+   508→  const filteredProducts = products.filter(p => {
+   509→    if (typeFilter !== "all" && p.cameraType !== typeFilter) return false;
+   510→    if (searchTerm) {
+   511→      const s = searchTerm.toLowerCase();
+   512→      return p.brand.toLowerCase().includes(s) || p.modelName.toLowerCase().includes(s);
+   513→    }
+   514→    return true;
+   515→  });
+   516→
+   517→  const fmt = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
+   518→
+   519→  // Stats
+   520→  const totalProducts = products.length;
+   521→  const totalBrands = [...new Set(products.map(p => p.brand))].length;
+   522→  const onSale = products.filter(p => p.salePrice && p.salePrice < p.price).length;
+   523→  const avgPrice = totalProducts > 0 ? Math.round(products.reduce((s, p) => s + p.price, 0) / totalProducts) : 0;
+   524→
+   525→  return (
+   526→    <div className="space-y-6">
+   527→      {/* Header */}
+   528→      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+   529→        <div className="flex items-center gap-3">
+   530→          <Button variant="ghost" size="sm" onClick={onBack} className="gap-1">
+   531→            <ChevronLeft className="h-4 w-4" /> Back
+   532→          </Button>
+   533→          <div>
+   534→            <h2 className="text-xl font-bold flex items-center gap-2"><Shield className="h-5 w-5 text-emerald-600" /> Admin Panel</h2>
+   535→            <p className="text-xs text-muted-foreground">Manage products, quotes, and settings</p>
+   536→          </div>
+   537→        </div>
+   538→      </div>
+   539→
+   540→      {/* Dashboard Stats */}
+   541→      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+   542→        <Card className="p-4">
+   543→          <div className="flex items-center gap-3">
+   544→            <div className="bg-emerald-100 text-emerald-700 p-2 rounded-lg"><Package className="h-5 w-5" /></div>
+   545→            <div><p className="text-2xl font-bold">{totalProducts}</p><p className="text-xs text-muted-foreground">Products</p></div>
+   546→          </div>
+   547→        </Card>
+   548→        <Card className="p-4">
+   549→          <div className="flex items-center gap-3">
+   550→            <div className="bg-amber-100 text-amber-700 p-2 rounded-lg"><Camera className="h-5 w-5" /></div>
+   551→            <div><p className="text-2xl font-bold">{totalBrands}</p><p className="text-xs text-muted-foreground">Brands</p></div>
+   552→          </div>
+   553→        </Card>
+   554→        <Card className="p-4">
+   555→          <div className="flex items-center gap-3">
+   556→            <div className="bg-red-100 text-red-700 p-2 rounded-lg"><Trash2 className="h-5 w-5" /></div>
+   557→            <div><p className="text-2xl font-bold">{onSale}</p><p className="text-xs text-muted-foreground">On Sale</p></div>
+   558→          </div>
+   559→        </Card>
+   560→        <Card className="p-4">
+   561→          <div className="flex items-center gap-3">
+   562→            <div className="bg-sky-100 text-sky-700 p-2 rounded-lg"><IndianRupee className="h-5 w-5" /></div>
+   563→            <div><p className="text-2xl font-bold">{fmt(avgPrice)}</p><p className="text-xs text-muted-foreground">Avg Price</p></div>
+   564→          </div>
+   565→        </Card>
+   566→      </div>
+   567→
+   568→      {/* Main Tabs */}
+   569→      <Tabs defaultValue="products">
+   570→        <div className="flex items-center justify-between">
+   571→          <TabsList>
+   572→            <TabsTrigger value="products" className="gap-1.5 text-xs"><Package className="h-3.5 w-3.5" /> Products</TabsTrigger>
+   573→            <TabsTrigger value="quotes" className="gap-1.5 text-xs"><FileText className="h-3.5 w-3.5" /> Quotes</TabsTrigger>
+   574→            <TabsTrigger value="settings" className="gap-1.5 text-xs"><Settings className="h-3.5 w-3.5" /> Settings</TabsTrigger>
+   575→          </TabsList>
+   576→          <SeedDataButton onDone={refresh} />
+   577→        </div>
+   578→
+   579→        {/* ─── PRODUCTS TAB ─── */}
+   580→        <TabsContent value="products" className="space-y-4 mt-4">
+   581→          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+   582→            <div className="flex items-center gap-2">
+   583→              <div className="relative">
+   584→                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search products..." className="w-60 pl-9 h-9 text-sm" />
+   585→                <Camera className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+   586→              </div>
+   587→              <Select value={typeFilter} onValueChange={setTypeFilter}>
+   588→                <SelectTrigger className="w-32 h-9 text-sm"><SelectValue placeholder="All Types" /></SelectTrigger>
+   589→                <SelectContent>
+   590→                  <SelectItem value="all">All Types</SelectItem>
+   591→                  <SelectItem value="Dome">Dome</SelectItem>
+   592→                  <SelectItem value="Bullet">Bullet</SelectItem>
+   593→                  <SelectItem value="WiFi">WiFi</SelectItem>
+   594→                  <SelectItem value="PTZ">PTZ</SelectItem>
+   595→                  <SelectItem value="4G">4G</SelectItem>
+   596→                  <SelectItem value="DVR">DVR</SelectItem>
+   597→                  <SelectItem value="NVR">NVR</SelectItem>
+   598→                </SelectContent>
+   599→              </Select>
+   600→            </div>
+   601→            <Dialog open={adding} onOpenChange={setAdding}>
+   602→              <DialogTrigger asChild><Button size="sm" className="gap-1.5"><Plus className="h-4 w-4" /> Add Product</Button></DialogTrigger>
+   603→              <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Add New Product</DialogTitle></DialogHeader><AdminForm onClose={handleDialogClose} /></DialogContent>
+   604→            </Dialog>
+   605→          </div>
+   606→
+   607→          <div className="border rounded-xl overflow-hidden">
+   608→            <div className="max-h-[60vh] overflow-y-auto">
+   609→              <table className="w-full text-sm">
+   610→                <thead className="bg-muted sticky top-0 z-10">
+   611→                  <tr>
+   612→                    <th className="p-3 text-left text-xs font-semibold">Image</th>
+   613→                    <th className="p-3 text-left text-xs font-semibold">Brand</th>
+   614→                    <th className="p-3 text-left text-xs font-semibold">Model</th>
+   615→                    <th className="p-3 text-left text-xs font-semibold">Type</th>
+   616→                    <th className="p-3 text-left text-xs font-semibold">Resolution</th>
+   617→                    <th className="p-3 text-right text-xs font-semibold">Price</th>
+   618→                    <th className="p-3 text-right text-xs font-semibold">Sale</th>
+   619→                    <th className="p-3 text-center text-xs font-semibold">Actions</th>
+   620→                  </tr>
+   621→                </thead>
+   622→                <tbody>
+   623→                  {filteredProducts.map((p) => (
+   624→                    <tr key={p.id} className="border-t hover:bg-muted/50 transition-colors">
+   625→                      <td className="p-2">
+   626→                        <img src={p.imageUrl} alt="" className="w-14 h-11 object-contain bg-muted rounded border" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+   627→                      </td>
+   628→                      <td className="p-3 font-medium">{p.brand}</td>
+   629→                      <td className="p-3 text-xs font-mono">{p.modelName}</td>
+   630→                      <td className="p-3"><Badge variant="secondary" className="text-[11px]">{p.cameraType}</Badge></td>
+   631→                      <td className="p-3 text-xs">{p.resolution}</td>
+   632→                      <td className="p-3 text-right font-medium">{fmt(p.price)}</td>
+   633→                      <td className="p-3 text-right">
+   634→                        {p.salePrice ? (
+   635→                          <div>
+   636→                            <span className="text-emerald-600 font-medium">{fmt(p.salePrice)}</span>
+   637→                            <span className="text-[10px] text-muted-foreground line-through ml-1">{fmt(p.price)}</span>
+   638→                          </div>
+   639→                        ) : <span className="text-muted-foreground">-</span>}
+   640→                      </td>
+   641→                      <td className="p-3 text-center">
+   642→                        <Dialog open={editing?.id === p.id} onOpenChange={(open) => { if (open) setEditing(p); else setEditing(undefined); }}>
+   643→                          <DialogTrigger asChild><Button variant="ghost" size="sm" className="h-8 gap-1 text-xs"><Pencil className="h-3 w-3" /> Edit</Button></DialogTrigger>
+   644→                          <DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>Edit Product</DialogTitle></DialogHeader><AdminForm editProduct={p} onClose={handleDialogClose} /></DialogContent>
+   645→                        </Dialog>
+   646→                      </td>
+   647→                    </tr>
+   648→                  ))}
+   649→                </tbody>
+   650→              </table>
+   651→              {filteredProducts.length === 0 && (
+   652→                <div className="text-center py-12">
+   653→                  <Package className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+   654→                  <p className="text-sm text-muted-foreground">No products found</p>
+   655→                </div>
+   656→              )}
+   657→            </div>
+   658→          </div>
+   659→          <p className="text-xs text-muted-foreground">Showing {filteredProducts.length} of {products.length} products</p>
+   660→        </TabsContent>
+   661→
+   662→        {/* ─── QUOTES TAB ─── */}
+   663→        <TabsContent value="quotes" className="mt-4">
+   664→          <QuotesTab />
+   665→        </TabsContent>
+   666→
+   667→        {/* ─── SETTINGS TAB ─── */}
+   668→        <TabsContent value="settings" className="mt-4">
+   669→          <SettingsTab />
+   670→        </TabsContent>
+   671→      </Tabs>
+   672→    </div>
+   673→  );
+   674→}
