@@ -1,0 +1,635 @@
+     1→"use client";
+     2→
+     3→import { useState, type FormEvent } from "react";
+     4→import { cn } from "@/lib/utils";
+     5→import { BRAND } from "@/lib/constants";
+     6→import { motion, AnimatePresence } from "framer-motion";
+     7→import { fadeUp, staggerContainer, staggerItem } from "@/lib/motion";
+     8→import { toast } from "sonner";
+     9→import { Button } from "@/components/ui/button";
+    10→import {
+    11→  Card,
+    12→  CardContent,
+    13→  CardHeader,
+    14→  CardTitle,
+    15→  CardDescription,
+    16→} from "@/components/ui/card";
+    17→import { Input } from "@/components/ui/input";
+    18→import { Label } from "@/components/ui/label";
+    19→import { Textarea } from "@/components/ui/textarea";
+    20→import {
+    21→  Select,
+    22→  SelectContent,
+    23→  SelectItem,
+    24→  SelectTrigger,
+    25→  SelectValue,
+    26→} from "@/components/ui/select";
+    27→import {
+    28→  Accordion,
+    29→  AccordionContent,
+    30→  AccordionItem,
+    31→  AccordionTrigger,
+    32→} from "@/components/ui/accordion";
+    33→import {
+    34→  Phone,
+    35→  Mail,
+    36→  MessageCircle,
+    37→  MapPin,
+    38→  Clock,
+    39→  Wrench,
+    40→  ArrowRight,
+    41→  Loader2,
+    42→  CheckCircle2,
+    43→  Zap,
+    44→  Headphones,
+    45→  ShieldAlert,
+    46→  Send,
+    47→  ExternalLink,
+    48→} from "lucide-react";
+    49→import { useRouter } from "next/navigation";
+    50→
+    51→/* ------------------------------------------------------------------ */
+    52→/*  Data                                                               */
+    53→/* ------------------------------------------------------------------ */
+    54→const SUBJECT_OPTIONS = [
+    55→  { value: "general", label: "General Inquiry" },
+    56→  { value: "quote", label: "Product Quote" },
+    57→  { value: "support", label: "Product Support" },
+    58→  { value: "partnership", label: "Partnership" },
+    59→  { value: "installation", label: "Installation Request" },
+    60→];
+    61→
+    62→const CONTACT_CARDS = [
+    63→  {
+    64→    icon: <Phone className="h-5 w-5" />,      
+    65→    title: "Phone",
+    66→    detail: BRAND.phone,
+    67→    href: `tel:${BRAND.phoneRaw}`,    
+    68→    color: "emerald",    
+    69→    response: "Instant during business hours",
+    70→  },
+    71→  {
+    72→    icon: <Mail className="h-5 w-5" />,       
+    73→    title: "Email",
+    74→    detail: BRAND.email,
+    75→    href: `mailto:${BRAND.email}`,
+    76→    color: "sky",
+    77→    response: "Response within 2 hours",
+    78→  },
+    79→  {
+    80→    icon: <MessageCircle className="h-5 w-5" />,
+    81→    title: "WhatsApp",
+    82→    detail: "Chat with us instantly",
+    83→    href: BRAND.whatsapp,
+    84→    color: "green",
+    85→    response: "Average reply: 5 minutes",
+    86→    external: true,
+    87→  },
+    88→];
+    89→
+    90→const FAQ_ITEMS = [
+    91→  {
+    92→    q: "What brands do you sell?",
+    93→    a: "We are authorized dealers for Hikvision, Dahua, Ezviz, Imou, CP Plus, and Godrej. All products are 100% genuine with full manufacturer warranty.",
+    94→  },
+    95→  {
+    96→    q: "Do you provide installation services?",
+    97→    a: "Yes, we offer professional CCTV installation services across India. Our certified technicians ensure proper setup and configuration for optimal performance.",
+    98→  },
+    99→  {
+   100→    q: "How can I get a custom quote?",
+   101→    a: "You can use our CCTV Builder tool for an instant online quote, or contact us directly via phone, email, or WhatsApp for a personalized consultation.",
+   102→  },
+   103→  {
+   104→    q: "What is your return policy?",
+   105→    a: "Returns are accepted within 7 days of delivery for manufacturing defects only, provided the product is in its original packaging and unused condition.",
+   106→  },
+   107→  {
+   108→    q: "Do you offer EMI or financing options?",
+   109→    a: "Yes, we offer EMI options through Razorpay for eligible orders. You can select the EMI option during checkout.",
+   110→  },
+   111→];
+   112→
+   113→const COLOR_MAP: Record<string, { bg: string; text: string }> = {
+   114→  emerald: {
+   115→    bg: "bg-emerald-50 dark:bg-emerald-950/40",
+   116→    text: "text-emerald-600 dark:text-emerald-400",
+   117→  },
+   118→  sky: {
+   119→    bg: "bg-sky-50 dark:bg-sky-950/40",
+   120→    text: "text-sky-600 dark:text-sky-400",
+   121→  },
+   122→  green: {
+   123→    bg: "bg-green-50 dark:bg-green-950/40",
+   124→    text: "text-green-600 dark:text-green-400",
+   125→  },
+   126→  amber: {
+   127→    bg: "bg-amber-50 dark:bg-amber-950/40",
+   128→    text: "text-amber-600 dark:text-amber-400",
+   129→  },
+   130→  rose: {
+   131→    bg: "bg-rose-50 dark:bg-rose-950/40",
+   132→    text: "text-rose-600 dark:text-rose-400",
+   133→  },
+   134→};
+   135→
+   136→/* ------------------------------------------------------------------ */
+   137→/*  Contact Page                                                       */
+   138→/* ------------------------------------------------------------------ */
+   139→export function ContactPage() {
+   140→  const router = useRouter();
+   141→
+   142→  const [submitting, setSubmitting] = useState(false);
+   143→  const [submitted, setSubmitted] = useState(false);
+   144→  const [form, setForm] = useState({
+   145→    name: "",
+   146→    email: "",
+   147→    phone: "",
+   148→    subject: "",
+   149→    message: "",
+   150→  });
+   151→
+   152→  function updateField(field: string, value: string) {
+   153→    setForm((prev) => ({ ...prev, [field]: value }));
+   154→  }
+   155→
+   156→  async function handleSubmit(e: FormEvent) {
+   157→    e.preventDefault();
+   158→    setSubmitting(true);
+   159→    await new Promise((resolve) => setTimeout(resolve, 1200));
+   160→    setSubmitting(false);
+   161→    setSubmitted(true);
+   162→    toast.success("Message sent! We'll get back to you soon.");
+   163→    setTimeout(() => setSubmitted(false), 3000);
+   164→    setForm({ name: "", email: "", phone: "", subject: "", message: "" });
+   165→  }
+   166→
+   167→  return (
+   168→    <div className="min-h-screen bg-background">
+   169→      Section
+   170→      <section className="relative overflow-hidden px-6 lg:px-8 py-24 sm:py-28">
+   171→        <div
+   172→          className="absolute inset-0 pointer-events-none bg-gradient-to-b from-background via-background/95 to-background/80 before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,oklch(0.6_0.15_160/0.12),transparent_70%)]"
+   173→        />
+   174→        <div className="relative z-10 mx-auto max-w-3xl text-center">
+   175→          <motion.div
+   176→            initial={{ opacity: 0, y: 20 }}
+   177→            animate={{ opacity: 1, y: 0 }}
+   178→            transition={{ duration: 0.5 }}
+   179→            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-6"
+   180→          >
+   181→            <Headphones className="h-4 w-4" />
+   182→            We&apos;re Here to Help
+   183→          </motion.div>
+   184→
+   185→          <motion.h1
+   186→            initial={{ opacity: 0, y: 20 }}
+   187→            animate={{ opacity: 1, y: 0 }}
+   188→            transition={{ duration: 0.5, delay: 0.1 }}
+   189→            className="text-4xl sm:text-5xl font-extrabold tracking-tight"
+   190→          >
+   191→            Get In <span className="text-primary">Touch</span>
+   192→          </motion.h1>
+   193→
+   194→          <motion.p
+   195→            initial={{ opacity: 0, y: 20 }}
+   196→            animate={{ opacity: 1, y: 0 }}
+   197→            transition={{ duration: 0.5, delay: 0.2 }}
+   198→            className="mt-6 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto"
+   199→          >
+   200→            Have a question, need a quote, or want a free security consultation?
+   201→            Reach out through any channel — our team responds within minutes.
+   202→          </motion.p>
+   203→
+   204→          
+   205→          <motion.div
+   206→            initial={{ opacity: 0, y: 20 }}
+   207→            animate={{ opacity: 1, y: 0 }}
+   208→            transition={{ duration: 0.5, delay: 0.3 }}
+   209→            className="mt-8 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground"
+   210→          >
+   211→            <span className="flex items-center gap-1.5">
+   212→              <Zap className="h-4 w-4 text-emerald-600" />
+   213→              Avg. reply: 5 min
+   214→            </span>
+   215→            <span className="flex items-center gap-1.5">
+   216→              <Clock className="h-4 w-4 text-emerald-600" />
+   217→              Mon-Sat 9AM-8PM
+   218→            </span>
+   219→            <span className="flex items-center gap-1.5">
+   220→              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+   221→              Free consultation
+   222→            </span>
+   223→          </motion.div>
+   224→        </div>
+   225→      </section>
+   226→
+   227→          QUICK ACTION BUTTONS
+   228→      Section
+   229→      <section className="px-6 lg:px-8 -mt-8">
+   230→        <div className="mx-auto max-w-4xl">
+   231→          <motion.div
+   232→            {...fadeUp}
+   233→            className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+   234→          >
+   235→            <a href={`tel:${BRAND.phoneRaw}`}>
+   236→              <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+   237→                <CardContent className="p-5 flex items-center gap-4">
+   238→                  <div className="h-12 w-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+   239→                    <Phone className="h-6 w-6" />
+   240→                  </div>
+   241→                  <div>
+   242→                    <p className="font-semibold">Call Now</p>
+   243→                    <p className="text-sm text-muted-foreground">{BRAND.phone}</p>
+   244→                  </div>
+   245→                </CardContent>
+   246→              </Card>
+   247→            </a>
+   248→
+   249→            <a
+   250→              href={BRAND.whatsapp}
+   251→              target="_blank"
+   252→              rel="noopener noreferrer"
+   253→            >
+   254→              <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+   255→                <CardContent className="p-5 flex items-center gap-4">
+   256→                  <div className="h-12 w-12 rounded-xl bg-green-50 dark:bg-green-950/40 flex items-center justify-center text-green-600 dark:text-green-400">
+   257→                    <MessageCircle className="h-6 w-6" />
+   258→                  </div>
+   259→                  <div>
+   260→                    <p className="font-semibold">WhatsApp</p>
+   261→                    <p className="text-sm text-muted-foreground">Chat instantly</p>
+   262→                  </div>
+   263→                </CardContent>
+   264→              </Card>
+   265→            </a>
+   266→
+   267→            <a href={`mailto:${BRAND.email}`}>
+   268→              <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+   269→                <CardContent className="p-5 flex items-center gap-4">
+   270→                  <div className="h-12 w-12 rounded-xl bg-sky-50 dark:bg-sky-950/40 flex items-center justify-center text-sky-600 dark:text-sky-400">
+   271→                    <Mail className="h-6 w-6" />
+   272→                  </div>
+   273→                  <div>
+   274→                    <p className="font-semibold">Email Us</p>
+   275→                    <p className="text-sm text-muted-foreground">Quick response</p>
+   276→                  </div>
+   277→                </CardContent>
+   278→              </Card>
+   279→            </a>
+   280→          </motion.div>
+   281→        </div>
+   282→      </section>
+   283→
+   284→          CONTACT INFO + FORM
+   285→      Section
+   286→      <section className="px-6 lg:px-8 py-24">
+   287→        <div className="mx-auto max-w-7xl grid gap-12 lg:grid-cols-5">
+   288→          
+   289→          <motion.div
+   290→            {...staggerContainer}
+   291→            className="lg:col-span-2 space-y-4"
+   292→          >
+   293→            {CONTACT_CARDS.map((card) => {
+   294→              const colors = COLOR_MAP[card.color] || COLOR_MAP.emerald;
+   295→              return (
+   296→                <motion.div key={card.title} {...staggerItem}>
+   297→                  <a
+   298→                    href={card.href}
+   299→                    target={card.external ? "_blank" : undefined}
+   300→                    rel={card.external ? "noopener noreferrer" : undefined}
+   301→                    className="block"
+   302→                  >
+   303→                    <Card className="rounded-2xl border shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 cursor-pointer">
+   304→                      <CardContent className="p-5 flex items-start gap-4">
+   305→                        <div
+   306→                          className={cn(
+   307→                            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+   308→                            colors.bg,
+   309→                            colors.text
+   310→                          )}
+   311→                        >
+   312→                          {card.icon}
+   313→                        </div>
+   314→                        <div className="flex-1 min-w-0">
+   315→                          <p className="font-semibold">{card.title}</p>
+   316→                          <p className="text-sm text-muted-foreground break-all mt-0.5">
+   317→                            {card.detail}
+   318→                          </p>
+   319→                          <p className="text-xs text-muted-foreground/70 mt-1">
+   320→                            {card.response}
+   321→                          </p>
+   322→                        </div>
+   323→                        {card.external && (
+   324→                          <ExternalLink className="h-4 w-4 text-muted-foreground/50 flex-shrink-0 mt-1" />
+   325→                        )}
+   326→                      </CardContent>
+   327→                    </Card>
+   328→                  </a>
+   329→                </motion.div>
+   330→              );
+   331→            })}
+   332→
+   333→            
+   334→            <motion.div {...staggerItem}>
+   335→              <Card className="rounded-2xl border shadow-sm">
+   336→                <CardContent className="p-5 flex items-start gap-4">
+   337→                  <div
+   338→                    className={cn(
+   339→                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+   340→                      COLOR_MAP.amber.bg,
+   341→                      COLOR_MAP.amber.text
+   342→                    )}
+   343→                  >
+   344→                    <Clock className="h-5 w-5" />
+   345→                  </div>
+   346→                  <div>
+   347→                    <p className="font-semibold">Business Hours</p>
+   348→                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+   349→                      <p className="flex justify-between gap-8">
+   350→                        <span>Monday – Saturday</span>
+   351→                        <span className="font-medium text-foreground">9:00 AM – 8:00 PM</span>
+   352→                      </p>
+   353→                      <p className="flex justify-between gap-8">
+   354→                        <span>Sunday</span>
+   355→                        <span className="font-medium text-foreground">10:00 AM – 6:00 PM</span>
+   356→                      </p>
+   357→                    </div>
+   358→                  </div>
+   359→                </CardContent>
+   360→              </Card>
+   361→            </motion.div>
+   362→
+   363→            
+   364→            <motion.div {...staggerItem}>
+   365→              <Card className="rounded-2xl border shadow-sm">
+   366→                <CardContent className="p-5 flex items-start gap-4">
+   367→                  <div
+   368→                    className={cn(
+   369→                      "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl",
+   370→                      COLOR_MAP.rose.bg,
+   371→                      COLOR_MAP.rose.text
+   372→                    )}
+   373→                  >
+   374→                    <MapPin className="h-5 w-5" />
+   375→                  </div>
+   376→                  <div>
+   377→                    <p className="font-semibold">Location</p>
+   378→                    <p className="text-sm text-muted-foreground mt-1">
+   379→                      ConnectZ Sales & Services, India
+   380→                    </p>
+   381→                  </div>
+   382→                </CardContent>
+   383→              </Card>
+   384→            </motion.div>
+   385→
+   386→            
+   387→            <motion.div {...staggerItem}>
+   388→              <Card className="rounded-2xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20">
+   389→                <CardContent className="p-5 flex items-start gap-3">
+   390→                  <ShieldAlert className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+   391→                  <div>
+   392→                    <p className="font-semibold text-sm text-amber-800 dark:text-amber-300">
+   393→                      Emergency Support
+   394→                    </p>
+   395→                    <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-1 leading-relaxed">
+   396→                      For urgent security system issues, call us directly. We prioritize
+   397→                      emergency requests and provide same-day remote troubleshooting support.
+   398→                    </p>
+   399→                  </div>
+   400→                </CardContent>
+   401→              </Card>
+   402→            </motion.div>
+   403→          </motion.div>
+   404→
+   405→          
+   406→          <motion.div {...fadeUp} className="lg:col-span-3">
+   407→            <Card className="rounded-2xl border shadow-sm">
+   408→              <CardHeader className="px-8 pt-8 pb-0">
+   409→                <CardTitle className="text-2xl">Send Us a Message</CardTitle>
+   410→                <CardDescription className="text-base">
+   411→                  Fill out the form and we&apos;ll respond within 2 hours during business hours.
+   412→                </CardDescription>
+   413→              </CardHeader>
+   414→              <CardContent className="p-8">
+   415→                <AnimatePresence mode="wait">
+   416→                  {submitted ? (
+   417→                    <motion.div
+   418→                      key="success"
+   419→                      initial={{ opacity: 0, scale: 0.95 }}
+   420→                      animate={{ opacity: 1, scale: 1 }}
+   421→                      exit={{ opacity: 0 }}
+   422→                      className="flex flex-col items-center justify-center py-16 text-center"
+   423→                    >
+   424→                      <div className="h-16 w-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center mb-4">
+   425→                        <CheckCircle2 className="h-8 w-8 text-emerald-600" />
+   426→                      </div>
+   427→                      <h3 className="text-xl font-bold">Message Sent!</h3>
+   428→                      <p className="text-muted-foreground mt-2 max-w-sm">
+   429→                        Thank you for reaching out. Our team will get back to you shortly.
+   430→                      </p>
+   431→                    </motion.div>
+   432→                  ) : (
+   433→                    <motion.form
+   434→                      key="form"
+   435→                      initial={{ opacity: 0 }}
+   436→                      animate={{ opacity: 1 }}
+   437→                      exit={{ opacity: 0 }}
+   438→                      onSubmit={handleSubmit}
+   439→                      className="space-y-5"
+   440→                    >
+   441→                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+   442→                        <div className="space-y-2">
+   443→                          <Label htmlFor="contact-name">Full Name *</Label>
+   444→                          <Input
+   445→                            id="contact-name"
+   446→                            type="text"
+   447→                            placeholder="Rahul Sharma"
+   448→                            required
+   449→                            value={form.name}
+   450→                            onChange={(e) => updateField("name", e.target.value)}
+   451→                            className="h-11 rounded-xl"
+   452→                          />
+   453→                        </div>
+   454→                        <div className="space-y-2">
+   455→                          <Label htmlFor="contact-email">Email Address *</Label>
+   456→                          <Input
+   457→                            id="contact-email"
+   458→                            type="email"
+   459→                            placeholder="rahul@example.com"
+   460→                            required
+   461→                            value={form.email}
+   462→                            onChange={(e) => updateField("email", e.target.value)}
+   463→                            className="h-11 rounded-xl"
+   464→                          />
+   465→                        </div>
+   466→                      </div>
+   467→
+   468→                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+   469→                        <div className="space-y-2">
+   470→                          <Label htmlFor="contact-phone">Phone Number</Label>
+   471→                          <Input
+   472→                            id="contact-phone"
+   473→                            type="tel"
+   474→                            placeholder="9876543210"
+   475→                            value={form.phone}
+   476→                            onChange={(e) => updateField("phone", e.target.value)}
+   477→                            className="h-11 rounded-xl"
+   478→                          />
+   479→                        </div>
+   480→                        <div className="space-y-2">
+   481→                          <Label htmlFor="contact-subject">Subject *</Label>
+   482→                          <Select
+   483→                            value={form.subject}
+   484→                            onValueChange={(val) => updateField("subject", val)}
+   485→                            required
+   486→                          >
+   487→                            <SelectTrigger className="h-11 w-full rounded-xl">
+   488→                              <SelectValue placeholder="Select a subject" />
+   489→                            </SelectTrigger>
+   490→                            <SelectContent>
+   491→                              {SUBJECT_OPTIONS.map((opt) => (
+   492→                                <SelectItem key={opt.value} value={opt.value}>
+   493→                                  {opt.label}
+   494→                                </SelectItem>
+   495→                              ))}
+   496→                            </SelectContent>
+   497→                          </Select>
+   498→                        </div>
+   499→                      </div>
+   500→
+   501→                      <div className="space-y-2">
+   502→                        <Label htmlFor="contact-message">Message *</Label>
+   503→                        <Textarea
+   504→                          id="contact-message"
+   505→                          placeholder="Tell us how we can help you..."
+   506→                          rows={5}
+   507→                          required
+   508→                          value={form.message}
+   509→                          onChange={(e) => updateField("message", e.target.value)}
+   510→                          className="rounded-xl"
+   511→                        />
+   512→                      </div>
+   513→
+   514→                      <Button
+   515→                        type="submit"
+   516→                        className="w-full h-12 text-base gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 transition-all duration-200 hover:shadow-md hover:scale-[1.01]"
+   517→                        disabled={submitting}
+   518→                      >
+   519→                        {submitting ? (
+   520→                          <>
+   521→                            <Loader2 className="h-4 w-4 animate-spin" />
+   522→                            Sending...
+   523→                          </>
+   524→                        ) : (
+   525→                          <>
+   526→                            <Send className="h-4 w-4" />
+   527→                            Send Message
+   528→                          </>
+   529→                        )}
+   530→                      </Button>
+   531→                    </motion.form>
+   532→                  )}
+   533→                </AnimatePresence>
+   534→              </CardContent>
+   535→            </Card>
+   536→          </motion.div>
+   537→        </div>
+   538→      </section>
+   539→
+   540→          GOOGLE MAP
+   541→      Section
+   542→      <section className="px-6 lg:px-8 pb-24">
+   543→        <div className="mx-auto max-w-7xl">
+   544→          <motion.div {...fadeUp}>
+   545→            <Card className="rounded-2xl border shadow-sm overflow-hidden">
+   546→              <div className="p-6 pb-4">
+   547→                <h2 className="text-2xl font-bold">Find Us</h2>
+   548→                <p className="text-muted-foreground mt-1">
+   549→                  Visit our office or reach out — we&apos;re always happy to help.
+   550→                </p>
+   551→              </div>
+   552→              <div className="h-[350px] sm:h-[400px] bg-muted">
+   553→                <iframe
+   554→                  title="ConnectZ Office Location"
+   555→                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d248849.84916296526!2d77.49085452149588!3d12.95451701349421!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bae1670c9b44e6d%3A0xf8dfc3e8517e4fe0!2sBengaluru%2C%20Karnataka!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin"
+   556→                  className="w-full h-full border-0"
+   557→                  allowFullScreen
+   558→                  loading="lazy"
+   559→                  referrerPolicy="no-referrer-when-downgrade"
+   560→                />
+   561→              </div>
+   562→            </Card>
+   563→          </motion.div>
+   564→        </div>
+   565→      </section>
+   566→
+   567→      Section
+   568→      <section className="px-6 lg:px-8 pb-24 bg-muted/30">
+   569→        <div className="mx-auto max-w-3xl">
+   570→          <motion.div {...fadeUp} className="text-center mb-10">
+   571→            <h2 className="text-3xl font-bold">Frequently Asked Questions</h2>
+   572→            <p className="mt-3 text-muted-foreground">
+   573→              Quick answers to common questions
+   574→            </p>
+   575→          </motion.div>
+   576→
+   577→          <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
+   578→            <Accordion type="single" collapsible className="space-y-3">
+   579→              {FAQ_ITEMS.map((item, i) => (
+   580→                <AccordionItem
+   581→                  key={i}
+   582→                  value={`faq-${i}`}
+   583→                  className="rounded-2xl border shadow-sm px-6 data-[state=open]:shadow-md transition-shadow"
+   584→                >
+   585→                  <AccordionTrigger className="text-left font-semibold hover:no-underline py-5">
+   586→                    {item.q}
+   587→                  </AccordionTrigger>
+   588→                  <AccordionContent className="text-muted-foreground leading-relaxed pb-5">
+   589→                    {item.a}
+   590→                  </AccordionContent>
+   591→                </AccordionItem>
+   592→              ))}
+   593→            </Accordion>
+   594→          </motion.div>
+   595→        </div>
+   596→      </section>
+   597→
+   598→          BUILDER CTA
+   599→      Section
+   600→      <section className="px-6 lg:px-8 pb-24">
+   601→        <div className="mx-auto max-w-5xl">
+   602→          <motion.div {...fadeUp}>
+   603→            <Card className="rounded-2xl border shadow-sm overflow-hidden">
+   604→              <CardContent className="p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-6">
+   605→                <div className="flex items-center gap-5">
+   606→                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+   607→                    <Wrench className="h-7 w-7" />
+   608→                  </div>
+   609→                  <div>
+   610→                    <h3 className="text-xl font-bold">
+   611→                      Or Build Your Own CCTV Setup
+   612→                    </h3>
+   613→                    <p className="text-muted-foreground mt-1 leading-relaxed">
+   614→                      Use our interactive builder to design a custom security
+   615→                      system and get an instant quote in minutes.
+   616→                    </p>
+   617→                  </div>
+   618→                </div>
+   619→                <Button
+   620→                  size="lg"
+   621→                  className="gap-2 shrink-0 rounded-xl bg-emerald-600 hover:bg-emerald-700 shadow-sm shadow-emerald-600/20 transition-all duration-200 hover:shadow-md hover:scale-[1.03]"
+   622→                  onClick={() => router.push("/builder")}
+   623→                >
+   624→                  Open Builder
+   625→                  <ArrowRight className="h-4 w-4" />
+   626→                </Button>
+   627→              </CardContent>
+   628→            </Card>
+   629→          </motion.div>
+   630→        </div>
+   631→      </section>
+   632→    </div>
+   633→  );
+   634→}
+   635→
