@@ -285,22 +285,15 @@ export function CctvBuilder() {
   const progressPct = Math.round((completedSteps / STEPS.length) * 100);
   const estMinutesLeft = Math.max(1, Math.round((STEPS.length - completedSteps) * 0.5));
 
-  // Auto-advance active step
+  // Auto-advance active step (no scroll — user stays where they are)
   useEffect(() => {
-    for (let i = STEPS.length - 1; i >= 0; i--) {
-      const s = STEPS[i];
-      if (stepDone(s.num)) { setActiveStep(s.num + 1 <= STEPS.length ? s.num + 1 : STEPS.length); break; }
+    if (stepDone(activeStep) && activeStep < STEPS.length) {
+      setActiveStep(activeStep + 1);
     }
-  }, [stepDone]);
+  }, [stepDone, activeStep]);
 
-  // Auto-scroll to active step
+  // Step refs for progress nav click-to-scroll (only manual clicks, no auto-scroll)
   const stepRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  useEffect(() => {
-    const el = stepRefs.current[activeStep];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [activeStep]);
-
-  // ─── Sync auto-calculated values ───
   useEffect(() => { if (recorderConfig) store.setRecorderUnits(recorderConfig.units.map(u => ({ ...u, type: recorderConfig.type }))); else store.setRecorderUnits([]); }, [recorderConfig, store.setRecorderUnits]);
   useEffect(() => { if (powerConfig) store.setPowerUnits(powerConfig.units); else store.setPowerUnits([]); }, [powerConfig, store.setPowerUnits]);
   useEffect(() => { store.setHddSuggestion(hddCalc.size); store.setHddBreakdown(hddCalc.breakdown); }, [hddCalc.size, hddCalc.breakdown, store.setHddSuggestion, store.setHddBreakdown]);
@@ -436,7 +429,7 @@ export function CctvBuilder() {
       >
         {/* Step header */}
         <button
-          onClick={() => { if (done) toggleCollapse(num); else if (active) { setActiveStep(num); const el = stepRefs.current[num]; if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); } }}
+          onClick={() => { if (done) toggleCollapse(num); else if (active) setActiveStep(num); }}
           className="w-full flex items-center gap-4 p-5 lg:p-6 text-left group" aria-expanded={!collapsed}
         >
           <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-all duration-300 border-2",
@@ -557,7 +550,7 @@ export function CctvBuilder() {
               const current = isCurrent(s.num);
               return (
                 <div key={s.num} className="flex items-center shrink-0">
-                  <button onClick={() => { if (done || isCurrent(s.num)) { setActiveStep(s.num); const el = stepRefs.current[s.num]; if (el) el.scrollIntoView({ behavior: "smooth", block: "center" }); } }} className={cn("flex items-center gap-2 transition-all", done ? "cursor-pointer" : current ? "cursor-pointer" : "cursor-default")} disabled={!done && !current}>
+                  <button onClick={() => { if (done || isCurrent(s.num)) { setActiveStep(s.num); const el = stepRefs.current[s.num]; if (el) el.scrollIntoView({ behavior: "smooth", block: "nearest" }); } }} className={cn("flex items-center gap-2 transition-all", done ? "cursor-pointer" : current ? "cursor-pointer" : "cursor-default")} disabled={!done && !current}>
                     <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all duration-300 border",
                       done ? "bg-emerald-500 border-emerald-500 text-white" : current ? "bg-emerald-50 border-emerald-400 text-emerald-700 ring-2 ring-emerald-200" : "bg-muted border-transparent text-muted-foreground"
                     )}>{done ? <CheckCircle2 className="h-4 w-4" /> : s.num}</div>
