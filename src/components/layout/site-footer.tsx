@@ -28,19 +28,9 @@ const QUICK_LINKS: { label: string; href: string }[] = [
   { label: "Contact", href: "/contact" },
 ];
 
-const RESOURCES: { label: string; href: string }[] = [
-  { label: "CCTV Camera Types", href: "/learn" },
-  { label: "Buying Guide", href: "/learn" },
-  { label: "Installation Tips", href: "/learn" },
-  { label: "Comparison Tool", href: "/builder" },
-  { label: "FAQs", href: "/learn" },
-  { label: "Warranty Info", href: "/learn" },
-];
-
 const LEGAL_LINKS: { label: string; href: string }[] = [
   { label: "Privacy Policy", href: "/privacy" },
   { label: "Terms of Service", href: "/terms" },
-  { label: "Refund Policy", href: "/refund" },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -122,10 +112,10 @@ export function SiteFooter() {
       {/* Main grid */}
       <div className={cn("mx-auto max-w-7xl px-6 pt-16 pb-10 lg:pt-20 lg:pb-14")}>
         <div className={cn(
-          "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-12"
+          "grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-8"
         )}>
           {/* ── Column 1: Brand ──────────────────────────────── */}
-          <div className={cn("sm:col-span-2 lg:col-span-4")}>
+          <div className={cn("sm:col-span-2 lg:col-span-3")}>
             <Link href="/" className={cn("inline-flex items-center gap-3")}>
               <img
                 src="/logo.svg"
@@ -194,55 +184,75 @@ export function SiteFooter() {
             </ul>
           </nav>
 
-          {/* ── Column 3: Resources ──────────────────────────── */}
-          <nav aria-label="Resources" className={cn("sm:col-span-1 lg:col-span-2")}>
-            <h3 className={cn(
-              "text-sm font-semibold uppercase tracking-wider text-white mb-5"
-            )}>
-              Resources
-            </h3>
-            <ul className={cn("space-y-3")}>
-              {RESOURCES.map((res) => (
-                <li key={res.label}>
-                  <Link
-                    href={res.href}
-                    className={cn(
-                      "text-sm text-gray-400 transition-all duration-200",
-                      "hover:text-white hover:translate-x-1 inline-block"
-                    )}
-                  >
-                    {res.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* ── Column 4: Support ──────────────────────────── */}
-          <nav aria-label="Support" className={cn("sm:col-span-1 lg:col-span-2")}>
+          {/* ── Column 3: Support ──────────────────────────── */}
+          <nav aria-label="Support" className={cn("sm:col-span-1 lg:col-span-1")}>
             <h3 className={cn(
               "text-sm font-semibold uppercase tracking-wider text-white mb-5"
             )}>
               Support
             </h3>
             <ul className={cn("space-y-3")}>
-              {["FAQs", "Warranty Information", "Return Policy", "Shipping Info", "Track Order"].map((label) => (
-                <li key={label}>
-                  <Link
-                    href="/learn"
-                    className={cn(
-                      "text-sm text-gray-400 transition-all duration-200",
-                      "hover:text-white hover:translate-x-1 inline-block"
-                    )}
-                  >
-                    {label}
-                  </Link>
-                </li>
-              ))}
+              <li>
+                <a
+                  href={BRAND.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cn(
+                    "text-sm text-gray-400 transition-all duration-200",
+                    "hover:text-white hover:translate-x-1 inline-block"
+                  )}
+                >
+                  FAQs
+                </a>
+              </li>
+              <li>
+                <Link
+                  href="/learn"
+                  className={cn(
+                    "text-sm text-gray-400 transition-all duration-200",
+                    "hover:text-white hover:translate-x-1 inline-block"
+                  )}
+                >
+                  Warranty Information
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms"
+                  className={cn(
+                    "text-sm text-gray-400 transition-all duration-200",
+                    "hover:text-white hover:translate-x-1 inline-block"
+                  )}
+                >
+                  Return Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className={cn(
+                    "text-sm text-gray-400 transition-all duration-200",
+                    "hover:text-white hover:translate-x-1 inline-block"
+                  )}
+                >
+                  Shipping Info
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className={cn(
+                    "text-sm text-gray-400 transition-all duration-200",
+                    "hover:text-white hover:translate-x-1 inline-block"
+                  )}
+                >
+                  Track Order
+                </Link>
+              </li>
             </ul>
           </nav>
 
-          {/* ── Column 5: Contact ────────────────────────────── */}
+          {/* ── Column 4: Contact ────────────────────────────── */}
           <address className={cn("sm:col-span-2 lg:col-span-2 not-italic")}>
             <h3 className={cn(
               "text-sm font-semibold uppercase tracking-wider text-white mb-5"
