@@ -426,8 +426,8 @@ export function CctvBuilder() {
         ref={(el) => { stepRefs.current[num] = el; }}
         id={`step-${num}`}
         initial={false}
-        animate={collapsed ? { opacity: 0.7, scale: 0.99 } : { opacity: 1, scale: 1 }}
-        transition={{ duration: 0.2 }}
+        animate={collapsed ? { opacity: 0.7 } : { opacity: 1 }}
+        transition={{ duration: 0.15 }}
         className={cn("relative rounded-2xl border transition-all duration-300",
           current ? "border-emerald-400 shadow-lg shadow-emerald-500/5 bg-card" :
           done ? "border-emerald-200 bg-emerald-50/30" :
@@ -456,13 +456,9 @@ export function CctvBuilder() {
           {current && <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-0 text-[10px]">Current</Badge>}
         </button>
         {/* Step content */}
-        <AnimatePresence initial={false}>
-          {!collapsed && active && (
-            <motion.div key="content" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25, ease: "easeOut" }}>
-              <div className="px-5 lg:px-6 pb-5 lg:pb-6 pt-0">{children}</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {!collapsed && active && (
+          <div className="px-5 lg:px-6 pb-5 lg:pb-6 pt-0">{children}</div>
+        )}
       </motion.div>
     );
   };
@@ -599,7 +595,7 @@ export function CctvBuilder() {
                     className={cn("flex flex-col items-center gap-2.5 p-5 rounded-2xl border-2 transition-all text-center group relative overflow-hidden",
                       store.propertyType === pt.value ? "border-emerald-500 bg-emerald-50 shadow-lg shadow-emerald-500/10" : "border-border hover:border-emerald-300 hover:shadow-md bg-card"
                     )}>
-                    {store.propertyType === pt.value && <motion.div layoutId="prop-glow" className="absolute inset-0 bg-gradient-to-b from-emerald-100/50 to-transparent pointer-events-none" />}
+                    {store.propertyType === pt.value && <div className="absolute inset-0 bg-gradient-to-b from-emerald-100/50 to-transparent pointer-events-none" />}
                     <div className={cn("p-3 rounded-xl transition-colors relative z-10", store.propertyType === pt.value ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground group-hover:bg-emerald-50 group-hover:text-emerald-600")}>{pt.icon}</div>
                     <div className="relative z-10">
                       <span className="text-sm font-semibold block">{pt.label}</span>
@@ -627,45 +623,49 @@ export function CctvBuilder() {
                     <span>100 sq ft</span><span>50,000 sq ft</span>
                   </div>
                 </div>
-                {area > 0 && (
-                  <motion.div {...fadeIn} className="flex items-center gap-3 flex-wrap">
-                    {areaMilestones.filter(m => area >= m.sqft).slice(-1).map(m => (
+                <div className="h-7 flex items-center">
+                  {area > 0 && (
+                    areaMilestones.filter(m => area >= m.sqft).slice(-1).map(m => (
                       <Badge key={m.sqft} variant="secondary" className="text-xs"><Ruler className="h-3 w-3 mr-1" />~{m.label} scale</Badge>
-                    ))}
-                  </motion.div>
-                )}
+                    ))
+                  )}
+                </div>
               </div>
             </StepCard>
 
             {/* STEP 3: CAMERA RECOMMENDATION */}
             <StepCard num={3} title="Recommended Camera Count">
-              {cameraSuggestion && (
-                <div className="space-y-5">
-                  <p className="text-sm text-muted-foreground">Based on your <strong>{propertyTypes.find(p => p.value === store.propertyType)?.label}</strong> of <strong>{area.toLocaleString()} sq ft</strong>:</p>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[{ label: "Minimum", val: cameraSuggestion.min, color: "amber", icon: <AlertTriangle className="h-4 w-4" /> },
-                     { label: "Recommended", val: cameraSuggestion.suggested, color: "emerald", icon: <Sparkles className="h-4 w-4" /> },
-                     { label: "Maximum", val: cameraSuggestion.max, color: "sky", icon: <Eye className="h-4 w-4" /> }].map(c => (
-                      <motion.div key={c.label} whileHover={{ y: -2 }} className={cn("rounded-2xl p-5 text-center border-2",
-                        c.color === "emerald" ? "border-emerald-200 bg-gradient-to-b from-emerald-50 to-emerald-100/50" :
-                        c.color === "amber" ? "border-amber-200 bg-gradient-to-b from-amber-50 to-amber-100/50" :
-                        "border-sky-200 bg-gradient-to-b from-sky-50 to-sky-100/50"
-                      )}>
-                        <div className={cn("w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-2",
-                          c.color === "emerald" ? "bg-emerald-200/50 text-emerald-700" : c.color === "amber" ? "bg-amber-200/50 text-amber-700" : "bg-sky-200/50 text-sky-700"
-                        )}>{c.icon}</div>
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{c.label}</p>
-                        <motion.p key={c.val} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className={cn("text-3xl font-extrabold mt-1", c.color === "emerald" ? "text-emerald-700" : c.color === "amber" ? "text-amber-700" : "text-sky-700")}>{c.val}</motion.p>
-                        <p className="text-xs text-muted-foreground mt-0.5">cameras</p>
-                      </motion.div>
-                    ))}
+              <div className="min-h-[260px]">
+                {cameraSuggestion ? (
+                  <div className="space-y-5">
+                    <p className="text-sm text-muted-foreground">Based on your <strong>{propertyTypes.find(p => p.value === store.propertyType)?.label}</strong> of <strong>{area.toLocaleString()} sq ft</strong>:</p>
+                    <div className="grid grid-cols-3 gap-3">
+                      {[{ label: "Minimum", val: cameraSuggestion.min, color: "amber", icon: <AlertTriangle className="h-4 w-4" /> },
+                       { label: "Recommended", val: cameraSuggestion.suggested, color: "emerald", icon: <Sparkles className="h-4 w-4" /> },
+                       { label: "Maximum", val: cameraSuggestion.max, color: "sky", icon: <Eye className="h-4 w-4" /> }].map(c => (
+                        <motion.div key={c.label} whileHover={{ y: -2 }} className={cn("rounded-2xl p-5 text-center border-2",
+                          c.color === "emerald" ? "border-emerald-200 bg-gradient-to-b from-emerald-50 to-emerald-100/50" :
+                          c.color === "amber" ? "border-amber-200 bg-gradient-to-b from-amber-50 to-amber-100/50" :
+                          "border-sky-200 bg-gradient-to-b from-sky-50 to-sky-100/50"
+                        )}>
+                          <div className={cn("w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-2",
+                            c.color === "emerald" ? "bg-emerald-200/50 text-emerald-700" : c.color === "amber" ? "bg-amber-200/50 text-amber-700" : "bg-sky-200/50 text-sky-700"
+                          )}>{c.icon}</div>
+                          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">{c.label}</p>
+                          <p className={cn("text-3xl font-extrabold mt-1", c.color === "emerald" ? "text-emerald-700" : c.color === "amber" ? "text-amber-700" : "text-sky-700")}>{c.val}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">cameras</p>
+                        </motion.div>
+                      ))}
+                    </div>
+                    <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                      <Lightbulb className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                      <p className="text-sm text-blue-700 leading-relaxed">These are estimates. Cover all entry points, parking, corridors, and blind spots. Outdoor areas typically need more coverage.</p>
+                    </div>
                   </div>
-                  <div className="bg-blue-50/80 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-                    <Lightbulb className="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                    <p className="text-sm text-blue-700 leading-relaxed">These are estimates. Cover all entry points, parking, corridors, and blind spots. Outdoor areas typically need more coverage.</p>
-                  </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flex items-center justify-center h-full text-sm text-muted-foreground">Complete Steps 1 & 2 to see camera recommendations.</div>
+                )}
+              </div>
             </StepCard>
 
             {/* STEP 4: SYSTEM TYPE */}
@@ -680,15 +680,19 @@ export function CctvBuilder() {
                     <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center mb-4 transition-colors", store.cameraSystem === cs.value ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground group-hover:bg-emerald-50 group-hover:text-emerald-600")}>{cs.icon}</div>
                     <h3 className="font-bold text-sm">{cs.label}</h3>
                     <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{cs.desc}</p>
-                    {store.cameraSystem === cs.value && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} className="mt-4 space-y-2">
-                        <div className="space-y-1">{cs.pros.map(p => <p key={p} className="text-xs flex items-center gap-1.5 text-emerald-700"><CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />{p}</p>)}</div>
-                        <div className="pt-2 border-t border-emerald-200 space-y-1">
-                          <p className="text-[10px] text-emerald-600"><span className="font-semibold">Best for:</span> {cs.bestFor}</p>
-                          <p className="text-[10px] text-emerald-600"><span className="font-semibold">Price range:</span> {cs.priceImpact}</p>
-                        </div>
-                      </motion.div>
-                    )}
+                    <div className="mt-4 space-y-2 min-h-[120px]">
+                      <AnimatePresence mode="wait">
+                        {store.cameraSystem === cs.value && (
+                          <motion.div key="pros" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                            <div className="space-y-1">{cs.pros.map(p => <p key={p} className="text-xs flex items-center gap-1.5 text-emerald-700"><CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />{p}</p>)}</div>
+                            <div className="pt-2 border-t border-emerald-200 space-y-1">
+                              <p className="text-[10px] text-emerald-600"><span className="font-semibold">Best for:</span> {cs.bestFor}</p>
+                              <p className="text-[10px] text-emerald-600"><span className="font-semibold">Price range:</span> {cs.priceImpact}</p>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
                     {store.cameraSystem === cs.value && <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute top-3 right-3 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center"><CheckCircle2 className="h-4 w-4 text-white" /></motion.div>}
                   </motion.button>
                 ))}
@@ -792,7 +796,7 @@ export function CctvBuilder() {
                     {store.cameraSelections.map((cam) => {
                       const up = cam.salePrice && cam.salePrice < cam.price ? cam.salePrice : cam.price;
                       return (
-                        <motion.div key={cam.productId} layout className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t hover:bg-muted/30 transition-colors">
+                        <div key={cam.productId} className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3 items-center border-t hover:bg-muted/30 transition-colors">
                           <div className="flex items-center gap-2.5 min-w-0">
                             {cam.imageUrl ? <img src={cam.imageUrl} alt="" className="w-9 h-9 rounded-lg object-contain bg-muted border shrink-0" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} /> : <div className="w-9 h-9 rounded-lg bg-muted border flex items-center justify-center shrink-0"><Camera className="h-4 w-4 text-muted-foreground" /></div>}
                             <div className="min-w-0"><p className="text-xs font-semibold truncate">{cam.brand} {cam.modelName}</p><p className="text-[10px] text-muted-foreground">{cam.cameraType}</p></div>
@@ -805,7 +809,7 @@ export function CctvBuilder() {
                           <div className="flex justify-center"><QtyControl value={cam.qty} onChange={(v) => updateSelectionQty(cam.productId, v)} /></div>
                           <div className="text-right"><p className="text-xs font-bold"><AnimatedPrice value={up * cam.qty} /></p><p className="text-[10px] text-muted-foreground">{fmt(up)} x {cam.qty}</p></div>
                           <button className="w-7 h-7 rounded-lg flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors" onClick={() => removeSelection(cam.productId)} aria-label={`Remove ${cam.modelName}`}><X className="h-4 w-4" /></button>
-                        </motion.div>
+                        </div>
                       );
                     })}
                     <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_auto] gap-0 px-4 py-3.5 bg-emerald-50 border-t font-bold text-sm">
@@ -984,7 +988,7 @@ export function CctvBuilder() {
 
           {/* ── STICKY SUMMARY (desktop) ── */}
           <aside className="hidden lg:block w-[340px] shrink-0 sticky top-[72px] max-h-[calc(100vh-88px)] overflow-y-auto" aria-label="Configuration summary">
-            <div className="rounded-2xl border bg-card p-5 shadow-lg shadow-black/5 space-y-5">
+            <div className="rounded-2xl border bg-card p-5 shadow-lg shadow-black/5 space-y-5 min-h-[320px]">
               <div className="flex items-center justify-between">
                 <h2 className="font-bold text-sm">Your Setup</h2>
                 <Badge variant="outline" className="text-[10px]">{completedSteps}/{STEPS.length} steps</Badge>
