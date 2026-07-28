@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { verifyToken } from "@/lib/auth";
+
+// ─── Helper: verify admin from Authorization header ───
+function getAdminFromRequest(req: NextRequest) {
+  const authHeader = req.headers.get("authorization");
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  const token = authHeader.slice(7);
+  const payload = verifyToken(token);
+  if (!payload || payload.role !== "admin") return null;
+  return payload;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -40,6 +51,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Require admin authentication
+  const admin = getAdminFromRequest(req);
+  if (!admin) {
+    return NextResponse.json(
+      { success: false, error: "Unauthorized — admin access required" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await req.json();
     const product = await db.cctvProduct.create({

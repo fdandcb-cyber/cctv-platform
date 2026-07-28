@@ -48,7 +48,8 @@ export const metadata: Metadata = {
     description: "Genuine CCTV cameras, recorders & accessories. Hikvision, Dahua, Ezviz & more.",
   },
   robots: { index: true, follow: true },
-  verification: { google: "your-google-verification-code" },
+  // Add your Google Search Console verification code here:
+  // verification: { google: "your-actual-code" },
 };
 
 export default function RootLayout({
