@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // ─── Protect admin routes ───
@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Note: Full JWT verification happens server-side in API routes.
-    // Middleware provides a fast first-pass check for the presence of a token.
+    // Proxy provides a fast first-pass check for the presence of a token.
   }
 
   // ─── Security headers for all routes ───
@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Run middleware on all routes except static files and API
+  // Run proxy on all routes except static files and API
   matcher: [
     "/((?!_next/static|_next/image|favicon.ico|logo.svg|robots.txt|uploads).*)",
   ],
